@@ -1,0 +1,50 @@
+# Logging Configuration Example
+# Demonstrates enterprise logging with multiple handlers and formatters
+
+name: app
+level: ${LOG_LEVEL:INFO}
+
+handlers:
+  # Console handler for development
+  - type: console
+    level: DEBUG
+    stream: stdout
+    formatter: structured
+
+  # File handler for all logs
+  - type: rotating_file
+    level: INFO
+    filename: logs/app.log
+    max_bytes: 10485760  # 10MB
+    backup_count: 5
+    compress: true
+    formatter: json
+
+  # Separate error log
+  - type: rotating_file
+    level: ERROR
+    filename: logs/error.log
+    max_bytes: 10485760  # 10MB
+    backup_count: 10
+    compress: true
+    formatter: json
+
+filters:
+  # Filter sensitive data from logs
+  - type: sensitive_data
+    patterns:
+      - "password"
+      - "api_key"
+      - "secret"
+      - "token"
+      - "authorization"
+
+  # Add context to logs
+  - type: context
+
+# Log format configuration
+format:
+  structured:
+    include_extra: true
+  json:
+    include_exc_info: true
