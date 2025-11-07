@@ -125,12 +125,13 @@ class TestBatchProcessingPerformance:
         def add_item():
             processor.add({"data": "test"}, timeout=1.0)
 
-        result = benchmark.run(add_item, iterations=100)
+        result = benchmark.run(add_item, iterations=100, warmup=0)  # No warmup to get exact count
 
         processor.stop()
 
         print(f"\nBatch Processor Throughput: {result.ops_per_second:.0f} ops/sec")
-        assert len(processed) == 100
+        # Verify all items were processed (should be exactly 100 with warmup=0)
+        assert len(processed) == 100, f"Expected 100 items, got {len(processed)}"
 
 
 class TestPerformanceAssertions:
