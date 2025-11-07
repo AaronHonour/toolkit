@@ -1,0 +1,33 @@
+# Audit Logging Configuration
+
+audit:
+  # Storage backend: memory, database, file
+  storage: memory
+
+  # Database storage (if using database)
+  database:
+    table_name: audit_logs
+    retention_days: 365
+
+  # File storage (if using file)
+  file:
+    path: "/var/log/audit/audit.log"
+    max_file_size_mb: 100
+    backup_count: 10
+
+  # What to audit
+  actions:
+    - CREATE
+    - UPDATE
+    - DELETE
+    - LOGIN
+    - LOGOUT
+    - ACCESS
+
+  # Exclude certain resources
+  exclude_resources:
+    - "/health"
+    - "/metrics"
+
+  # Include IP addresses and user agents
+  include_metadata: true

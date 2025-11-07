@@ -1,11 +1,17 @@
-"""
-Tasks Module - Placeholder.
+"""Tasks module for background job processing and scheduling."""
 
-Note: This module provides basic structure. For production use:
-- Celery for distributed task queue
-- RQ (Redis Queue) for simple task queue
-- Dramatiq for alternative task system
-- APScheduler for scheduled tasks
-"""
+from toolkit.tasks.celery import CeleryManager, task
+from toolkit.tasks.scheduler import Scheduler, Job
+from toolkit.tasks.worker import Worker, WorkerConfig
+from toolkit.tasks.monitor import TaskMonitor, TaskStatus
 
-# Placeholder - integrate with Celery/RQ/Dramatiq based on needs
+__all__ = [
+    "CeleryManager",
+    "task",
+    "Scheduler",
+    "Job",
+    "Worker",
+    "WorkerConfig",
+    "TaskMonitor",
+    "TaskStatus",
+]

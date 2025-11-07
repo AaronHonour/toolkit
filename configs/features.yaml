@@ -1,0 +1,32 @@
+# Feature Flags Configuration
+
+features:
+  # Storage backend: memory, database, redis
+  storage: memory
+
+  # Default features
+  flags:
+    - name: new_ui
+      status: disabled
+      description: "New UI redesign"
+      rollout_percentage: 0
+
+    - name: advanced_search
+      status: enabled
+      description: "Advanced search functionality"
+
+    - name: beta_features
+      status: rollout
+      description: "Beta features for testing"
+      rollout_percentage: 10
+
+  # Database storage (if using database)
+  database:
+    table_name: feature_flags
+
+  # Redis storage (if using redis)
+  redis:
+    host: "${REDIS_HOST:-localhost}"
+    port: "${REDIS_PORT:-6379}"
+    db: 1
+    key_prefix: "features:"

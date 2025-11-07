@@ -1,0 +1,28 @@
+# Tasks Configuration
+
+tasks:
+  # Celery broker configuration
+  broker_url: "${CELERY_BROKER_URL:-redis://localhost:6379/0}"
+  result_backend: "${CELERY_RESULT_BACKEND:-redis://localhost:6379/0}"
+
+  # Serialization
+  task_serializer: json
+  result_serializer: json
+  accept_content:
+    - json
+
+  # Timezone
+  timezone: UTC
+  enable_utc: true
+
+  # Worker configuration
+  worker:
+    concurrency: 4
+    pool: prefork
+    max_tasks_per_child: 1000
+    time_limit: 3600
+    soft_time_limit: 3000
+
+  # Scheduler configuration
+  scheduler:
+    timezone: UTC

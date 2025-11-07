@@ -1,11 +1,19 @@
-"""
-Tracing Module - Placeholder.
+"""Distributed tracing module using OpenTelemetry."""
 
-Note: This module provides basic structure. For production use:
-- OpenTelemetry for distributed tracing
-- Jaeger for trace collection
-- Zipkin as alternative
-- Integration with existing logging
-"""
+from toolkit.tracing.tracer import TracerManager, get_tracer, trace
+from toolkit.tracing.span import SpanManager, SpanKind
+from toolkit.tracing.context import TraceContext, get_trace_id, get_span_id
+from toolkit.tracing.exporters import ExporterConfig, ExporterType
 
-# Placeholder - integrate with OpenTelemetry based on needs
+__all__ = [
+    "TracerManager",
+    "get_tracer",
+    "trace",
+    "SpanManager",
+    "SpanKind",
+    "TraceContext",
+    "get_trace_id",
+    "get_span_id",
+    "ExporterConfig",
+    "ExporterType",
+]

@@ -1,0 +1,75 @@
+"""Notification manager."""
+
+from enum import Enum
+from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from datetime import datetime
+
+
+class NotificationChannel(str, Enum):
+    """Notification channel types."""
+
+    EMAIL = "email"
+    SMS = "sms"
+    PUSH = "push"
+    WEBHOOK = "webhook"
+
+
+@dataclass
+class Notification:
+    """Notification message."""
+
+    channel: NotificationChannel
+    recipient: str
+    subject: Optional[str] = None
+    body: str = ""
+    template: Optional[str] = None
+    template_vars: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
+    scheduled_at: Optional[datetime] = None
+
+
+class NotificationManager:
+    """Multi-channel notification manager."""
+
+    def __init__(self):
+        """Initialize notification manager."""
+        self.channels: Dict[NotificationChannel, "ChannelBackend"] = {}
+
+    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend"):
+        """Register channel backend.
+
+        Args:
+            channel_type: Channel type
+            backend: Channel backend
+        """
+        self.channels[channel_type] = backend
+
+    def send(self, notification: Notification) -> str:
+        """Send notification.
+
+        Args:
+            notification: Notification to send
+
+        Returns:
+            Notification ID
+
+        Raises:
+            ValueError: If channel not registered
+        """
+        if notification.channel not in self.channels:
+            raise ValueError(f"Channel {notification.channel} not registered")
+
+        backend = self.channels[notification.channel]
+        return backend.send(notification)
+
+    def send_bulk(self, notifications: List[Notification]) -> List[str]:
+        """Send multiple notifications.
+
+        Args:
+            notifications: List of notifications
+
+        Returns:
+            List of notification IDs
+        """
+        return [self.send(notif) for notif in notifications]

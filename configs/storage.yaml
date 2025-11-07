@@ -1,0 +1,23 @@
+# Storage Configuration
+
+storage:
+  # Backend: local, s3, azure, gcs
+  backend: local
+  base_path: "/tmp/storage"
+
+  # S3 configuration
+  s3:
+    bucket: "${S3_BUCKET:-my-bucket}"
+    region: "${AWS_REGION:-us-east-1}"
+    access_key: "${AWS_ACCESS_KEY_ID}"
+    secret_key: "${AWS_SECRET_ACCESS_KEY}"
+
+  # Azure configuration
+  azure:
+    container: "${AZURE_CONTAINER:-my-container}"
+    connection_string: "${AZURE_STORAGE_CONNECTION_STRING}"
+
+  # GCS configuration
+  gcs:
+    bucket: "${GCS_BUCKET:-my-bucket}"
+    credentials_file: "${GOOGLE_APPLICATION_CREDENTIALS}"

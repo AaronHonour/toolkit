@@ -1,11 +1,17 @@
-"""
-Database Module - Placeholder.
+"""Database module for connection management and ORM integration."""
 
-Note: This module provides basic structure. For production use:
-- SQLAlchemy for ORM
-- psycopg2/asyncpg for PostgreSQL
-- pymysql/aiomysql for MySQL
-- Connection pooling with SQLAlchemy
-"""
+from toolkit.database.connection import DatabaseManager, DatabaseConfig
+from toolkit.database.session import SessionManager, get_session
+from toolkit.database.migrations import MigrationManager
+from toolkit.database.base import Base, TimestampMixin, SoftDeleteMixin
 
-# Placeholder - extend based on specific database needs
+__all__ = [
+    "DatabaseManager",
+    "DatabaseConfig",
+    "SessionManager",
+    "get_session",
+    "MigrationManager",
+    "Base",
+    "TimestampMixin",
+    "SoftDeleteMixin",
+]

@@ -1,0 +1,21 @@
+# Tracing Configuration
+
+tracing:
+  service_name: "${SERVICE_NAME:-my-app}"
+  service_version: "1.0.0"
+  environment: "${ENVIRONMENT:-production}"
+
+  # Exporter configuration
+  exporter:
+    type: otlp  # otlp, jaeger, zipkin, console
+    endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4317}"
+    insecure: true
+
+  # Jaeger specific (if using jaeger)
+  jaeger:
+    agent_host: localhost
+    agent_port: 6831
+
+  # Sampling
+  sampling:
+    rate: 1.0  # Sample all traces (0.0 - 1.0)
