@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backend-toolkit"
-version = "0.1.0"
-description = "Enterprise-grade Python toolkit for backend development"
+version = "0.2.0"
+description = "Enterprise-grade Python toolkit for backend development with metrics, caching, HTTP client, validation, rate limiting, and resilience patterns"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -31,6 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Development dependencies
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -39,6 +40,59 @@ dev = [
     "ruff>=0.1",
     "mypy>=1.0",
     "types-PyYAML",
+    "types-requests",
+]
+
+# HTTP client support
+http = [
+    "requests>=2.28.0",
+]
+
+# Cache backends
+cache = [
+    "redis>=4.5.0",
+    "pymemcache>=4.0.0",
+]
+
+# Metrics backends
+metrics = [
+    "prometheus-client>=0.16.0",
+    "statsd>=4.0.0",
+]
+
+# Database support
+database = [
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",  # PostgreSQL
+    "pymysql>=1.0.0",  # MySQL
+]
+
+# Task queue support
+tasks = [
+    "celery>=5.2.0",
+    "redis>=4.5.0",
+]
+
+# Tracing support
+tracing = [
+    "opentelemetry-api>=1.15.0",
+    "opentelemetry-sdk>=1.15.0",
+    "opentelemetry-instrumentation>=0.36b0",
+]
+
+# All optional dependencies
+all = [
+    "requests>=2.28.0",
+    "redis>=4.5.0",
+    "pymemcache>=4.0.0",
+    "prometheus-client>=0.16.0",
+    "statsd>=4.0.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "pymysql>=1.0.0",
+    "celery>=5.2.0",
+    "opentelemetry-api>=1.15.0",
+    "opentelemetry-sdk>=1.15.0",
 ]
 
 [project.urls]

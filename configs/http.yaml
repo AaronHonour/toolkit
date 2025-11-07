@@ -1,0 +1,39 @@
+# HTTP Client Configuration
+
+http:
+  # Base URL for all requests
+  base_url: ${API_BASE_URL}
+
+  # Default timeout (seconds)
+  timeout: 10.0
+
+  # Maximum retry attempts
+  max_retries: 3
+
+  # Retry configuration
+  retry:
+    backoff_factor: 2.0
+    max_delay: 60.0
+    retry_on_status: [500, 502, 503, 504]
+
+  # Default headers
+  headers:
+    User-Agent: ${APP_NAME:backend-toolkit}/1.0
+    Accept: application/json
+    Authorization: ${API_KEY}
+
+  # Circuit breaker
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    timeout: 60.0
+
+  # Connection pooling
+  pool:
+    max_connections: 100
+    max_keepalive: 50
+
+  # Logging
+  log_requests: true
+  log_responses: true
+  log_headers: false

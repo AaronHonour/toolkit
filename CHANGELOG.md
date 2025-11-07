@@ -5,6 +5,106 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2024-11-07
+
+### Added
+
+#### New Modules
+
+- **Metrics Module** (`toolkit.metrics`):
+  - MetricsManager with Prometheus, StatsD, and in-memory backends
+  - Counter, gauge, and histogram metrics
+  - Decorator-based instrumentation (`@timer`, `@counter`, `@gauge`)
+  - Thread-safe metric collection
+  - Auto-instrumentation capabilities
+
+- **Cache Module** (`toolkit.cache`):
+  - Unified caching interface for Redis, Memcached, and in-memory
+  - Memoization decorators for function results
+  - TTL management and pattern-based deletion
+  - Compression and serialization support (JSON/pickle)
+  - LRU eviction for in-memory cache
+  - Thread-safe operations
+
+- **HTTP Client Module** (`toolkit.http`):
+  - Enterprise HTTP client with requests integration
+  - Automatic retry with exponential backoff
+  - Circuit breaker pattern
+  - Connection pooling
+  - Request/response logging
+  - Configurable timeouts
+
+- **Validation Module** (`toolkit.validation`):
+  - Data validation with pre-built rules
+  - Email, URL, phone number validators
+  - Length and range validation
+  - Custom validation rules
+  - Error message customization
+
+- **Rate Limiting Module** (`toolkit.ratelimit`):
+  - Token bucket algorithm
+  - Sliding window algorithm
+  - Per-user and per-endpoint limiting
+  - Redis backend support for distributed rate limiting
+  - Decorator-based rate limiting
+
+- **Resilience Module** (`toolkit.resilience`):
+  - Circuit breaker pattern implementation
+  - Fallback strategies for graceful degradation
+  - State management (CLOSED, OPEN, HALF_OPEN)
+  - Configurable failure thresholds and timeouts
+
+- **Database Module** (Placeholder):
+  - Structure for database connection management
+  - Notes for SQLAlchemy integration
+
+- **Tasks Module** (Placeholder):
+  - Structure for background task processing
+  - Notes for Celery/RQ integration
+
+- **Tracing Module** (Placeholder):
+  - Structure for distributed tracing
+  - Notes for OpenTelemetry integration
+
+#### Configuration
+
+- Added YAML configurations for all new modules:
+  - `configs/metrics.yaml` - Metrics backend and collection settings
+  - `configs/cache.yaml` - Cache backend and TTL settings
+  - `configs/http.yaml` - HTTP client and retry configuration
+  - `configs/validation.yaml` - Validation rules and error messages
+  - `configs/ratelimit.yaml` - Rate limiting policies
+  - `configs/resilience.yaml` - Circuit breaker and fallback settings
+
+#### Examples
+
+- `examples/complete_application.py` - Comprehensive example using all toolkit modules
+- Demonstrates integration of all modules in a production-ready backend service
+
+#### Dependencies
+
+- Added optional dependency groups in `pyproject.toml`:
+  - `[http]` - HTTP client support (requests)
+  - `[cache]` - Redis and Memcached support
+  - `[metrics]` - Prometheus and StatsD support
+  - `[database]` - SQLAlchemy and database drivers
+  - `[tasks]` - Celery and task queue support
+  - `[tracing]` - OpenTelemetry support
+  - `[all]` - All optional features
+
+### Enhanced
+
+- Updated README with:
+  - Documentation for all new modules
+  - Quick start examples for each module
+  - Installation instructions for optional features
+
+- Enhanced project architecture:
+  - 9 modules (4 core + 5 extended + 3 placeholders)
+  - 40+ Python files
+  - 6 YAML configuration files
+  - Comprehensive examples
+
 ## [0.1.0] - 2024-11-06
 
 ### Added

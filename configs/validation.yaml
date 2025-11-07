@@ -1,0 +1,35 @@
+# Validation Configuration
+
+validation:
+  # Strict mode (fail fast)
+  strict: true
+
+  # Custom error messages
+  error_messages:
+    required: "{field} is required"
+    email: "{field} must be a valid email"
+    url: "{field} must be a valid URL"
+    phone: "{field} must be a valid phone number"
+    min_length: "{field} must be at least {min} characters"
+    max_length: "{field} must be at most {max} characters"
+    min_value: "{field} must be at least {min}"
+    max_value: "{field} must be at most {max}"
+
+  # Pre-defined rules
+  rules:
+    username:
+      - type: length
+        min: 3
+        max: 50
+      - type: pattern
+        regex: "^[a-zA-Z0-9_]+$"
+
+    password:
+      - type: length
+        min: 8
+        max: 128
+      - type: pattern
+        regex: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)"
+
+    email:
+      - type: email

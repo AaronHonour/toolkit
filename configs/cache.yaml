@@ -1,0 +1,37 @@
+# Cache Configuration
+
+cache:
+  # Backend: redis, memcached, memory
+  backend: memory
+
+  # Key prefix for all cache operations
+  prefix: ${CACHE_PREFIX:cache}
+
+  # Serialization: json, pickle
+  serializer: json
+
+  # Compression
+  compress: false
+
+  # Default TTL (seconds)
+  default_ttl: 3600
+
+  # Backend-specific configuration
+  backend_config:
+    # Redis
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    db: ${REDIS_DB:0}
+    password: ${REDIS_PASSWORD}
+
+    # Memcached
+    memcached_host: ${MEMCACHED_HOST:localhost}
+    memcached_port: ${MEMCACHED_PORT:11211}
+
+    # In-memory
+    max_size: 1000
+
+  # Cache warming
+  warm_cache:
+    enabled: false
+    keys: []
