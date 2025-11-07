@@ -1,0 +1,54 @@
+# Application Lifecycle Configuration
+
+lifecycle:
+  # Application settings
+  app:
+    name: ${APP_NAME:backend-app}
+    shutdown_timeout: 30.0
+
+  # Startup hooks
+  startup:
+    - name: database
+      priority: 1
+      action: connect_database
+
+    - name: cache
+      priority: 2
+      action: init_cache
+
+    - name: event_bus
+      priority: 3
+      action: init_event_bus
+
+  # Shutdown hooks
+  shutdown:
+    - name: event_bus
+      priority: 1
+      action: stop_event_bus
+
+    - name: cache
+      priority: 2
+      action: flush_cache
+
+    - name: database
+      priority: 3
+      action: disconnect_database
+
+  # Health checks
+  health:
+    liveness:
+      - name: app
+        interval: 10
+
+    readiness:
+      - name: database
+        interval: 30
+        timeout: 5
+
+      - name: cache
+        interval: 30
+        timeout: 2
+
+      - name: external_api
+        interval: 60
+        timeout: 10

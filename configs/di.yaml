@@ -1,0 +1,33 @@
+# Dependency Injection Configuration
+
+di:
+  # Auto-wiring
+  auto_wire: true
+
+  # Default lifetime
+  default_lifetime: transient
+
+  # Service registrations
+  services:
+    # Singleton services
+    singletons:
+      - DatabaseClient
+      - CacheManager
+      - MetricsManager
+      - EventBus
+
+    # Scoped services (per request)
+    scoped:
+      - UnitOfWork
+      - DatabaseSession
+
+    # Transient services (new instance each time)
+    transient:
+      - UserService
+      - OrderService
+
+  # Factory registrations
+  factories:
+    logger:
+      factory: "get_logger"
+      lifetime: transient
