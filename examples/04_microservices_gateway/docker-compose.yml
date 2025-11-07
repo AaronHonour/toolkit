@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  gateway:
+    build:
+      context: ../..
+      dockerfile: examples/04_microservices_gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8003:8003"
+    environment:
+      - MAX_CONNECTIONS=1000
+      - KEEPALIVE_CONNECTIONS=100
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # Analytics Dashboard
+  analytics:
+    build:
+      context: ../..
+      dockerfile: examples/02_realtime_analytics_dashboard/Dockerfile
+    container_name: analytics-dashboard
+    ports:
+      - "8002:8002"
+    environment:
+      - BUFFER_SIZE=1000000
+      - BATCH_SIZE=1000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
