@@ -4,6 +4,19 @@ from toolkit.database.connection import DatabaseManager, DatabaseConfig
 from toolkit.database.session import SessionManager, get_session
 from toolkit.database.migrations import MigrationManager
 from toolkit.database.base import Base, TimestampMixin, SoftDeleteMixin
+from toolkit.database.optimizations import (
+    QueryCache,
+    QueryCacheConfig,
+    PreparedStatementCache,
+    QueryBatcher,
+    ReadWriteSplitter,
+    ConnectionPoolMonitor,
+    QueryProfiler,
+    cached_query,
+    get_query_cache,
+    get_prepared_statement_cache,
+    get_query_profiler,
+)
 
 __all__ = [
     "DatabaseManager",
@@ -14,4 +27,16 @@ __all__ = [
     "Base",
     "TimestampMixin",
     "SoftDeleteMixin",
+    # Performance optimizations
+    "QueryCache",
+    "QueryCacheConfig",
+    "PreparedStatementCache",
+    "QueryBatcher",
+    "ReadWriteSplitter",
+    "ConnectionPoolMonitor",
+    "QueryProfiler",
+    "cached_query",
+    "get_query_cache",
+    "get_prepared_statement_cache",
+    "get_query_profiler",
 ]
