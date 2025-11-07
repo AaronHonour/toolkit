@@ -1,0 +1,17 @@
+# Data Export Service Requirements
+
+# Web framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+
+# Fast serialization
+orjson>=3.9.0  # 9.05x faster than json
+msgpack>=1.0.0  # 5x faster than JSON
+
+# Fast compression
+lz4>=4.3.0  # 8.4x faster than zlib
+python-snappy>=0.6.0  # Database-optimized compression
+
+# Performance toolkit
+../../

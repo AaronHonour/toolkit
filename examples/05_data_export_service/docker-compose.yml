@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # Data Export Service
+  export-service:
+    build:
+      context: ../..
+      dockerfile: examples/05_data_export_service/Dockerfile
+    container_name: data-export-service
+    ports:
+      - "8005:8005"
+    volumes:
+      - exports:/app/exports
+    environment:
+      - CHUNK_SIZE=10000
+      - MAX_CONCURRENT_EXPORTS=10
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  exports:
