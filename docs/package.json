@@ -1,6 +1,7 @@
 {
   "name": "@toolkit/docs",
   "version": "1.0.0",
+  "type": "module",
   "description": "Unified documentation for Composable Toolkit",
   "scripts": {
     "docs:dev": "vitepress dev",
