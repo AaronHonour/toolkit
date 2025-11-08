@@ -1,0 +1,306 @@
+openapi: 3.0.3
+info:
+  title: Time-Series Database API
+  description: |
+    High-performance time-series data storage and querying with downsampling,
+    aggregations, and retention policies.
+
+    **Features:**
+    - Time-series data ingestion (10K+ points/sec)
+    - Range queries with aggregations
+    - Downsampling and rollups
+    - Retention policies
+    - Real-time streaming
+    - Tags and labels
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8008
+    description: Local development server
+  - url: https://api.toolkit.example.com/timeseries
+    description: Production server
+
+tags:
+  - name: Write
+    description: Data ingestion
+  - name: Query
+    description: Data queries
+  - name: Series
+    description: Series management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /write:
+    post:
+      tags:
+        - Write
+      summary: Write data points
+      description: Ingest time-series data points
+      operationId: writePoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                points:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DataPoint'
+            examples:
+              metrics:
+                value:
+                  points:
+                    - metric: "cpu.usage"
+                      value: 75.5
+                      timestamp: "2024-01-22T15:30:00Z"
+                      tags:
+                        host: "server-01"
+                        region: "us-east-1"
+      responses:
+        '201':
+          description: Points written
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  written:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /query:
+    post:
+      tags:
+        - Query
+      summary: Query time-series data
+      description: Query data with aggregations and downsampling
+      operationId: queryData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSeriesQuery'
+      responses:
+        '200':
+          description: Query results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /series:
+    get:
+      tags:
+        - Series
+      summary: List series
+      description: List all time-series with tags
+      operationId: listSeries
+      parameters:
+        - name: metric
+          in: query
+          schema:
+            type: string
+        - name: tags
+          in: query
+          schema:
+            type: object
+      responses:
+        '200':
+          description: Series list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  series:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Series'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /retention-policies:
+    get:
+      tags:
+        - Series
+      summary: List retention policies
+      operationId: listRetentionPolicies
+      responses:
+        '200':
+          description: Retention policies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        duration:
+                          type: string
+                        shard_duration:
+                          type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DataPoint:
+      type: object
+      required:
+        - metric
+        - value
+        - timestamp
+      properties:
+        metric:
+          type: string
+        value:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+
+    TimeSeriesQuery:
+      type: object
+      required:
+        - metric
+        - start
+        - end
+      properties:
+        metric:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        tags:
+          type: object
+        aggregation:
+          type: string
+          enum: [avg, sum, min, max, count]
+        downsample:
+          type: string
+          description: Downsample interval (e.g., "5m", "1h")
+
+    QueryResponse:
+      type: object
+      properties:
+        metric:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number
+
+    Series:
+      type: object
+      properties:
+        metric:
+          type: string
+        tags:
+          type: object
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

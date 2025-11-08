@@ -1,0 +1,320 @@
+openapi: 3.0.3
+info:
+  title: Cache Browser API
+  description: |
+    Redis cache visualization and management with key browsing, TTL management,
+    and memory analytics.
+
+    **Features:**
+    - Browse Redis keys by pattern
+    - View key values and types
+    - Set/update/delete keys
+    - TTL management
+    - Memory usage analytics
+    - Batch operations
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8009
+    description: Local development server
+  - url: https://api.toolkit.example.com/cache
+    description: Production server
+
+tags:
+  - name: Keys
+    description: Key management
+  - name: Values
+    description: Value operations
+  - name: Analytics
+    description: Cache analytics
+  - name: Health
+    description: Service health checks
+
+paths:
+  /keys:
+    get:
+      tags:
+        - Keys
+      summary: List keys
+      description: List Redis keys matching pattern
+      operationId: listKeys
+      parameters:
+        - name: pattern
+          in: query
+          schema:
+            type: string
+            default: "*"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Keys list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KeyInfo'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /keys/{key}:
+    get:
+      tags:
+        - Values
+      summary: Get key value
+      description: Get value and metadata for a specific key
+      operationId: getKey
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Key value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyValue'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    put:
+      tags:
+        - Values
+      summary: Set key value
+      description: Set or update a key's value
+      operationId: setKey
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: string
+                ttl:
+                  type: integer
+                  description: TTL in seconds
+      responses:
+        '200':
+          description: Key set
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Values
+      summary: Delete key
+      operationId: deleteKey
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Key deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /keys/{key}/ttl:
+    patch:
+      tags:
+        - Values
+      summary: Update TTL
+      description: Set or update key's TTL
+      operationId: updateTTL
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ttl:
+                  type: integer
+                  description: TTL in seconds (-1 for no expiration)
+      responses:
+        '200':
+          description: TTL updated
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /analytics/memory:
+    get:
+      tags:
+        - Analytics
+      summary: Get memory stats
+      description: Get Redis memory usage statistics
+      operationId: getMemoryStats
+      responses:
+        '200':
+          description: Memory statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  used_memory:
+                    type: integer
+                  used_memory_human:
+                    type: string
+                  peak_memory:
+                    type: integer
+                  keys_by_type:
+                    type: object
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    KeyInfo:
+      type: object
+      properties:
+        key:
+          type: string
+        type:
+          type: string
+          enum: [string, list, set, zset, hash]
+        ttl:
+          type: integer
+          description: TTL in seconds (-1 = no expiration)
+        size:
+          type: integer
+
+    KeyValue:
+      allOf:
+        - $ref: '#/components/schemas/KeyInfo'
+        - type: object
+          properties:
+            value:
+              oneOf:
+                - type: string
+                - type: array
+                - type: object
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        redis_connected:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

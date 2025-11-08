@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: ML Feature Store API
+  description: |
+    Centralized feature management, versioning, and serving for machine learning
+    pipelines with online/offline feature serving.
+
+    **Features:**
+    - Feature registration and versioning
+    - Online feature serving (< 10ms)
+    - Offline feature retrieval for training
+    - Feature lineage tracking
+    - Point-in-time correctness
+    - Feature discovery
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8016
+    description: Local development server
+  - url: https://api.toolkit.example.com/features
+    description: Production server
+
+tags:
+  - name: Registry
+    description: Feature registry operations
+  - name: Online
+    description: Online feature serving
+  - name: Offline
+    description: Offline feature retrieval
+  - name: Health
+    description: Service health checks
+
+paths:
+  /features/register:
+    post:
+      tags:
+        - Registry
+      summary: Register feature
+      description: Register a new feature definition
+      operationId: registerFeature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureDefinition'
+      responses:
+        '201':
+          description: Feature registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  feature:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /features:
+    get:
+      tags:
+        - Registry
+      summary: List features
+      description: List all registered features
+      operationId: listFeatures
+      responses:
+        '200':
+          description: Features list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeatureDefinition'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /features/online/get:
+    post:
+      tags:
+        - Online
+      summary: Get online features
+      description: Get features for real-time inference (low latency)
+      operationId: getOnlineFeatures
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureRequest'
+      responses:
+        '200':
+          description: Features retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /features/online/set:
+    post:
+      tags:
+        - Online
+      summary: Set online features
+      description: Set features for online serving
+      operationId: setOnlineFeatures
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                entity_id:
+                  type: string
+                features:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Features set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  count:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /features/offline/get:
+    get:
+      tags:
+        - Offline
+      summary: Get offline features
+      description: Get features for offline training (point-in-time correct)
+      operationId: getOfflineFeatures
+      parameters:
+        - name: entity_ids
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: feature_names
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: timestamp
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Features retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    FeatureDefinition:
+      type: object
+      required:
+        - name
+        - description
+        - dtype
+        - source
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        dtype:
+          type: string
+        source:
+          type: string
+        transformation:
+          type: string
+        version:
+          type: integer
+          default: 1
+
+    FeatureRequest:
+      type: object
+      required:
+        - entity_id
+        - feature_names
+      properties:
+        entity_id:
+          type: string
+        feature_names:
+          type: array
+          items:
+            type: string
+
+    FeatureResponse:
+      type: object
+      properties:
+        entity_id:
+          type: string
+        features:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,503 @@
+openapi: 3.0.3
+info:
+  title: Kappa Architecture Monitor API
+  description: |
+    Real-time stream processing monitor with Kafka topic visualization,
+    consumer lag tracking, and stream processor management.
+
+    **Features:**
+    - Kafka topic monitoring
+    - Consumer group lag tracking
+    - Stream processor health
+    - Event replay capabilities
+    - Throughput metrics
+    - Stream lineage tracking
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8006
+    description: Local development server
+  - url: https://api.toolkit.example.com/kappa
+    description: Production server
+
+tags:
+  - name: Topics
+    description: Kafka topic operations
+  - name: Consumers
+    description: Consumer group management
+  - name: Streams
+    description: Stream processor monitoring
+  - name: Events
+    description: Event replay and inspection
+  - name: Health
+    description: Service health checks
+
+paths:
+  /topics:
+    get:
+      tags:
+        - Topics
+      summary: List Kafka topics
+      description: List all Kafka topics with metadata
+      operationId: listTopics
+      responses:
+        '200':
+          description: Topics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Topic'
+              examples:
+                topics:
+                  value:
+                    topics:
+                      - name: "events.user.signup"
+                        partitions: 12
+                        replication_factor: 3
+                        message_count: 1250000
+                        size_bytes: 524288000
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /topics/{topic_name}:
+    get:
+      tags:
+        - Topics
+      summary: Get topic details
+      description: Get detailed information about a specific topic
+      operationId: getTopicDetails
+      parameters:
+        - name: topic_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Topic details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /topics/{topic_name}/messages:
+    get:
+      tags:
+        - Events
+      summary: Browse topic messages
+      description: Browse recent messages from a topic
+      operationId: browseMessages
+      parameters:
+        - name: topic_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: partition
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: offset
+          in: query
+          description: Offset to start reading from (negative = from end)
+          schema:
+            type: integer
+            default: -10
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Messages retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topic:
+                    type: string
+                  partition:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /consumer-groups:
+    get:
+      tags:
+        - Consumers
+      summary: List consumer groups
+      description: List all consumer groups with lag information
+      operationId: listConsumerGroups
+      responses:
+        '200':
+          description: Consumer groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  consumer_groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConsumerGroup'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /consumer-groups/{group_id}/lag:
+    get:
+      tags:
+        - Consumers
+      summary: Get consumer lag
+      description: Get consumer group lag per topic/partition
+      operationId: getConsumerLag
+      parameters:
+        - name: group_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consumer lag
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  group_id:
+                    type: string
+                  total_lag:
+                    type: integer
+                  partitions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        topic:
+                          type: string
+                        partition:
+                          type: integer
+                        lag:
+                          type: integer
+                        current_offset:
+                          type: integer
+                        end_offset:
+                          type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /streams:
+    get:
+      tags:
+        - Streams
+      summary: List stream processors
+      description: List all stream processing applications
+      operationId: listStreams
+      responses:
+        '200':
+          description: Stream processors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  streams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StreamProcessor'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /streams/{stream_id}/metrics:
+    get:
+      tags:
+        - Streams
+      summary: Get stream metrics
+      description: Get real-time metrics for a stream processor
+      operationId: getStreamMetrics
+      parameters:
+        - name: stream_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: time_range
+          in: query
+          schema:
+            type: string
+            enum: [5m, 1h, 24h]
+            default: 1h
+      responses:
+        '200':
+          description: Stream metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamMetrics'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /replay:
+    post:
+      tags:
+        - Events
+      summary: Replay events
+      description: Replay events from a topic to a new topic
+      operationId: replayEvents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source_topic
+                - target_topic
+                - start_offset
+              properties:
+                source_topic:
+                  type: string
+                target_topic:
+                  type: string
+                partition:
+                  type: integer
+                  default: 0
+                start_offset:
+                  type: integer
+                end_offset:
+                  type: integer
+      responses:
+        '202':
+          description: Replay started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  replay_id:
+                    type: string
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Topic:
+      type: object
+      properties:
+        name:
+          type: string
+        partitions:
+          type: integer
+        replication_factor:
+          type: integer
+        message_count:
+          type: integer
+        size_bytes:
+          type: integer
+
+    TopicDetails:
+      allOf:
+        - $ref: '#/components/schemas/Topic'
+        - type: object
+          properties:
+            configs:
+              type: object
+            partition_details:
+              type: array
+              items:
+                type: object
+
+    Message:
+      type: object
+      properties:
+        offset:
+          type: integer
+        partition:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        key:
+          type: string
+        value:
+          type: object
+        headers:
+          type: object
+
+    ConsumerGroup:
+      type: object
+      properties:
+        group_id:
+          type: string
+        state:
+          type: string
+        members:
+          type: integer
+        total_lag:
+          type: integer
+
+    StreamProcessor:
+      type: object
+      properties:
+        stream_id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [running, stopped, failed]
+        instances:
+          type: integer
+        input_topics:
+          type: array
+          items:
+            type: string
+        output_topics:
+          type: array
+          items:
+            type: string
+
+    StreamMetrics:
+      type: object
+      properties:
+        stream_id:
+          type: string
+        throughput:
+          type: number
+          description: Messages per second
+        latency_p50:
+          type: number
+        latency_p95:
+          type: number
+        latency_p99:
+          type: number
+        error_rate:
+          type: number
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        kafka_connected:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

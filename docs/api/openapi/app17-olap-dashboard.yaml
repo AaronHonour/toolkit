@@ -1,0 +1,211 @@
+openapi: 3.0.3
+info:
+  title: OLAP Analytics Dashboard API
+  description: |
+    Multi-dimensional analytics with pivot tables, drill-down, and cube
+    visualization using ClickHouse/Druid.
+
+    **Features:**
+    - OLAP cube queries
+    - Multi-dimensional aggregations
+    - Drill-down navigation
+    - Slice and dice operations
+    - Pivot table generation
+    - Real-time to hourly refresh
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8017
+    description: Local development server
+  - url: https://api.toolkit.example.com/olap
+    description: Production server
+
+tags:
+  - name: Query
+    description: OLAP query operations
+  - name: Cubes
+    description: Cube management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /query:
+    post:
+      tags:
+        - Query
+      summary: Execute OLAP query
+      description: Execute multi-dimensional query with aggregations
+      operationId: executeQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OLAPQuery'
+            examples:
+              salesQuery:
+                value:
+                  dimensions: ["product", "region", "date"]
+                  measures: ["sales", "revenue"]
+                  filters:
+                    date_range:
+                      start: "2024-01-01"
+                      end: "2024-01-31"
+                    region: "US"
+                  time_range:
+                    start: "2024-01-01T00:00:00Z"
+                    end: "2024-01-31T23:59:59Z"
+      responses:
+        '200':
+          description: Query results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dimensions:
+                    type: array
+                    items:
+                      type: string
+                  measures:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /cubes:
+    get:
+      tags:
+        - Cubes
+      summary: List OLAP cubes
+      description: List available OLAP cubes
+      operationId: listCubes
+      responses:
+        '200':
+          description: Cubes list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cubes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        dimensions:
+                          type: array
+                          items:
+                            type: string
+                        measures:
+                          type: array
+                          items:
+                            type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    OLAPQuery:
+      type: object
+      required:
+        - dimensions
+        - measures
+      properties:
+        dimensions:
+          type: array
+          items:
+            type: string
+        measures:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          additionalProperties: true
+        time_range:
+          type: object
+          properties:
+            start:
+              type: string
+            end:
+              type: string
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

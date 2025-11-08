@@ -1,0 +1,376 @@
+openapi: 3.0.3
+info:
+  title: Event Sourcing API
+  description: |
+    Event sourcing system with event store, aggregates, projections, and snapshots.
+
+    **Features:**
+    - Event store with append-only log
+    - Aggregate root management
+    - Event replay and projections
+    - Snapshot creation and loading
+    - Time-travel queries
+    - Event versioning
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8007
+    description: Local development server
+  - url: https://api.toolkit.example.com/events
+    description: Production server
+
+tags:
+  - name: Events
+    description: Event store operations
+  - name: Aggregates
+    description: Aggregate management
+  - name: Projections
+    description: Read model projections
+  - name: Snapshots
+    description: Snapshot management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /events:
+    post:
+      tags:
+        - Events
+      summary: Append event
+      description: Append a new event to the event store
+      operationId: appendEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        '201':
+          description: Event appended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  event_id:
+                    type: string
+                  sequence_number:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Concurrency conflict
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /events/stream/{stream_id}:
+    get:
+      tags:
+        - Events
+      summary: Get event stream
+      description: Retrieve all events for an aggregate
+      operationId: getEventStream
+      parameters:
+        - name: stream_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from_version
+          in: query
+          description: Start from version (inclusive)
+          schema:
+            type: integer
+            default: 0
+        - name: to_version
+          in: query
+          description: End at version (inclusive)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Event stream
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream_id:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventRecord'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /aggregates/{aggregate_id}:
+    get:
+      tags:
+        - Aggregates
+      summary: Get aggregate state
+      description: Get current state of an aggregate (rebuilt from events)
+      operationId: getAggregate
+      parameters:
+        - name: aggregate_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: Get state at specific version (time-travel)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Aggregate state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AggregateState'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /aggregates/{aggregate_id}/snapshot:
+    post:
+      tags:
+        - Snapshots
+      summary: Create snapshot
+      description: Create a snapshot of the aggregate's current state
+      operationId: createSnapshot
+      parameters:
+        - name: aggregate_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Snapshot created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  snapshot_id:
+                    type: string
+                  version:
+                    type: integer
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /projections:
+    get:
+      tags:
+        - Projections
+      summary: List projections
+      description: List all active projections (read models)
+      operationId: listProjections
+      responses:
+        '200':
+          description: Projections list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Projection'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /projections/{projection_id}/rebuild:
+    post:
+      tags:
+        - Projections
+      summary: Rebuild projection
+      description: Replay all events to rebuild a projection
+      operationId: rebuildProjection
+      parameters:
+        - name: projection_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Rebuild started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  status:
+                    type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Event:
+      type: object
+      required:
+        - stream_id
+        - event_type
+        - data
+      properties:
+        stream_id:
+          type: string
+          description: Aggregate ID
+        event_type:
+          type: string
+        data:
+          type: object
+        metadata:
+          type: object
+        expected_version:
+          type: integer
+          description: Expected aggregate version (optimistic locking)
+
+    EventRecord:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+        - type: object
+          properties:
+            event_id:
+              type: string
+            sequence_number:
+              type: integer
+            version:
+              type: integer
+            timestamp:
+              type: string
+              format: date-time
+
+    AggregateState:
+      type: object
+      properties:
+        aggregate_id:
+          type: string
+        type:
+          type: string
+        version:
+          type: integer
+        state:
+          type: object
+        last_modified:
+          type: string
+          format: date-time
+
+    Projection:
+      type: object
+      properties:
+        projection_id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, rebuilding, stopped]
+        last_processed_event:
+          type: integer
+        lag:
+          type: integer
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

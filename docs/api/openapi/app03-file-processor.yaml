@@ -1,0 +1,643 @@
+openapi: 3.0.3
+info:
+  title: File Processor API
+  description: |
+    File upload, processing, and transformation API with support for multiple
+    file types, async processing, and webhook notifications.
+
+    **Features:**
+    - Multi-part file uploads
+    - Async file processing
+    - File format conversion
+    - Image resizing and optimization
+    - PDF generation
+    - Status tracking
+    - Webhook notifications
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8003
+    description: Local development server
+  - url: https://api.toolkit.example.com/files
+    description: Production server
+
+tags:
+  - name: Upload
+    description: File upload operations
+  - name: Processing
+    description: File processing and transformation
+  - name: Downloads
+    description: File download operations
+  - name: Jobs
+    description: Processing job management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /upload:
+    post:
+      tags:
+        - Upload
+      summary: Upload a file
+      description: Upload a single file for processing
+      operationId: uploadFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload
+                filename:
+                  type: string
+                  description: Original filename
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: File tags for organization
+                process:
+                  type: boolean
+                  description: Start processing immediately
+                  default: true
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+              examples:
+                success:
+                  value:
+                    file_id: "file_abc123"
+                    filename: "document.pdf"
+                    size: 2048576
+                    mime_type: "application/pdf"
+                    status: "processing"
+                    created_at: "2024-01-22T15:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /upload/multipart:
+    post:
+      tags:
+        - Upload
+      summary: Upload multiple files
+      description: Upload multiple files in a single request
+      operationId: uploadMultipleFiles
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  maxItems: 10
+      responses:
+        '201':
+          description: Files uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploaded:
+                    type: integer
+                  failed:
+                    type: integer
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /files/{file_id}:
+    get:
+      tags:
+        - Downloads
+      summary: Get file metadata
+      description: Retrieve metadata for a specific file
+      operationId: getFileMetadata
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileMetadata'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Downloads
+      summary: Delete a file
+      description: Delete a file and all its processed versions
+      operationId: deleteFile
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: File deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /files/{file_id}/download:
+    get:
+      tags:
+        - Downloads
+      summary: Download file
+      description: Download the original or processed file
+      operationId: downloadFile
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: query
+          description: File version to download
+          schema:
+            type: string
+            enum: [original, processed, thumbnail]
+            default: original
+      responses:
+        '200':
+          description: File download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /files/{file_id}/process:
+    post:
+      tags:
+        - Processing
+      summary: Process file
+      description: Start or restart file processing with specific operations
+      operationId: processFile
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessingJob'
+            examples:
+              imageResize:
+                value:
+                  operation: "resize"
+                  params:
+                    width: 800
+                    height: 600
+                    quality: 85
+              pdfConvert:
+                value:
+                  operation: "convert"
+                  params:
+                    format: "pdf"
+                    options:
+                      compress: true
+      responses:
+        '202':
+          description: Processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  status:
+                    type: string
+                  estimated_completion:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /jobs/{job_id}:
+    get:
+      tags:
+        - Jobs
+      summary: Get job status
+      description: Retrieve processing job status and progress
+      operationId: getJobStatus
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+              examples:
+                processing:
+                  value:
+                    job_id: "job_xyz789"
+                    file_id: "file_abc123"
+                    status: "processing"
+                    progress: 65
+                    started_at: "2024-01-22T15:30:00Z"
+                completed:
+                  value:
+                    job_id: "job_xyz789"
+                    file_id: "file_abc123"
+                    status: "completed"
+                    progress: 100
+                    started_at: "2024-01-22T15:30:00Z"
+                    completed_at: "2024-01-22T15:32:15Z"
+                    result:
+                      output_file_id: "file_def456"
+                      size: 1024000
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /jobs:
+    get:
+      tags:
+        - Jobs
+      summary: List jobs
+      description: List all processing jobs with optional filtering
+      operationId: listJobs
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Jobs list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JobStatus'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /webhooks:
+    post:
+      tags:
+        - Processing
+      summary: Register webhook
+      description: Register a webhook URL for file processing notifications
+      operationId: registerWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+                - events
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: Webhook URL
+                events:
+                  type: array
+                  items:
+                    type: string
+                    enum: [upload.completed, processing.completed, processing.failed]
+                secret:
+                  type: string
+                  description: Webhook secret for signature verification
+      responses:
+        '201':
+          description: Webhook registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhook_id:
+                    type: string
+                  url:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the file processor service is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSizeParam:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    FileUploadResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+        filename:
+          type: string
+        size:
+          type: integer
+          description: File size in bytes
+        mime_type:
+          type: string
+        status:
+          type: string
+          enum: [uploaded, processing, completed, failed]
+        created_at:
+          type: string
+          format: date-time
+        url:
+          type: string
+          format: uri
+          description: Download URL
+
+    FileMetadata:
+      type: object
+      properties:
+        file_id:
+          type: string
+        filename:
+          type: string
+        size:
+          type: integer
+        mime_type:
+          type: string
+        checksum:
+          type: string
+          description: MD5 checksum
+        tags:
+          type: array
+          items:
+            type: string
+        versions:
+          type: array
+          items:
+            type: object
+            properties:
+              version:
+                type: string
+              size:
+                type: integer
+              url:
+                type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ProcessingJob:
+      type: object
+      required:
+        - operation
+      properties:
+        operation:
+          type: string
+          enum: [resize, convert, compress, thumbnail, watermark]
+        params:
+          type: object
+          additionalProperties: true
+        webhook_url:
+          type: string
+          format: uri
+
+    JobStatus:
+      type: object
+      properties:
+        job_id:
+          type: string
+        file_id:
+          type: string
+        operation:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        error:
+          type: string
+        result:
+          type: object
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        has_next:
+          type: boolean
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

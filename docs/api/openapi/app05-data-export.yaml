@@ -1,0 +1,729 @@
+openapi: 3.0.3
+info:
+  title: Data Export API
+  description: |
+    Large-scale data export API with streaming, multiple formats, compression,
+    and scheduled exports.
+
+    **Features:**
+    - Export to CSV, JSON, Parquet, Avro
+    - Streaming large datasets
+    - Gzip compression
+    - Scheduled exports
+    - Custom field mapping
+    - Incremental exports
+    - Export templates
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8005
+    description: Local development server
+  - url: https://api.toolkit.example.com/export
+    description: Production server
+
+tags:
+  - name: Exports
+    description: Data export operations
+  - name: Templates
+    description: Export template management
+  - name: Schedules
+    description: Scheduled export management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /exports:
+    post:
+      tags:
+        - Exports
+      summary: Create export
+      description: Create a new data export job
+      operationId: createExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+            examples:
+              csvExport:
+                value:
+                  source: "products"
+                  format: "csv"
+                  filters:
+                    category: "electronics"
+                    in_stock: true
+                  fields: ["id", "name", "price", "stock"]
+                  compression: "gzip"
+              jsonExport:
+                value:
+                  source: "orders"
+                  format: "json"
+                  filters:
+                    date_from: "2024-01-01"
+                    date_to: "2024-01-31"
+                  stream: true
+      responses:
+        '202':
+          description: Export job created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  export_id:
+                    type: string
+                  status:
+                    type: string
+                  estimated_completion:
+                    type: string
+                    format: date-time
+              examples:
+                created:
+                  value:
+                    export_id: "exp_abc123"
+                    status: "pending"
+                    estimated_completion: "2024-01-22T15:35:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - Exports
+      summary: List exports
+      description: List all export jobs
+      operationId: listExports
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Exports list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExportStatus'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /exports/{export_id}:
+    get:
+      tags:
+        - Exports
+      summary: Get export status
+      description: Get status and details of an export job
+      operationId: getExportStatus
+      parameters:
+        - name: export_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Export status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportStatus'
+              examples:
+                processing:
+                  value:
+                    export_id: "exp_abc123"
+                    source: "products"
+                    format: "csv"
+                    status: "processing"
+                    progress: 45
+                    rows_processed: 45000
+                    total_rows: 100000
+                    created_at: "2024-01-22T15:30:00Z"
+                completed:
+                  value:
+                    export_id: "exp_abc123"
+                    source: "products"
+                    format: "csv"
+                    status: "completed"
+                    progress: 100
+                    rows_processed: 100000
+                    total_rows: 100000
+                    file_size: 8388608
+                    download_url: "https://storage.example.com/exports/exp_abc123.csv.gz"
+                    expires_at: "2024-01-29T15:30:00Z"
+                    created_at: "2024-01-22T15:30:00Z"
+                    completed_at: "2024-01-22T15:33:45Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Exports
+      summary: Cancel export
+      description: Cancel a pending or running export job
+      operationId: cancelExport
+      parameters:
+        - name: export_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Export cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  export_id:
+                    type: string
+                  status:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /exports/{export_id}/download:
+    get:
+      tags:
+        - Exports
+      summary: Download export
+      description: Download the completed export file
+      operationId: downloadExport
+      parameters:
+        - name: export_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Export file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /exports/stream:
+    post:
+      tags:
+        - Exports
+      summary: Stream export
+      description: Stream export data in real-time (Server-Sent Events)
+      operationId: streamExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: Streaming export
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /templates:
+    get:
+      tags:
+        - Templates
+      summary: List export templates
+      description: List all saved export templates
+      operationId: listTemplates
+      responses:
+        '200':
+          description: Templates list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExportTemplate'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    post:
+      tags:
+        - Templates
+      summary: Create template
+      description: Save an export configuration as a template
+      operationId: createTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportTemplate'
+            examples:
+              productTemplate:
+                value:
+                  name: "Weekly Products Export"
+                  description: "All in-stock products with pricing"
+                  config:
+                    source: "products"
+                    format: "csv"
+                    filters:
+                      in_stock: true
+                    fields: ["id", "name", "price", "stock", "category"]
+                    compression: "gzip"
+      responses:
+        '201':
+          description: Template created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  template_id:
+                    type: string
+                  name:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /templates/{template_id}:
+    get:
+      tags:
+        - Templates
+      summary: Get template
+      description: Get export template details
+      operationId: getTemplate
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportTemplate'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Templates
+      summary: Delete template
+      description: Delete an export template
+      operationId: deleteTemplate
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Template deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /schedules:
+    get:
+      tags:
+        - Schedules
+      summary: List scheduled exports
+      description: List all scheduled export jobs
+      operationId: listSchedules
+      responses:
+        '200':
+          description: Schedules list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schedules:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExportSchedule'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    post:
+      tags:
+        - Schedules
+      summary: Create scheduled export
+      description: Schedule a recurring export job
+      operationId: createSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportSchedule'
+            examples:
+              dailyExport:
+                value:
+                  name: "Daily Sales Export"
+                  template_id: "tmpl_123"
+                  cron: "0 2 * * *"
+                  timezone: "America/New_York"
+                  enabled: true
+      responses:
+        '201':
+          description: Schedule created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schedule_id:
+                    type: string
+                  next_run:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /schedules/{schedule_id}:
+    delete:
+      tags:
+        - Schedules
+      summary: Delete schedule
+      description: Delete a scheduled export
+      operationId: deleteSchedule
+      parameters:
+        - name: schedule_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Schedule deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the export service is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSizeParam:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    ExportRequest:
+      type: object
+      required:
+        - source
+        - format
+      properties:
+        source:
+          type: string
+          description: Data source name
+          example: "products"
+        format:
+          type: string
+          enum: [csv, json, parquet, avro]
+        filters:
+          type: object
+          additionalProperties: true
+          description: Filter criteria
+        fields:
+          type: array
+          items:
+            type: string
+          description: Fields to export (empty = all)
+        compression:
+          type: string
+          enum: [none, gzip, bzip2]
+          default: none
+        stream:
+          type: boolean
+          default: false
+          description: Enable streaming export
+
+    ExportStatus:
+      type: object
+      properties:
+        export_id:
+          type: string
+        source:
+          type: string
+        format:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, cancelled]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        rows_processed:
+          type: integer
+        total_rows:
+          type: integer
+        file_size:
+          type: integer
+          description: File size in bytes
+        download_url:
+          type: string
+          format: uri
+        expires_at:
+          type: string
+          format: date-time
+        error:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    ExportTemplate:
+      type: object
+      required:
+        - name
+        - config
+      properties:
+        template_id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        config:
+          $ref: '#/components/schemas/ExportRequest'
+        created_at:
+          type: string
+          format: date-time
+
+    ExportSchedule:
+      type: object
+      required:
+        - name
+        - cron
+      properties:
+        schedule_id:
+          type: string
+        name:
+          type: string
+        template_id:
+          type: string
+        cron:
+          type: string
+          description: Cron expression
+          example: "0 2 * * *"
+        timezone:
+          type: string
+          default: "UTC"
+        enabled:
+          type: boolean
+          default: true
+        last_run:
+          type: string
+          format: date-time
+        next_run:
+          type: string
+          format: date-time
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        has_next:
+          type: boolean
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,295 @@
+openapi: 3.0.3
+info:
+  title: Distributed Tracing Viewer API
+  description: |
+    OpenTelemetry trace visualization with span analysis and performance profiling
+    using Jaeger backend.
+
+    **Features:**
+    - Distributed trace collection
+    - Span timeline visualization
+    - Performance bottleneck detection
+    - Service dependency mapping
+    - Trace search and filtering
+    - Span analytics
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8018
+    description: Local development server
+  - url: https://api.toolkit.example.com/traces
+    description: Production server
+
+tags:
+  - name: Traces
+    description: Trace operations
+  - name: Spans
+    description: Span operations
+  - name: Services
+    description: Service operations
+  - name: Health
+    description: Service health checks
+
+paths:
+  /traces/{trace_id}:
+    get:
+      tags:
+        - Traces
+      summary: Get trace
+      description: Retrieve a complete trace with all spans
+      operationId: getTrace
+      parameters:
+        - name: trace_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trace details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  spans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Span'
+                  duration_ms:
+                    type: number
+                  services:
+                    type: array
+                    items:
+                      type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /traces/search:
+    get:
+      tags:
+        - Traces
+      summary: Search traces
+      description: Search traces by service, operation, tags, etc.
+      operationId: searchTraces
+      parameters:
+        - name: service
+          in: query
+          schema:
+            type: string
+        - name: operation
+          in: query
+          schema:
+            type: string
+        - name: min_duration
+          in: query
+          schema:
+            type: number
+            description: Minimum duration in milliseconds
+        - name: max_duration
+          in: query
+          schema:
+            type: number
+        - name: start_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Trace search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  traces:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        trace_id:
+                          type: string
+                        start_time:
+                          type: string
+                          format: date-time
+                        duration_ms:
+                          type: number
+                        services:
+                          type: array
+                          items:
+                            type: string
+                        spans_count:
+                          type: integer
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /services:
+    get:
+      tags:
+        - Services
+      summary: List services
+      description: List all services with tracing
+      operationId: listServices
+      responses:
+        '200':
+          description: Services list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items:
+                      type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /services/{service_name}/operations:
+    get:
+      tags:
+        - Services
+      summary: List service operations
+      description: List all operations for a service
+      operationId: listOperations
+      parameters:
+        - name: service_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operations list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operations:
+                    type: array
+                    items:
+                      type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Span:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        span_id:
+          type: string
+        parent_span_id:
+          type: string
+        service:
+          type: string
+        operation:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        duration_ms:
+          type: number
+        tags:
+          type: object
+        logs:
+          type: array
+          items:
+            type: object
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: Lambda Architecture API
+  description: |
+    Unified batch and stream processing with serving layer for complete data pipeline.
+
+    **Features:**
+    - Batch layer (accuracy, complete)
+    - Speed layer (low latency, real-time)
+    - Serving layer (unified queries)
+    - Historical data reprocessing
+    - Real-time + batch view merging
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8012
+    description: Local development server
+  - url: https://api.toolkit.example.com/lambda
+    description: Production server
+
+tags:
+  - name: Query
+    description: Unified data queries
+  - name: Batch
+    description: Batch layer operations
+  - name: Stream
+    description: Stream layer operations
+  - name: Health
+    description: Service health checks
+
+paths:
+  /query/metrics:
+    post:
+      tags:
+        - Query
+      summary: Query metrics
+      description: Query metrics using Lambda architecture (batch + realtime)
+      operationId: queryMetrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricQuery'
+      responses:
+        '200':
+          description: Metric results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetricPoint'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /batch/process:
+    post:
+      tags:
+        - Batch
+      summary: Process batch data
+      description: Trigger batch processing for a specific date
+      operationId: processBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+      responses:
+        '202':
+          description: Batch processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /batch/reprocess:
+    post:
+      tags:
+        - Batch
+      summary: Reprocess historical data
+      description: Reprocess data for a date range
+      operationId: reprocessData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+      responses:
+        '202':
+          description: Reprocessing started
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    MetricQuery:
+      type: object
+      required:
+        - user_id
+        - event_type
+        - start_time
+        - end_time
+      properties:
+        user_id:
+          type: string
+        event_type:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        granularity:
+          type: string
+          enum: [1h, 1d]
+          default: "1h"
+
+    MetricPoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        count:
+          type: integer
+        avg_value:
+          type: number
+        max_value:
+          type: number
+        source:
+          type: string
+          enum: [batch, realtime]
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        layers:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []
