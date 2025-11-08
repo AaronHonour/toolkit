@@ -1,0 +1,287 @@
+name: Semantic Versioning
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ============================================================================
+  # Validate Commit Messages (Conventional Commits)
+  # ============================================================================
+  validate-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        uses: wagoid/commitlint-github-action@v5
+        with:
+          configFile: .commitlintrc.json
+        continue-on-error: true
+
+  # ============================================================================
+  # Determine Version Bump
+  # ============================================================================
+  determine-version:
+    name: Determine Next Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.semver.outputs.new_version }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+      should_release: ${{ steps.check.outputs.should_release }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Latest tag: $LATEST_TAG"
+
+      - name: Analyze commits since last tag
+        id: analyze
+        run: |
+          LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+
+          # Count commit types
+          BREAKING_COUNT=$(git log ${LATEST_TAG}..HEAD --oneline | grep -i "BREAKING CHANGE" | wc -l)
+          FEAT_COUNT=$(git log ${LATEST_TAG}..HEAD --oneline | grep "^feat" | wc -l)
+          FIX_COUNT=$(git log ${LATEST_TAG}..HEAD --oneline | grep "^fix" | wc -l)
+
+          echo "breaking_count=$BREAKING_COUNT" >> $GITHUB_OUTPUT
+          echo "feat_count=$FEAT_COUNT" >> $GITHUB_OUTPUT
+          echo "fix_count=$FIX_COUNT" >> $GITHUB_OUTPUT
+
+          # Determine bump type
+          if [ $BREAKING_COUNT -gt 0 ]; then
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+          elif [ $FEAT_COUNT -gt 0 ]; then
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+          elif [ $FIX_COUNT -gt 0 ]; then
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+          else
+            echo "bump_type=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if release needed
+        id: check
+        run: |
+          BUMP_TYPE="${{ steps.analyze.outputs.bump_type }}"
+          if [ "$BUMP_TYPE" != "none" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Calculate new version
+        id: semver
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+          VERSION=${LATEST_TAG#v}
+
+          # Parse version
+          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          PATCH="${VERSION_PARTS[2]}"
+
+          # Determine bump type
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            BUMP_TYPE="${{ github.event.inputs.version_bump }}"
+          else
+            BUMP_TYPE="${{ steps.analyze.outputs.bump_type }}"
+          fi
+
+          # Bump version
+          case $BUMP_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version will be: v$NEW_VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        if: steps.check.outputs.should_release == 'true'
+        run: |
+          LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+
+          # Generate changelog sections
+          echo "## What's Changed" > CHANGELOG_SECTION.md
+          echo "" >> CHANGELOG_SECTION.md
+
+          # Breaking changes
+          BREAKING=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" | grep -i "BREAKING CHANGE" || echo "")
+          if [ ! -z "$BREAKING" ]; then
+            echo "### ⚠️ BREAKING CHANGES" >> CHANGELOG_SECTION.md
+            echo "$BREAKING" >> CHANGELOG_SECTION.md
+            echo "" >> CHANGELOG_SECTION.md
+          fi
+
+          # Features
+          FEATURES=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" | grep "^- feat" || echo "")
+          if [ ! -z "$FEATURES" ]; then
+            echo "### ✨ Features" >> CHANGELOG_SECTION.md
+            echo "$FEATURES" >> CHANGELOG_SECTION.md
+            echo "" >> CHANGELOG_SECTION.md
+          fi
+
+          # Fixes
+          FIXES=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" | grep "^- fix" || echo "")
+          if [ ! -z "$FIXES" ]; then
+            echo "### 🐛 Bug Fixes" >> CHANGELOG_SECTION.md
+            echo "$FIXES" >> CHANGELOG_SECTION.md
+            echo "" >> CHANGELOG_SECTION.md
+          fi
+
+          # Documentation
+          DOCS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" | grep "^- docs" || echo "")
+          if [ ! -z "$DOCS" ]; then
+            echo "### 📚 Documentation" >> CHANGELOG_SECTION.md
+            echo "$DOCS" >> CHANGELOG_SECTION.md
+            echo "" >> CHANGELOG_SECTION.md
+          fi
+
+          # Performance
+          PERF=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" | grep "^- perf" || echo "")
+          if [ ! -z "$PERF" ]; then
+            echo "### ⚡ Performance" >> CHANGELOG_SECTION.md
+            echo "$PERF" >> CHANGELOG_SECTION.md
+            echo "" >> CHANGELOG_SECTION.md
+          fi
+
+          # Output for use in release
+          {
+            echo "changelog<<EOF"
+            cat CHANGELOG_SECTION.md
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+  # ============================================================================
+  # Update CHANGELOG.md
+  # ============================================================================
+  update-changelog:
+    name: Update CHANGELOG.md
+    runs-on: ubuntu-latest
+    needs: determine-version
+    if: needs.determine-version.outputs.should_release == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION="${{ needs.determine-version.outputs.new_version }}"
+          DATE=$(date +%Y-%m-%d)
+
+          # Create new changelog entry
+          cat > NEW_ENTRY.md << EOF
+## [${NEW_VERSION}] - ${DATE}
+
+${{ needs.determine-version.outputs.changelog }}
+
+EOF
+
+          # Prepend to existing CHANGELOG.md or create new one
+          if [ -f CHANGELOG.md ]; then
+            # Keep header, insert new entry
+            sed -i "/^## /r NEW_ENTRY.md" CHANGELOG.md || cat NEW_ENTRY.md CHANGELOG.md > CHANGELOG_NEW.md && mv CHANGELOG_NEW.md CHANGELOG.md
+          else
+            # Create new CHANGELOG.md
+            cat > CHANGELOG.md << EOF
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+EOF
+            cat NEW_ENTRY.md >> CHANGELOG.md
+          fi
+
+          rm NEW_ENTRY.md
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore: update CHANGELOG.md for v${{ needs.determine-version.outputs.new_version }}"
+          git push
+
+  # ============================================================================
+  # Create Release Tag
+  # ============================================================================
+  create-tag:
+    name: Create Release Tag
+    runs-on: ubuntu-latest
+    needs: [determine-version, update-changelog]
+    if: needs.determine-version.outputs.should_release == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull latest changes
+        run: git pull origin main
+
+      - name: Create and push tag
+        run: |
+          NEW_VERSION="${{ needs.determine-version.outputs.new_version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
+          git push origin "v${NEW_VERSION}"
+
+      - name: Trigger release workflow
+        run: |
+          echo "Tag v${{ needs.determine-version.outputs.new_version }} created successfully"
+          echo "Release workflow will be triggered automatically"
