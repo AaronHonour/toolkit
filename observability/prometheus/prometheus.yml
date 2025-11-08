@@ -1,0 +1,83 @@
+# Prometheus configuration for Composable Toolkit
+# Scrapes metrics from all 19 backend services + infrastructure
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'toolkit-dev'
+    environment: 'development'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Backend services (19 services)
+  - job_name: 'toolkit-backend'
+    static_configs:
+      - targets:
+          - 'app01-inventory:8001'
+          - 'app02-analytics:8002'
+          - 'app03-file-processor:8003'
+          - 'app04-gateway:8004'
+          - 'app05-export:8005'
+          - 'app06-kappa:8006'
+          - 'app07-tracing:8007'
+          - 'app08-multitenant:8008'
+          - 'app09-iot:8009'
+          - 'app10-graphql:8010'
+          - 'app11-webhooks:8011'
+          - 'app12-search:8012'
+          - 'app13-ratelimit:8013'
+          - 'app14-features:8014'
+          - 'app15-scheduler:8015'
+          - 'app16-notifications:8016'
+          - 'app17-media:8017'
+          - 'app18-ml:8018'
+          - 'app19-probabilistic:8019'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # PostgreSQL
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+
+  # Kafka
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+    scrape_interval: 30s
+
+  # Node exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 15s
