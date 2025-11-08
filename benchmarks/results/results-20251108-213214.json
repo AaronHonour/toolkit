@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-11-08T21:32:13.154272",
+  "environment": {
+    "python_version": "3.11.14",
+    "platform": "Linux-4.4.0-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "machine": "x86_64"
+  },
+  "benchmarks": {
+    "algorithms": {
+      "success": false,
+      "output": "",
+      "errors": "ImportError while loading conftest '/home/user/toolkit/tests/conftest.py'.\ntests/conftest.py:10: in <module>\n    import yaml\nE   ModuleNotFoundError: No module named 'yaml'\n"
+    },
+    "cache": {
+      "success": false,
+      "output": "",
+      "errors": "ImportError while loading conftest '/home/user/toolkit/tests/conftest.py'.\ntests/conftest.py:10: in <module>\n    import yaml\nE   ModuleNotFoundError: No module named 'yaml'\n"
+    },
+    "rate_limit": {
+      "success": false,
+      "output": "",
+      "errors": "ImportError while loading conftest '/home/user/toolkit/tests/conftest.py'.\ntests/conftest.py:10: in <module>\n    import yaml\nE   ModuleNotFoundError: No module named 'yaml'\n"
+    }
+  }
+}

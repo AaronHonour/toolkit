@@ -58,6 +58,8 @@ class BenchmarkRunner:
         print(f"{'='*70}")
 
         cmd = [
+            sys.executable,
+            "-m",
             "pytest",
             "tests/benchmarks/",
             "tests/performance/",
@@ -66,6 +68,7 @@ class BenchmarkRunner:
             "--benchmark-json=" + str(self.output_dir / "pytest-benchmark.json"),
             "--benchmark-columns=min,max,mean,median,ops,rounds",
             "--benchmark-sort=name",
+            "--no-cov"  # Disable coverage for benchmarks
         ]
 
         if pattern:
@@ -81,11 +84,14 @@ class BenchmarkRunner:
         print(f"{'='*70}")
 
         cmd = [
+            sys.executable,
+            "-m",
             "pytest",
             "tests/benchmarks/test_algorithms_benchmarks.py",
             "-v",
             "-s",  # Show print statements
-            "--tb=short"
+            "--tb=short",
+            "--no-cov"  # Disable coverage for benchmarks
         ]
 
         result = subprocess.run(cmd, cwd=self.root_dir, capture_output=True, text=True)
@@ -103,11 +109,14 @@ class BenchmarkRunner:
         print(f"{'='*70}")
 
         cmd = [
+            sys.executable,
+            "-m",
             "pytest",
             "tests/performance/test_cache_performance.py",
             "-v",
             "-s",
-            "--tb=short"
+            "--tb=short",
+            "--no-cov"  # Disable coverage for benchmarks
         ]
 
         result = subprocess.run(cmd, cwd=self.root_dir, capture_output=True, text=True)
@@ -125,11 +134,14 @@ class BenchmarkRunner:
         print(f"{'='*70}")
 
         cmd = [
+            sys.executable,
+            "-m",
             "pytest",
             "tests/performance/test_ratelimit_performance.py",
             "-v",
             "-s",
-            "--tb=short"
+            "--tb=short",
+            "--no-cov"  # Disable coverage for benchmarks
         ]
 
         result = subprocess.run(cmd, cwd=self.root_dir, capture_output=True, text=True)
