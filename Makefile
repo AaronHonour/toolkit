@@ -42,7 +42,7 @@ dev: ## Start full development stack (all services)
 	@echo "  - Frontend Development Server (port 3000)"
 	@echo "  - Documentation Site (port 5173)"
 	@echo ""
-	@docker-compose up -d
+	@docker compose up -d
 	@echo ""
 	@echo "$(GREEN)✓ All services started!$(NC)"
 	@echo ""
@@ -61,19 +61,19 @@ dev: ## Start full development stack (all services)
 
 dev-infra: ## Start only infrastructure services
 	@echo "$(GREEN)Starting infrastructure services...$(NC)"
-	@docker-compose up -d postgres redis kafka zookeeper timescale
+	@docker compose up -d postgres redis kafka zookeeper timescale
 	@echo "$(GREEN)✓ Infrastructure ready!$(NC)"
 
 down: ## Stop all services
 	@echo "$(YELLOW)Stopping all services...$(NC)"
-	@docker-compose down
+	@docker compose down
 	@echo "$(GREEN)✓ All services stopped$(NC)"
 
 logs: ## Show logs from all services
-	@docker-compose logs -f
+	@docker compose logs -f
 
 ps: ## Show running services
-	@docker-compose ps
+	@docker compose ps
 
 # =============================================================================
 # Installation
