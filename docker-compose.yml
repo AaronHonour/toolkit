@@ -553,6 +553,7 @@ services:
     build:
       context: ./docs
       dockerfile: Dockerfile
+      target: development
     container_name: toolkit-docs
     ports:
       - "5173:5173"
