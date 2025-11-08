@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  timeseries-db:
+    build:
+      context: ../..
+      dockerfile: examples/08_timeseries_db/Dockerfile
+    container_name: timeseries-db
+    ports:
+      - "8008:8008"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
