@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  feature-store:
+    build:
+      context: ../..
+      dockerfile: examples/16_feature_store/Dockerfile
+    container_name: feature-store
+    ports:
+      - "8016:8016"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8016/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
