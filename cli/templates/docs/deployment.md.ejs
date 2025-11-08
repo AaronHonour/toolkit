@@ -1,0 +1,384 @@
+# Deployment Guide
+
+## Production Deployment
+
+<% if (template === 'serverless') { %>
+## Serverless Deployment
+
+<% if (cloudProvider === 'aws') { %>
+### AWS Lambda + API Gateway
+
+```bash
+# Install AWS SAM CLI
+pip install aws-sam-cli
+
+# Build
+sam build
+
+# Deploy
+sam deploy --guided
+```
+
+**Resources Created**:
+- Lambda functions
+- API Gateway
+- CloudWatch Logs
+- IAM roles
+
+<% } else if (cloudProvider === 'gcp') { %>
+### Google Cloud Functions
+
+```bash
+# Deploy function
+gcloud functions deploy <%= projectName %> \
+  --gen2 \
+  --runtime python311 \
+  --trigger-http \
+  --allow-unauthenticated \
+  --region us-central1
+```
+
+<% } else if (cloudProvider === 'azure') { %>
+### Azure Functions
+
+```bash
+# Create function app
+az functionapp create \
+  --resource-group <%= projectName %>-rg \
+  --name <%= projectName %>-func \
+  --storage-account <%= projectName %>storage \
+  --runtime python \
+  --runtime-version 3.11
+
+# Deploy
+func azure functionapp publish <%= projectName %>-func
+```
+<% } %>
+
+<% } else { %>
+## Container Deployment
+
+### Build Docker Image
+
+```bash
+# Build production image
+docker build -t <%= projectName %>:latest .
+
+# Test locally
+docker run -p 8000:8000 <%= projectName %>:latest
+```
+
+### Push to Registry
+
+<% if (cloudProvider === 'aws') { %>
+```bash
+# AWS ECR
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin ACCOUNT.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag <%= projectName %>:latest ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/<%= projectName %>:latest
+docker push ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/<%= projectName %>:latest
+```
+<% } else if (cloudProvider === 'gcp') { %>
+```bash
+# GCP Container Registry
+docker tag <%= projectName %>:latest gcr.io/PROJECT-ID/<%= projectName %>:latest
+docker push gcr.io/PROJECT-ID/<%= projectName %>:latest
+```
+<% } else { %>
+```bash
+# Docker Hub
+docker tag <%= projectName %>:latest yourusername/<%= projectName %>:latest
+docker push yourusername/<%= projectName %>:latest
+```
+<% } %>
+
+### Deploy to Kubernetes
+
+```bash
+# Apply manifests
+kubectl apply -f infrastructure/kubernetes/
+
+# Check deployment
+kubectl get pods
+kubectl logs -f deployment/<%= projectName %>
+
+# Expose service
+kubectl port-forward service/<%= projectName %> 8000:8000
+```
+
+<% if (cloudProvider === 'aws') { %>
+### Deploy to AWS ECS
+
+```bash
+# Create cluster
+aws ecs create-cluster --cluster-name <%= projectName %>-cluster
+
+# Register task definition
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+# Create service
+aws ecs create-service \
+  --cluster <%= projectName %>-cluster \
+  --service-name <%= projectName %>-service \
+  --task-definition <%= projectName %>-task \
+  --desired-count 2 \
+  --launch-type FARGATE
+```
+<% } else if (cloudProvider === 'gcp') { %>
+### Deploy to Cloud Run
+
+```bash
+gcloud run deploy <%= projectName %> \
+  --image gcr.io/PROJECT-ID/<%= projectName %>:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --memory 512Mi
+```
+<% } %>
+<% } %>
+
+## Environment Configuration
+
+### Production Environment Variables
+
+```bash
+# Required
+SECRET_KEY=<strong-random-key>
+DEBUG=False
+ALLOWED_HOSTS=yourdomain.com
+
+<% if (patterns.includes('database')) { %>
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+<% } %>
+
+<% if (patterns.includes('cache')) { %>
+# Cache
+REDIS_URL=redis://redis-host:6379/0
+<% } %>
+
+<% if (patterns.includes('auth')) { %>
+# Auth
+JWT_SECRET_KEY=<jwt-secret>
+JWT_ALGORITHM=HS256
+JWT_EXPIRATION=3600
+<% } %>
+```
+
+## Database Setup
+
+<% if (patterns.includes('database')) { %>
+### Run Migrations
+
+```bash
+<% if (framework === 'django') { %>
+python manage.py migrate
+<% } else { %>
+alembic upgrade head
+<% } %>
+```
+
+### Backup Strategy
+
+```bash
+# Automated backups
+pg_dump -h hostname -U username <%= projectName %> > backup.sql
+
+# Restore
+psql -h hostname -U username <%= projectName %> < backup.sql
+```
+<% } %>
+
+## Monitoring
+
+<% if (patterns.includes('metrics')) { %>
+### Prometheus Setup
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: '<%= projectName %>'
+    static_configs:
+      - targets: ['<%= projectName %>:8000']
+    metrics_path: '/metrics'
+```
+
+### Grafana Dashboards
+
+Import dashboards:
+- **Overview**: ID 14282
+- **Service Detail**: ID 893
+<% } %>
+
+## Scaling
+
+### Horizontal Scaling
+
+```bash
+<% if (template === 'serverless') { %>
+# Serverless auto-scales automatically
+# Configure concurrency limits if needed
+<% } else { %>
+# Kubernetes
+kubectl scale deployment/<%= projectName %> --replicas=5
+
+# ECS
+aws ecs update-service \
+  --cluster <%= projectName %>-cluster \
+  --service <%= projectName %>-service \
+  --desired-count 5
+<% } %>
+```
+
+### Vertical Scaling
+
+```yaml
+# Kubernetes resource limits
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
+```
+
+## CI/CD
+
+### GitHub Actions
+
+Workflows are in `.github/workflows/`:
+- `ci.yml` - Run tests on PR
+- `deploy.yml` - Deploy on merge to main
+- `benchmarks.yml` - Nightly performance tests
+
+### Deploy via CI/CD
+
+```bash
+# Push to main triggers deployment
+git push origin main
+
+# Monitor deployment
+gh workflow view deploy
+```
+
+## Health Checks
+
+### Endpoint
+
+```bash
+# Health check
+curl https://your-domain.com/health
+
+# Expected response
+{
+  "status": "healthy",
+  "service": "<%= projectName %>",
+  "version": "1.0.0"
+}
+```
+
+### Configure Health Checks
+
+<% if (template !== 'serverless') { %>
+```yaml
+# Kubernetes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+```
+<% } %>
+
+## Security
+
+### HTTPS/TLS
+
+<% if (cloudProvider === 'aws') { %>
+Use AWS Certificate Manager + ALB
+<% } else if (cloudProvider === 'gcp') { %>
+Cloud Run provides automatic HTTPS
+<% } else { %>
+Use Let's Encrypt with cert-manager (Kubernetes)
+<% } %>
+
+### Secrets Management
+
+<% if (cloudProvider === 'aws') { %>
+```bash
+# AWS Secrets Manager
+aws secretsmanager create-secret \
+  --name <%= projectName %>/production \
+  --secret-string file://secrets.json
+```
+<% } else if (cloudProvider === 'gcp') { %>
+```bash
+# GCP Secret Manager
+gcloud secrets create <%= projectName %>-secret \
+  --data-file=secrets.json
+```
+<% } else { %>
+```bash
+# Kubernetes Secrets
+kubectl create secret generic <%= projectName %>-secret \
+  --from-env-file=.env.production
+```
+<% } %>
+
+## Rollback
+
+```bash
+<% if (template === 'serverless') { %>
+# AWS Lambda
+aws lambda update-function-code \
+  --function-name <%= projectName %> \
+  --image-uri ACCOUNT.dkr.ecr.region.amazonaws.com/<%= projectName %>:previous-version
+<% } else { %>
+# Kubernetes
+kubectl rollout undo deployment/<%= projectName %>
+
+# ECS
+aws ecs update-service \
+  --cluster <%= projectName %>-cluster \
+  --service <%= projectName %>-service \
+  --task-definition <%= projectName %>-task:PREVIOUS-VERSION
+<% } %>
+```
+
+## Troubleshooting
+
+### Check Logs
+
+```bash
+<% if (template === 'serverless') { %>
+# AWS CloudWatch
+aws logs tail /aws/lambda/<%= projectName %> --follow
+
+# GCP
+gcloud functions logs read <%= projectName %> --limit 50
+<% } else { %>
+# Kubernetes
+kubectl logs -f deployment/<%= projectName %>
+
+# Docker
+docker logs -f <%= projectName %>
+<% } %>
+```
+
+### Common Issues
+
+**503 Service Unavailable**: Check health endpoint, ensure dependencies are running
+**High latency**: Check database connections, cache hit rate
+**Memory issues**: Increase resource limits
+**Connection timeouts**: Check security groups/firewall rules

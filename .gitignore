@@ -213,3 +213,4 @@ temp/
 tmp/
 .env.local
 .env.*.local
+cli/node_modules/

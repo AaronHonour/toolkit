@@ -1,0 +1,89 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: <%= projectName %>-rg
+  AZURE_LOCATION: eastus
+<% if (template === 'serverless') { %>
+  FUNCTION_APP_NAME: <%= projectName %>-func
+<% } else { %>
+  APP_SERVICE_NAME: <%= projectName %>-app
+  CONTAINER_REGISTRY: <%= projectName %>acr
+<% } %>
+
+jobs:
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+<% if (template === 'serverless') { %>
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt --target=".python_packages/lib/site-packages"
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNCTION_APP_NAME }}
+          package: .
+          scm-do-build-during-deployment: true
+
+      - name: Get function URL
+        run: |
+          FUNCTION_URL=$(az functionapp show \
+            --name $FUNCTION_APP_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --query 'defaultHostName' -o tsv)
+          echo "Function URL: https://$FUNCTION_URL"
+
+<% } else { %>
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.CONTAINER_REGISTRY }}.azurecr.io
+          username: ${{ secrets.AZURE_ACR_USERNAME }}
+          password: ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      - name: Build and push image
+        run: |
+          docker build -t $CONTAINER_REGISTRY.azurecr.io/<%= projectName %>:${{ github.sha }} .
+          docker push $CONTAINER_REGISTRY.azurecr.io/<%= projectName %>:${{ github.sha }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_SERVICE_NAME }}
+          images: ${{ env.CONTAINER_REGISTRY }}.azurecr.io/<%= projectName %>:${{ github.sha }}
+
+      - name: Verify deployment
+        run: |
+          APP_URL=$(az webapp show \
+            --name $APP_SERVICE_NAME \
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --query 'defaultHostName' -o tsv)
+          echo "App URL: https://$APP_URL"
+          sleep 30
+          curl -f https://$APP_URL/health || exit 1
+<% } %>
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✅ Deployment successful to Azure ${{ env.AZURE_LOCATION }}"

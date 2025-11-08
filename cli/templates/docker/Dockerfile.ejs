@@ -1,0 +1,96 @@
+# Multi-stage Dockerfile for <%= projectName %>
+
+# Stage 1: Base
+FROM python:3.11-slim as base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# Stage 2: Builder
+FROM base as builder
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY pyproject.toml README.md ./
+<% if (template === 'monorepo') { %>
+COPY shared/ ./shared/
+COPY services/ ./services/
+<% } else if (template === 'microservices') { %>
+COPY services/ ./services/
+<% } %>
+
+RUN pip install -e ".[all]"
+
+# Stage 3: Production
+FROM python:3.11-slim as production
+
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app && \
+    chown -R appuser:appuser /app
+
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+
+<% if (template === 'monorepo') { %>
+COPY --chown=appuser:appuser shared/ ./shared/
+COPY --chown=appuser:appuser services/ ./services/
+<% } else if (template === 'microservices') { %>
+COPY --chown=appuser:appuser services/ ./services/
+<% } %>
+
+USER appuser
+
+EXPOSE 8000
+
+<% if (framework === 'fastapi') { %>
+CMD ["uvicorn", "services.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+<% } else if (framework === 'django') { %>
+CMD ["gunicorn", "services.api.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+<% } else if (framework === 'flask') { %>
+CMD ["gunicorn", "services.api.app:app", "--bind", "0.0.0.0:8000", "--workers", "4"]
+<% } %>
+
+# Stage 4: Development
+FROM base as development
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    git \
+    vim \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY pyproject.toml README.md ./
+RUN pip install -e ".[dev]"
+
+# Don't copy source code - will be mounted as volume
+
+EXPOSE 8000
+
+<% if (framework === 'fastapi') { %>
+CMD ["uvicorn", "services.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+<% } else if (framework === 'django') { %>
+CMD ["python", "services/api/manage.py", "runserver", "0.0.0.0:8000"]
+<% } else if (framework === 'flask') { %>
+CMD ["flask", "run", "--host", "0.0.0.0", "--port", "8000", "--debug"]
+<% } %>
+
+# Stage 5: Testing
+FROM development as testing
+
+RUN pip install -e ".[test]"
+
+CMD ["pytest", "tests/", "-v", "--cov"]

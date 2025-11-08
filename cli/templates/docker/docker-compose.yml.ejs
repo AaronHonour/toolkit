@@ -1,0 +1,221 @@
+version: '3.8'
+
+networks:
+  <%= projectName %>-network:
+    driver: bridge
+
+volumes:
+<% if (patterns.includes('database')) { %>
+  postgres-data:
+<% } %>
+<% if (patterns.includes('cache')) { %>
+  redis-data:
+<% } %>
+<% if (patterns.includes('events') || patterns.includes('queue')) { %>
+  kafka-data:
+  zookeeper-data:
+<% } %>
+<% if (patterns.includes('metrics')) { %>
+  prometheus-data:
+  grafana-data:
+<% } %>
+
+services:
+<% if (template === 'monorepo' || template === 'microservices') { %>
+  <% services.forEach((service, index) => { %>
+  <%= service %>:
+    build:
+      context: .
+      target: development
+    ports:
+      - "<%= 8000 + index %>:<%= 8000 + index %>"
+    environment:
+      - PORT=<%= 8000 + index %>
+  <% if (patterns.includes('database')) { %>
+      - DATABASE_URL=postgresql://toolkit:toolkit_dev@postgres:5432/<%= projectName %>
+  <% } %>
+  <% if (patterns.includes('cache')) { %>
+      - REDIS_URL=redis://redis:6379/0
+  <% } %>
+  <% if (patterns.includes('events') || patterns.includes('queue')) { %>
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+  <% } %>
+  <% if (patterns.includes('tracing')) { %>
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+  <% } %>
+    volumes:
+      - .:/app
+    depends_on:
+  <% if (patterns.includes('database')) { %>
+      - postgres
+  <% } %>
+  <% if (patterns.includes('cache')) { %>
+      - redis
+  <% } %>
+  <% if (patterns.includes('events') || patterns.includes('queue')) { %>
+      - kafka
+  <% } %>
+    networks:
+      - <%= projectName %>-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:<%= 8000 + index %>/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  <% }); %>
+<% } %>
+
+  # Infrastructure Services
+
+<% if (patterns.includes('database')) { %>
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: toolkit
+      POSTGRES_PASSWORD: toolkit_dev
+      POSTGRES_DB: <%= projectName %>
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - <%= projectName %>-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U toolkit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+<% } %>
+
+<% if (patterns.includes('cache')) { %>
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - <%= projectName %>-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+<% } %>
+
+<% if (patterns.includes('events') || patterns.includes('queue')) { %>
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - <%= projectName %>-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - <%= projectName %>-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+<% } %>
+
+<% if (patterns.includes('metrics')) { %>
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./observability/prometheus/rules:/etc/prometheus/rules
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - <%= projectName %>-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - <%= projectName %>-network
+<% } %>
+
+<% if (patterns.includes('tracing')) { %>
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # UI
+      - "6831:6831/udp"  # Agent
+      - "14268:14268"  # Collector
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - <%= projectName %>-network
+<% } %>
+
+<% if (patterns.includes('search')) { %>
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    networks:
+      - <%= projectName %>-network
+<% } %>
+
+<% if (patterns.includes('storage')) { %>
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    networks:
+      - <%= projectName %>-network
+<% } %>
