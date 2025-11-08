@@ -1,31 +1,33 @@
 /**
- * API Gateway UI - Example 4: API Gateway (50K+ req/sec)
- * Service routing and load balancing
+ * API Gateway Dashboard
+ * Example 4: Service Routing (50K+ req/sec)
  */
 import { useState, useEffect } from 'react';
 import { Badge } from '@frontend-toolkit/atoms';
 
+interface Service { name: string; url: string; healthy: boolean; latency: number; requests: number; }
+interface Stats { total_requests?: number; avg_latency?: number; circuit_breaks?: number; }
+
 const API_URL = 'http://localhost:8003';
 
 export function App() {
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats>({});
+  const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/v1/stats`);
-        const data = await response.json();
-        setStats(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Stats error:', error);
-        setLoading(false);
-      }
+        const [s, svc] = await Promise.all([
+          fetch(`${API_URL}/api/v1/stats`),
+          fetch(`${API_URL}/api/v1/services`)
+        ]);
+        setStats(await s.json());
+        const svcData = await svc.json();
+        setServices(svcData.services || []);
+      } catch (error) { console.error('Error:', error); }
     };
-
-    fetchStats();
-    const interval = setInterval(fetchStats, 2000);
+    fetchData();
+    const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -33,38 +35,26 @@ export function App() {
     <div className="min-h-screen bg-neutral-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">API Gateway</h1>
-          <p className="text-sm text-neutral-600">Example 4: API Gateway (50K+ req/sec)</p>
+          <h1 className="text-2xl font-bold">🚪 API Gateway</h1>
+          <p className="text-sm text-neutral-600">Service Routing (50K+ req/sec)</p>
         </div>
       </header>
-
+      <div className="bg-primary-50 border-b"><div className="max-w-7xl mx-auto px-4 py-3 flex gap-6 text-sm">
+        <div><span className="font-semibold">Requests:</span> <span className="ml-2">{stats.total_requests?.toLocaleString() || 0}</span></div>
+        <div><span className="font-semibold">Avg Latency:</span> <span className="ml-2 text-success-700">{stats.avg_latency?.toFixed(2) || 0}ms</span></div>
+        <div><span className="font-semibold">Circuit Breaks:</span> <span className="ml-2 text-error-700">{stats.circuit_breaks || 0}</span></div>
+      </div></div>
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            <p className="mt-2 text-sm text-neutral-600">Loading...</p>
-          </div>
-        ) : stats ? (
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-lg font-semibold mb-4">System Statistics</h2>
-            <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto">
-              {JSON.stringify(stats, null, 2)}
-            </pre>
-          </div>
-        ) : (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-amber-900">
-              Unable to connect to backend at {API_URL}. Make sure the backend service is running.
-            </p>
-          </div>
-        )}
-      </main>
-
-      <footer className="mt-12 border-t bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-6 text-sm text-neutral-600">
-          <span className="font-semibold">Backend:</span> localhost:8003
+        <div className="bg-white rounded-lg border p-6"><h2 className="text-lg font-semibold mb-4">Registered Services</h2>
+          <div className="space-y-3">{services.map(s => (<div key={s.name} className="p-4 border rounded-lg flex justify-between items-center">
+            <div><div className="font-semibold">{s.name}</div><div className="text-xs text-neutral-500">{s.url}</div></div>
+            <div className="flex items-center gap-3">
+              <div className="text-sm">{s.requests.toLocaleString()} req</div>
+              <div className="text-sm">{s.latency.toFixed(1)}ms</div>
+              <Badge variant={s.healthy ? 'success' : 'error'}>{s.healthy ? 'Healthy' : 'Down'}</Badge>
+            </div></div>))}</div>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

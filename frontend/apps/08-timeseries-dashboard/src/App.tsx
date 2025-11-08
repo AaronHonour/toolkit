@@ -1,31 +1,33 @@
 /**
- * Time-Series DB UI - Example 8: Time-Series DB (1M+ points/sec)
- * High-speed metrics storage
+ * Time-Series Database Dashboard
+ * Example 8: Metrics Storage (1M+ points/sec)
  */
 import { useState, useEffect } from 'react';
 import { Badge } from '@frontend-toolkit/atoms';
 
+interface Metric { name: string; value: number; timestamp: number; tags: Record<string, string>; }
+interface Stats { datapoints_ingested?: number; ingestion_rate?: number; compression_ratio?: number; }
+
 const API_URL = 'http://localhost:8007';
 
 export function App() {
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats>({});
+  const [metrics, setMetrics] = useState<Metric[]>([]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/v1/stats`);
-        const data = await response.json();
-        setStats(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Stats error:', error);
-        setLoading(false);
-      }
+        const [s, m] = await Promise.all([
+          fetch(`${API_URL}/api/v1/stats`),
+          fetch(`${API_URL}/api/v1/metrics/recent?limit=20`)
+        ]);
+        setStats(await s.json());
+        const metricsData = await m.json();
+        setMetrics(metricsData.metrics || []);
+      } catch (error) { console.error('Error:', error); }
     };
-
-    fetchStats();
-    const interval = setInterval(fetchStats, 2000);
+    fetchData();
+    const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -33,38 +35,25 @@ export function App() {
     <div className="min-h-screen bg-neutral-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">Time-Series DB</h1>
-          <p className="text-sm text-neutral-600">Example 8: Time-Series DB (1M+ points/sec)</p>
+          <h1 className="text-2xl font-bold">📈 Time-Series Database</h1>
+          <p className="text-sm text-neutral-600">Metrics Storage (1M+ points/sec)</p>
         </div>
       </header>
-
+      <div className="bg-primary-50 border-b"><div className="max-w-7xl mx-auto px-4 py-3 flex gap-6 text-sm">
+        <div><span className="font-semibold">Datapoints:</span> <span className="ml-2">{stats.datapoints_ingested?.toLocaleString() || 0}</span></div>
+        <div><span className="font-semibold">Rate:</span> <span className="ml-2 text-success-700">{stats.ingestion_rate?.toLocaleString() || 0}/sec</span></div>
+        <div><span className="font-semibold">Compression:</span> <span className="ml-2">{stats.compression_ratio?.toFixed(1) || 0}:1</span></div>
+      </div></div>
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            <p className="mt-2 text-sm text-neutral-600">Loading...</p>
-          </div>
-        ) : stats ? (
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-lg font-semibold mb-4">System Statistics</h2>
-            <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto">
-              {JSON.stringify(stats, null, 2)}
-            </pre>
-          </div>
-        ) : (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-amber-900">
-              Unable to connect to backend at {API_URL}. Make sure the backend service is running.
-            </p>
-          </div>
-        )}
-      </main>
-
-      <footer className="mt-12 border-t bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-6 text-sm text-neutral-600">
-          <span className="font-semibold">Backend:</span> localhost:8007
+        <div className="bg-white rounded-lg border p-6"><h2 className="text-lg font-semibold mb-4">Recent Metrics</h2>
+          <div className="space-y-2">{metrics.map((m, i) => (<div key={i} className="p-3 border-b flex justify-between">
+            <div><div className="font-semibold text-sm">{m.name}</div>
+            <div className="text-xs text-neutral-500">{Object.entries(m.tags).map(([k,v]) => `${k}=${v}`).join(', ')}</div></div>
+            <div className="text-right"><div className="font-bold">{m.value.toFixed(2)}</div>
+            <div className="text-xs text-neutral-500">{new Date(m.timestamp * 1000).toLocaleTimeString()}</div></div>
+          </div>))}</div>
         </div>
-      </footer>
+      </main>
     </div>
   );
 }
