@@ -1,0 +1,16 @@
+{
+  "name": "@frontend-toolkit/design-tokens",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/tokens.ts",
+  "types": "./src/tokens.ts",
+  "exports": {
+    ".": "./src/tokens.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
