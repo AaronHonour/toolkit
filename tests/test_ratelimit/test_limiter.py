@@ -14,9 +14,16 @@ Testing Strategy:
 
 import pytest
 import time
-from freezegun import freeze_time
 from unittest.mock import Mock, patch
 from toolkit.ratelimit.limiter import RateLimiter
+
+# Try to import freezegun, skip tests if not available
+try:
+    from freezegun import freeze_time
+    HAS_FREEZEGUN = True
+except ImportError:
+    HAS_FREEZEGUN = False
+    freeze_time = None
 
 
 class TestRateLimiterBasics:
@@ -339,6 +346,7 @@ class TestRateLimiterPerformance:
         # (In production, you'd want cleanup of old buckets)
 
 
+@pytest.mark.skipif(not HAS_FREEZEGUN, reason="freezegun not installed")
 class TestRateLimiterWithFreezgun:
     """Test time-dependent behavior with frozen time."""
 
