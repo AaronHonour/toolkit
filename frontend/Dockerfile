@@ -15,8 +15,8 @@ COPY packages/atoms/package.json ./packages/atoms/
 COPY packages/performance/package.json ./packages/performance/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 
-# Install dependencies with frozen lockfile
-RUN npm ci --prefer-offline --no-audit
+# Install dependencies
+RUN if [ -f package-lock.json ]; then npm ci --prefer-offline --no-audit; else npm install; fi
 
 # =============================================================================
 # Stage 2: Builder
@@ -84,7 +84,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Copy source code
 COPY . .
@@ -104,7 +104,7 @@ WORKDIR /app
 
 # Install dependencies including Playwright browsers
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Install Playwright browsers
 RUN npx playwright install --with-deps chromium
