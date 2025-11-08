@@ -1,0 +1,17 @@
+{
+  "name": "@toolkit/docs",
+  "version": "1.0.0",
+  "description": "Unified documentation for Composable Toolkit",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0",
+    "vue": "^3.3.11"
+  },
+  "dependencies": {
+    "mermaid": "^10.6.1"
+  }
+}
