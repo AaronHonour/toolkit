@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  cdc-pipeline:
+    build:
+      context: ../..
+      dockerfile: examples/13_cdc_pipeline/Dockerfile
+    container_name: cdc-pipeline
+    ports:
+      - "8013:8013"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8013/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
