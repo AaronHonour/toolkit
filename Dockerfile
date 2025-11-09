@@ -98,6 +98,7 @@ WORKDIR /app
 
 # Install dependencies (including dev)
 COPY pyproject.toml README.md ./
+COPY src/ ./src/
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -e ".[dev,all]"
 
