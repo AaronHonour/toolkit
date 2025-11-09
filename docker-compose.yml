@@ -104,7 +104,7 @@ services:
     environment:
       POSTGRES_USER: toolkit
       POSTGRES_PASSWORD: toolkit_dev
-      POSTGRES_DB: timeseries
+      POSTGRES_DB: toolkit
     ports:
       - "5433:5432"
     volumes:

@@ -8,12 +8,12 @@ global:
     cluster: 'toolkit-dev'
     environment: 'development'
 
-# Alertmanager configuration
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-            - alertmanager:9093
+# Alertmanager configuration (optional - uncomment and add alertmanager service if needed)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#             - alertmanager:9093
 
 # Load rules once and periodically evaluate them
 rule_files:
