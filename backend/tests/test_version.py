@@ -1,8 +1,8 @@
 """Test version information."""
-import toolkit
+import unistax
 
 
 def test_version_exists():
     """Test that version attribute exists."""
-    assert hasattr(toolkit, "__version__")
-    assert isinstance(toolkit.__version__, str)
+    assert hasattr(unistax, "__version__")
+    assert isinstance(unistax.__version__, str)

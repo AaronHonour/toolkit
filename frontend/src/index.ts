@@ -1,7 +1,7 @@
 /**
- * Toolkit Frontend
+ * Unistax Frontend
  *
- * Main entry point for the toolkit frontend package
+ * Main entry point for the unistax frontend package
  */
 
 export const version = '0.1.0';

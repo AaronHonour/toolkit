@@ -1,19 +1,19 @@
-# Toolkit
+# Unistax
 
-A comprehensive toolkit providing reusable components and utilities for both backend and frontend development.
+A composable full-stack toolkit for building unified applications with coordinated frontend and backend components.
 
-[![CI](https://github.com/AaronHonour/toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/AaronHonour/toolkit/actions/workflows/ci.yml)
-[![Backend PyPI](https://img.shields.io/pypi/v/toolkit)](https://pypi.org/project/toolkit/)
-[![Frontend npm](https://img.shields.io/npm/v/@toolkit/frontend)](https://www.npmjs.com/package/@toolkit/frontend)
+[![CI](https://github.com/AaronHonour/unistax/actions/workflows/ci.yml/badge.svg)](https://github.com/AaronHonour/unistax/actions/workflows/ci.yml)
+[![Backend PyPI](https://img.shields.io/pypi/v/unistax)](https://pypi.org/project/unistax/)
+[![Frontend npm](https://img.shields.io/npm/v/@unistax/frontend)](https://www.npmjs.com/package/@unistax/frontend)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
 This monorepo contains:
 
-- **Backend Toolkit** (Python) - Utilities and components for backend development
-- **Frontend Toolkit** (JavaScript/TypeScript) - Reusable components for frontend development
-- **Examples** - Demonstration code showing toolkit usage (not published)
+- **Backend Components** (Python) - Composable backend building blocks for full-stack applications
+- **Frontend Components** (JavaScript/TypeScript) - Composable frontend building blocks that integrate seamlessly with the backend
+- **Examples** - Demonstration code showing how to compose full-stack applications (not published)
 - **Documentation** - Comprehensive guides and API references
 
 ## Quick Start
@@ -21,36 +21,36 @@ This monorepo contains:
 ### Backend (Python)
 
 ```bash
-pip install toolkit
+pip install unistax
 ```
 
 ```python
-from toolkit import YourModule
+from unistax import YourModule
 
-# Use toolkit components
+# Use composable backend components
 ```
 
 ### Frontend (JavaScript/TypeScript)
 
 ```bash
-npm install @toolkit/frontend
+npm install @unistax/frontend
 # or
-yarn add @toolkit/frontend
+yarn add @unistax/frontend
 ```
 
 ```typescript
-import { YourComponent } from '@toolkit/frontend';
+import { YourComponent } from '@unistax/frontend';
 
-// Use toolkit components
+// Use composable frontend components
 ```
 
 ## Repository Structure
 
 ```
-toolkit/
+unistax/
 ├── backend/              # Python package
 │   ├── src/
-│   │   └── toolkit/     # Source code
+│   │   └── unistax/     # Source code
 │   ├── tests/           # Test suite
 │   ├── pyproject.toml   # Package configuration
 │   └── README.md        # Backend documentation
@@ -94,8 +94,8 @@ toolkit/
 
 ```bash
 # Clone the repository
-git clone https://github.com/AaronHonour/toolkit.git
-cd toolkit
+git clone https://github.com/AaronHonour/unistax.git
+cd unistax
 
 # Backend setup
 cd backend
@@ -114,7 +114,7 @@ npm install
 ```bash
 cd backend
 pytest                    # Run tests
-pytest --cov=toolkit      # With coverage
+pytest --cov=unistax      # With coverage
 ruff check src tests      # Lint
 black src tests           # Format
 mypy src                  # Type check
@@ -230,14 +230,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed publishing configuration.
 
 ## Features
 
-### Backend Toolkit
+### Backend Components
 - 🐍 Modern Python (3.9+) with type hints
-- ✨ Modular design for easy extension
+- 🧩 Composable building blocks
 - 🧪 Comprehensive test coverage
 - 📚 Well-documented APIs
 
-### Frontend Toolkit
+### Frontend Components
 - 🎨 TypeScript for type safety
+- 🧩 Composable building blocks
 - ⚡ Modern ESM and CommonJS support
 - 🧪 Jest testing setup
 - 📦 Tree-shakeable exports
@@ -253,7 +254,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed publishing configuration.
 ### Monorepo Structure
 - **Pros**: Unified versioning, coordinated releases, shared tooling
 - **Cons**: Larger repo size
-- **Decision**: Monorepo is optimal for a toolkit with coordinated backend/frontend releases
+- **Decision**: Monorepo is optimal for composable full-stack components with coordinated releases
 
 ### GitHub Flow vs Gitflow
 - **GitHub Flow**: Simple feature/main workflow
@@ -282,15 +283,15 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/AaronHonour/toolkit/issues)
-- 💬 [Discussions](https://github.com/AaronHonour/toolkit/discussions)
+- 🐛 [Issue Tracker](https://github.com/AaronHonour/unistax/issues)
+- 💬 [Discussions](https://github.com/AaronHonour/unistax/discussions)
 
 ## Changelog
 
-See [Releases](https://github.com/AaronHonour/toolkit/releases) for version history and changes.
+See [Releases](https://github.com/AaronHonour/unistax/releases) for version history and changes.
 
 ---
 
 **Status**: 🚧 Active Development
 
-This toolkit is under active development. APIs may change between minor versions until v1.0.0 release.
+Unistax is under active development. APIs may change between minor versions until v1.0.0 release.

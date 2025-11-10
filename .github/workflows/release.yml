@@ -140,12 +140,12 @@ jobs:
 
             **Backend (Python):**
             \`\`\`bash
-            pip install toolkit==${{ needs.validate-version.outputs.version }}
+            pip install unistax==${{ needs.validate-version.outputs.version }}
             \`\`\`
 
             **Frontend (npm):**
             \`\`\`bash
-            npm install @toolkit/frontend@${{ needs.validate-version.outputs.version }}
+            npm install @unistax/frontend@${{ needs.validate-version.outputs.version }}
             \`\`\`
           draft: false
           prerelease: ${{ contains(needs.validate-version.outputs.version, '-') }}

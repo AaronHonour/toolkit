@@ -1,6 +1,6 @@
-# Toolkit Documentation
+# Unistax Documentation
 
-Welcome to the Toolkit documentation!
+Welcome to the Unistax documentation!
 
 ## Quick Links
 
@@ -16,12 +16,12 @@ Welcome to the Toolkit documentation!
 
 **Backend:**
 ```bash
-pip install toolkit
+pip install unistax
 ```
 
 **Frontend:**
 ```bash
-npm install @toolkit/frontend
+npm install @unistax/frontend
 ```
 
 ### First Steps
@@ -60,5 +60,5 @@ Learn about our [architecture decisions](../README.md#architecture-decisions) an
 
 ## Support
 
-- [GitHub Issues](https://github.com/AaronHonour/toolkit/issues)
-- [GitHub Discussions](https://github.com/AaronHonour/toolkit/discussions)
+- [GitHub Issues](https://github.com/AaronHonour/unistax/issues)
+- [GitHub Discussions](https://github.com/AaronHonour/unistax/discussions)

@@ -1,7 +1,7 @@
 {
-  "name": "@toolkit/frontend",
+  "name": "@unistax/frontend",
   "version": "0.1.0",
-  "description": "Frontend toolkit providing reusable components and utilities",
+  "description": "Composable frontend components for building unified full-stack applications",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -21,22 +21,23 @@
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
-    "toolkit",
+    "unistax",
+    "composable",
+    "full-stack",
     "frontend",
-    "utilities",
     "components"
   ],
-  "author": "Your Team <team@example.com>",
+  "author": "Aaron Honour <aaron@example.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AaronHonour/toolkit.git",
+    "url": "https://github.com/AaronHonour/unistax.git",
     "directory": "frontend"
   },
   "bugs": {
-    "url": "https://github.com/AaronHonour/toolkit/issues"
+    "url": "https://github.com/AaronHonour/unistax/issues"
   },
-  "homepage": "https://github.com/AaronHonour/toolkit#readme",
+  "homepage": "https://github.com/AaronHonour/unistax#readme",
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",

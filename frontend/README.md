@@ -1,21 +1,21 @@
-# Toolkit Frontend
+# Unistax Frontend
 
-JavaScript/TypeScript toolkit providing reusable components and utilities for frontend development.
+Composable frontend components for building unified full-stack applications.
 
 ## Installation
 
 ```bash
-npm install @toolkit/frontend
+npm install @unistax/frontend
 # or
-yarn add @toolkit/frontend
+yarn add @unistax/frontend
 ```
 
 ## Development Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/AaronHonour/toolkit.git
-cd toolkit/frontend
+git clone https://github.com/AaronHonour/unistax.git
+cd unistax/frontend
 
 # Install dependencies
 npm install
@@ -24,7 +24,7 @@ npm install
 ## Usage
 
 ```typescript
-import { YourComponent } from '@toolkit/frontend';
+import { YourComponent } from '@unistax/frontend';
 
 // Example usage here
 ```

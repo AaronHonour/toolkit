@@ -1,4 +1,4 @@
-"""Toolkit - A comprehensive toolkit for backend development."""
+"""Unistax - A composable full-stack toolkit for building unified applications."""
 
 try:
     from ._version import version as __version__

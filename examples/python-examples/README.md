@@ -1,15 +1,15 @@
 # Python Examples
 
-This directory contains example code demonstrating how to use the backend toolkit.
+This directory contains example code demonstrating how to use Unistax backend components.
 
 ## Examples
 
-(Examples will be added as toolkit features are developed)
+(Examples will be added as features are developed)
 
 ### Basic Usage
 
 ```python
-from toolkit import YourModule
+from unistax import YourModule
 
 # Example usage
 ```
@@ -17,7 +17,7 @@ from toolkit import YourModule
 ## Running Examples
 
 ```bash
-# Install the toolkit in development mode
+# Install unistax in development mode
 cd ../../backend
 pip install -e ".[dev]"
 
@@ -28,4 +28,4 @@ python example_script.py
 
 ## Contributing Examples
 
-When adding new toolkit features, please include corresponding examples here to help users understand how to use them.
+When adding new features, please include corresponding examples here to help users understand how to compose applications with Unistax.

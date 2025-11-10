@@ -1,6 +1,6 @@
-# Contributing to Toolkit
+# Contributing to Unistax
 
-Thank you for your interest in contributing to Toolkit! This document outlines our development workflow, branching strategy, and release process.
+Thank you for your interest in contributing to Unistax! This document outlines our development workflow, branching strategy, and release process.
 
 ## Table of Contents
 
@@ -374,4 +374,4 @@ Added cleanup in useEffect return function.
 
 ---
 
-Thank you for contributing to Toolkit! 🚀
+Thank you for contributing to Unistax! 🚀

@@ -1,19 +1,19 @@
-# Toolkit Backend
+# Unistax Backend
 
-Python toolkit providing utilities and components for backend development.
+Composable backend components for building unified full-stack applications.
 
 ## Installation
 
 ```bash
-pip install toolkit
+pip install unistax
 ```
 
 ## Development Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/AaronHonour/toolkit.git
-cd toolkit/backend
+git clone https://github.com/AaronHonour/unistax.git
+cd unistax/backend
 
 # Install with development dependencies
 pip install -e ".[dev]"
@@ -22,7 +22,7 @@ pip install -e ".[dev]"
 ## Usage
 
 ```python
-from toolkit import YourModule
+from unistax import YourModule
 
 # Example usage here
 ```

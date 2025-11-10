@@ -3,16 +3,16 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "toolkit"
+name = "unistax"
 dynamic = ["version"]
-description = "A comprehensive toolkit for backend development"
+description = "A composable full-stack toolkit for building applications with unified frontend and backend components"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
-    { name = "Your Team", email = "team@example.com" }
+    { name = "Aaron Honour", email = "aaron@example.com" }
 ]
-keywords = ["toolkit", "utilities", "backend"]
+keywords = ["unistax", "composable", "full-stack", "toolkit", "backend"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -44,20 +44,20 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AaronHonour/toolkit"
-Documentation = "https://github.com/AaronHonour/toolkit/docs"
-Repository = "https://github.com/AaronHonour/toolkit"
-Issues = "https://github.com/AaronHonour/toolkit/issues"
+Homepage = "https://github.com/AaronHonour/unistax"
+Documentation = "https://github.com/AaronHonour/unistax/docs"
+Repository = "https://github.com/AaronHonour/unistax"
+Issues = "https://github.com/AaronHonour/unistax/issues"
 
 [tool.hatch.version]
 source = "vcs"
 fallback-version = "0.0.0"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/toolkit/_version.py"
+version-file = "src/unistax/_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/toolkit"]
+packages = ["src/unistax"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -67,7 +67,7 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=toolkit",
+    "--cov=unistax",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
