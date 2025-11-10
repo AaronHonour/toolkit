@@ -1,0 +1,14 @@
+# Database Configuration
+
+database:
+  url: "${DATABASE_URL:-postgresql://user:password@localhost:5432/myapp}"
+  pool_size: 5
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 3600
+  echo: false
+  echo_pool: false
+
+  # Optional connection arguments
+  connect_args:
+    connect_timeout: 10

@@ -1,0 +1,162 @@
+name: Performance Benchmarks
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Nightly at 2 AM UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '<% if (template === 'monorepo') { %>shared/src/**/*.py<% } else { %>services/**/*.py<% } %>'
+      - 'tests/benchmarks/**'
+
+jobs:
+  benchmarks:
+    name: Run Benchmarks (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    services:
+<% if (patterns.includes('database')) { %>
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: benchmark_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+<% } %>
+<% if (patterns.includes('cache')) { %>
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+<% } %>
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[test]"
+          pip install pytest-benchmark
+
+      - name: Run algorithm benchmarks
+        run: |
+          pytest tests/benchmarks/ \
+            --benchmark-only \
+            --benchmark-json=benchmarks/results/py${{ matrix.python-version }}.json
+        env:
+<% if (patterns.includes('database')) { %>
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/benchmark_db
+<% } %>
+<% if (patterns.includes('cache')) { %>
+          REDIS_URL: redis://localhost:6379/0
+<% } %>
+
+      - name: Generate HTML report
+        if: matrix.python-version == '3.11'
+        run: |
+          python scripts/run-benchmarks.py
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results-py${{ matrix.python-version }}
+          path: |
+            benchmarks/results/py${{ matrix.python-version }}.json
+            benchmarks/results/latest.html
+          retention-days: 90
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && matrix.python-version == '3.11'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('benchmarks/results/py3.11.json', 'utf8'));
+
+            const comment = `## 📊 Benchmark Results
+
+            **Python 3.11**
+
+            | Benchmark | Operations/sec | Comparison |
+            |-----------|----------------|------------|
+            ${results.benchmarks.map(b => `| ${b.name} | ${b.stats.ops.toLocaleString()} | ${b.ops > 100000 ? '✅' : '⚠️'} |`).join('\n')}
+
+            *Target: 100K+ ops/sec*
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  compare:
+    name: Compare with Baseline
+    runs-on: ubuntu-latest
+    needs: benchmarks
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download current results
+        uses: actions/download-artifact@v3
+        with:
+          name: benchmark-results-py3.11
+          path: benchmarks/results/current
+
+      - name: Checkout main branch
+        run: |
+          git fetch origin main
+          git checkout main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run baseline benchmarks
+        run: |
+          pytest tests/benchmarks/ \
+            --benchmark-only \
+            --benchmark-json=benchmarks/results/baseline.json
+
+      - name: Compare results
+        run: |
+          python scripts/compare-benchmarks.py \
+            benchmarks/results/baseline.json \
+            benchmarks/results/current/py3.11.json
+
+      - name: Check for regressions
+        run: |
+          python scripts/compare-benchmarks.py \
+            benchmarks/results/baseline.json \
+            benchmarks/results/current/py3.11.json \
+            --fail-on-regression \
+            --threshold 10

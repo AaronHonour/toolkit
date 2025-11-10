@@ -1,0 +1,603 @@
+openapi: 3.0.3
+info:
+  title: Analytics Engine API
+  description: |
+    Real-time analytics API for tracking events, metrics, and generating reports
+    with time-series aggregations and custom dashboards.
+
+    **Features:**
+    - Event tracking and ingestion
+    - Real-time metrics computation
+    - Time-series aggregations
+    - Custom dashboard queries
+    - Funnel analysis
+    - Cohort analysis
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8002
+    description: Local development server
+  - url: https://api.toolkit.example.com/analytics
+    description: Production server
+
+tags:
+  - name: Events
+    description: Event tracking operations
+  - name: Metrics
+    description: Metrics and aggregations
+  - name: Dashboards
+    description: Dashboard and report queries
+  - name: Funnels
+    description: Funnel analysis
+  - name: Health
+    description: Service health checks
+
+paths:
+  /events:
+    post:
+      tags:
+        - Events
+      summary: Track an event
+      description: Ingest a single analytics event
+      operationId: trackEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+            examples:
+              pageView:
+                value:
+                  event_type: "page_view"
+                  user_id: "user_123"
+                  properties:
+                    page: "/products"
+                    referrer: "https://google.com"
+                  timestamp: "2024-01-22T15:30:00Z"
+              purchase:
+                value:
+                  event_type: "purchase"
+                  user_id: "user_456"
+                  properties:
+                    product_id: "prod_789"
+                    amount: 99.99
+                    currency: "USD"
+                  timestamp: "2024-01-22T15:35:00Z"
+      responses:
+        '201':
+          description: Event tracked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "tracked"
+                  event_id:
+                    type: string
+                    example: "evt_abc123"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /events/batch:
+    post:
+      tags:
+        - Events
+      summary: Track multiple events
+      description: Ingest multiple events in a single batch request
+      operationId: trackEventsBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                events:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Event'
+                  maxItems: 1000
+      responses:
+        '201':
+          description: Events tracked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracked:
+                    type: integer
+                  failed:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /metrics:
+    post:
+      tags:
+        - Metrics
+      summary: Query metrics
+      description: Retrieve aggregated metrics with time-series data
+      operationId: queryMetrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricQuery'
+            examples:
+              dailyUsers:
+                value:
+                  metric: "unique_users"
+                  event_type: "page_view"
+                  time_range:
+                    start: "2024-01-01T00:00:00Z"
+                    end: "2024-01-31T23:59:59Z"
+                  interval: "1d"
+                  filters:
+                    country: "US"
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricResponse'
+              examples:
+                timeSeries:
+                  value:
+                    metric: "unique_users"
+                    interval: "1d"
+                    data:
+                      - timestamp: "2024-01-01T00:00:00Z"
+                        value: 1523
+                      - timestamp: "2024-01-02T00:00:00Z"
+                        value: 1687
+                      - timestamp: "2024-01-03T00:00:00Z"
+                        value: 1432
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /metrics/realtime:
+    get:
+      tags:
+        - Metrics
+      summary: Get real-time metrics
+      description: Retrieve current real-time metrics (last 5 minutes)
+      operationId: getRealtimeMetrics
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [active_users, events_per_second, page_views]
+      responses:
+        '200':
+          description: Real-time metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metric:
+                    type: string
+                  value:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+              examples:
+                activeUsers:
+                  value:
+                    metric: "active_users"
+                    value: 342
+                    timestamp: "2024-01-22T15:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /funnels:
+    post:
+      tags:
+        - Funnels
+      summary: Analyze funnel
+      description: Calculate conversion funnel metrics
+      operationId: analyzeFunnel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FunnelQuery'
+            examples:
+              purchaseFunnel:
+                value:
+                  steps:
+                    - event_type: "page_view"
+                      filters:
+                        page: "/products"
+                    - event_type: "add_to_cart"
+                    - event_type: "checkout"
+                    - event_type: "purchase"
+                  time_range:
+                    start: "2024-01-01T00:00:00Z"
+                    end: "2024-01-31T23:59:59Z"
+                  window: "7d"
+      responses:
+        '200':
+          description: Funnel analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FunnelResponse'
+              examples:
+                funnelResults:
+                  value:
+                    steps:
+                      - step: 1
+                        event_type: "page_view"
+                        users: 10000
+                        conversion_rate: 100.0
+                      - step: 2
+                        event_type: "add_to_cart"
+                        users: 3000
+                        conversion_rate: 30.0
+                      - step: 3
+                        event_type: "checkout"
+                        users: 1500
+                        conversion_rate: 15.0
+                      - step: 4
+                        event_type: "purchase"
+                        users: 1200
+                        conversion_rate: 12.0
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /dashboards/{dashboard_id}:
+    get:
+      tags:
+        - Dashboards
+      summary: Get dashboard data
+      description: Retrieve all metrics for a specific dashboard
+      operationId: getDashboard
+      parameters:
+        - name: dashboard_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: time_range
+          in: query
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d, 90d]
+            default: "24h"
+      responses:
+        '200':
+          description: Dashboard data retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dashboard_id:
+                    type: string
+                  name:
+                    type: string
+                  widgets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        widget_id:
+                          type: string
+                        type:
+                          type: string
+                        data:
+                          type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /cohorts:
+    post:
+      tags:
+        - Metrics
+      summary: Analyze cohorts
+      description: Perform cohort analysis on user behavior
+      operationId: analyzeCohorts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cohort_by:
+                  type: string
+                  enum: [signup_date, first_purchase]
+                event_type:
+                  type: string
+                time_range:
+                  $ref: '#/components/schemas/TimeRange'
+                interval:
+                  type: string
+                  enum: [1d, 1w, 1m]
+      responses:
+        '200':
+          description: Cohort analysis results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cohorts:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the analytics service is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  headers:
+    X-RateLimit-Limit:
+      description: Request limit per hour
+      schema:
+        type: integer
+    X-RateLimit-Remaining:
+      description: Remaining requests in current window
+      schema:
+        type: integer
+
+  schemas:
+    Event:
+      type: object
+      required:
+        - event_type
+        - user_id
+      properties:
+        event_type:
+          type: string
+          description: Type of event
+          example: "page_view"
+        user_id:
+          type: string
+          description: Unique user identifier
+          example: "user_123"
+        session_id:
+          type: string
+          description: Session identifier
+        properties:
+          type: object
+          description: Event properties
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (defaults to now)
+
+    MetricQuery:
+      type: object
+      required:
+        - metric
+        - time_range
+      properties:
+        metric:
+          type: string
+          enum: [count, unique_users, sum, avg, min, max]
+        event_type:
+          type: string
+        time_range:
+          $ref: '#/components/schemas/TimeRange'
+        interval:
+          type: string
+          enum: [1m, 5m, 1h, 1d, 1w]
+        filters:
+          type: object
+          additionalProperties: true
+        group_by:
+          type: array
+          items:
+            type: string
+
+    TimeRange:
+      type: object
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+
+    MetricResponse:
+      type: object
+      properties:
+        metric:
+          type: string
+        interval:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number
+              group:
+                type: string
+
+    FunnelQuery:
+      type: object
+      required:
+        - steps
+        - time_range
+      properties:
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              event_type:
+                type: string
+              filters:
+                type: object
+        time_range:
+          $ref: '#/components/schemas/TimeRange'
+        window:
+          type: string
+          description: Time window for users to complete funnel
+          example: "7d"
+
+    FunnelResponse:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              step:
+                type: integer
+              event_type:
+                type: string
+              users:
+                type: integer
+              conversion_rate:
+                type: number
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds until rate limit resets
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

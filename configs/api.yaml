@@ -1,0 +1,27 @@
+# API Configuration
+
+api:
+  title: "My API"
+  version: "1.0.0"
+  description: "API built with toolkit"
+
+  # Documentation URLs
+  docs_url: "/docs"
+  redoc_url: "/redoc"
+  openapi_url: "/openapi.json"
+
+  # CORS configuration
+  cors_enabled: true
+  cors_origins:
+    - "*"
+  cors_allow_credentials: true
+  cors_allow_methods:
+    - "*"
+  cors_allow_headers:
+    - "*"
+
+  # Server configuration
+  host: "${API_HOST:-0.0.0.0}"
+  port: "${API_PORT:-8000}"
+  reload: false
+  workers: 4

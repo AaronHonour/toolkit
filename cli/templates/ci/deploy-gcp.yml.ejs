@@ -1,0 +1,98 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: us-central1
+<% if (template === 'serverless') { %>
+  FUNCTION_NAME: <%= projectName %>
+<% } else { %>
+  SERVICE_NAME: <%= projectName %>
+  GCR_REGISTRY: gcr.io
+<% } %>
+
+jobs:
+  deploy:
+    name: Deploy to GCP
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+<% if (template === 'serverless') { %>
+      - name: Deploy to Cloud Functions
+        run: |
+          gcloud functions deploy $FUNCTION_NAME \
+            --gen2 \
+            --runtime python311 \
+            --region $GCP_REGION \
+            --source . \
+            --entry-point main \
+            --trigger-http \
+            --allow-unauthenticated \
+            --set-env-vars PROJECT_ID=$GCP_PROJECT_ID
+  <% if (patterns.includes('database')) { %>
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }}
+  <% } %>
+
+      - name: Get function URL
+        run: |
+          FUNCTION_URL=$(gcloud functions describe $FUNCTION_NAME \
+            --region $GCP_REGION \
+            --format='value(serviceConfig.uri)')
+          echo "Function URL: $FUNCTION_URL"
+          echo "function_url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+        id: function
+
+<% } else { %>
+      - name: Build and push to GCR
+        run: |
+          gcloud builds submit \
+            --tag $GCR_REGISTRY/$GCP_PROJECT_ID/$SERVICE_NAME:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE_NAME \
+            --image $GCR_REGISTRY/$GCP_PROJECT_ID/$SERVICE_NAME:${{ github.sha }} \
+            --region $GCP_REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --cpu 1 \
+  <% if (patterns.includes('database')) { %>
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+  <% } %>
+  <% if (patterns.includes('cache')) { %>
+            --set-env-vars REDIS_URL=${{ secrets.REDIS_URL }} \
+  <% } %>
+            --max-instances 10
+
+      - name: Get service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME \
+            --region $GCP_REGION \
+            --format='value(status.url)')
+          echo "Service URL: $SERVICE_URL"
+          curl -f $SERVICE_URL/health
+<% } %>
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✅ Deployment successful to GCP ${{ env.GCP_REGION }}"

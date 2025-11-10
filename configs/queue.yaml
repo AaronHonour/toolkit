@@ -1,0 +1,29 @@
+# Queue Configuration
+
+queue:
+  # Backend: redis, rabbitmq, sqs
+  backend: redis
+
+  # Redis configuration
+  redis:
+    host: "${REDIS_HOST:-localhost}"
+    port: "${REDIS_PORT:-6379}"
+    db: 0
+    password: "${REDIS_PASSWORD}"
+
+  # RabbitMQ configuration
+  rabbitmq:
+    host: "${RABBITMQ_HOST:-localhost}"
+    port: "${RABBITMQ_PORT:-5672}"
+    username: "${RABBITMQ_USER:-guest}"
+    password: "${RABBITMQ_PASS:-guest}"
+    vhost: "/"
+
+  # Queue settings
+  queues:
+    - name: default
+      durable: true
+      auto_delete: false
+    - name: high_priority
+      durable: true
+      auto_delete: false

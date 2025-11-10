@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  event-sourcing:
+    build:
+      context: ../..
+      dockerfile: examples/07_event_sourcing/Dockerfile
+    container_name: event-sourcing
+    ports:
+      - "8007:8007"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

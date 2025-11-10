@@ -1,0 +1,344 @@
+openapi: 3.0.3
+info:
+  title: Probabilistic Data Structures API
+  description: |
+    Space-efficient data structures: Bloom filters, HyperLogLog, Count-Min Sketch
+    for approximate algorithms with massive scale.
+
+    **Features:**
+    - Bloom filters (set membership, < 1% FP rate)
+    - HyperLogLog (cardinality estimation, < 2% error)
+    - Count-Min Sketch (frequency counting)
+    - Redis-backed storage
+    - Memory-efficient (90%+ reduction vs exact)
+    - O(1) query time
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8019
+    description: Local development server
+  - url: https://api.toolkit.example.com/probabilistic
+    description: Production server
+
+tags:
+  - name: Bloom Filter
+    description: Bloom filter operations
+  - name: HyperLogLog
+    description: HyperLogLog cardinality estimation
+  - name: Count-Min Sketch
+    description: Frequency counting
+  - name: Health
+    description: Service health checks
+
+paths:
+  /bloom/add:
+    post:
+      tags:
+        - Bloom Filter
+      summary: Add item to Bloom filter
+      description: Add an item to the Bloom filter
+      operationId: bloomAdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - item
+              properties:
+                item:
+                  type: string
+                filter_name:
+                  type: string
+                  default: "default"
+      responses:
+        '200':
+          description: Item added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /bloom/check:
+    get:
+      tags:
+        - Bloom Filter
+      summary: Check item existence
+      description: Check if item probably exists (may have false positives)
+      operationId: bloomCheck
+      parameters:
+        - name: item
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: filter_name
+          in: query
+          schema:
+            type: string
+            default: "default"
+      responses:
+        '200':
+          description: Check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item:
+                    type: string
+                  probably_exists:
+                    type: boolean
+                  note:
+                    type: string
+                    example: "False positives possible, false negatives impossible"
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /hyperloglog/add:
+    post:
+      tags:
+        - HyperLogLog
+      summary: Add items to HyperLogLog
+      description: Add items for cardinality estimation
+      operationId: hllAdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+                - items
+              properties:
+                key:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Items added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  count:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /hyperloglog/count:
+    get:
+      tags:
+        - HyperLogLog
+      summary: Get cardinality
+      description: Get approximate unique count
+      operationId: hllCount
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cardinality estimate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  cardinality:
+                    type: integer
+                  error_rate:
+                    type: string
+                    example: "±2%"
+              examples:
+                uniqueVisitors:
+                  value:
+                    key: "unique_visitors"
+                    cardinality: 1523847
+                    error_rate: "±2%"
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /countmin/increment:
+    post:
+      tags:
+        - Count-Min Sketch
+      summary: Increment counter
+      description: Increment frequency counter for an item
+      operationId: countMinIncrement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sketch_name
+                - item
+              properties:
+                sketch_name:
+                  type: string
+                item:
+                  type: string
+                count:
+                  type: integer
+                  default: 1
+      responses:
+        '200':
+          description: Counter incremented
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /countmin/query:
+    get:
+      tags:
+        - Count-Min Sketch
+      summary: Query frequency
+      description: Get approximate frequency count for an item
+      operationId: countMinQuery
+      parameters:
+        - name: sketch_name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: item
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Frequency estimate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item:
+                    type: string
+                  frequency:
+                    type: integer
+                  note:
+                    type: string
+                    example: "May overestimate, never underestimates"
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,62 @@
+# Security Configuration
+
+security:
+  # JWT settings
+  jwt:
+    secret: ${JWT_SECRET}
+    algorithm: HS256
+    expiration: 3600  # 1 hour
+    refresh_expiration: 2592000  # 30 days
+
+  # Password hashing
+  password:
+    algorithm: sha256
+    salt_length: 32
+    min_length: 8
+    require_uppercase: true
+    require_lowercase: true
+    require_digits: true
+    require_special: true
+
+  # RBAC settings
+  rbac:
+    enabled: true
+
+    # Role definitions
+    roles:
+      admin:
+        permissions:
+          - "*"  # All permissions
+
+      user:
+        permissions:
+          - users:read
+          - users:update_own
+          - posts:read
+          - posts:create
+          - posts:update_own
+          - posts:delete_own
+
+      guest:
+        permissions:
+          - users:read
+          - posts:read
+
+  # API Key management
+  api_keys:
+    enabled: true
+    header_name: X-API-Key
+    storage: database
+
+  # Session management
+  session:
+    timeout: 1800  # 30 minutes
+    renewal_threshold: 300  # 5 minutes
+    storage: redis
+
+  # Security headers
+  headers:
+    x_frame_options: DENY
+    x_content_type_options: nosniff
+    x_xss_protection: "1; mode=block"
+    strict_transport_security: "max-age=31536000; includeSubDomains"

@@ -1,0 +1,31 @@
+# Metrics Configuration
+
+metrics:
+  # Backend: prometheus, statsd, memory
+  backend: memory
+
+  # Metric name prefix
+  prefix: ${APP_NAME:app}
+
+  # Default labels for all metrics
+  labels:
+    environment: ${ENV:development}
+    service: ${SERVICE_NAME:backend}
+
+  # Backend-specific configuration
+  backend_config:
+    # Prometheus
+    port: 9090
+    registry: null
+
+    # StatsD
+    host: ${STATSD_HOST:localhost}
+    statsd_port: 8125
+
+  # Auto-collect metrics
+  auto_collect:
+    - http_requests
+    - http_duration
+    - cache_hits
+    - cache_misses
+    - error_count

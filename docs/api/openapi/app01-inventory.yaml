@@ -1,0 +1,725 @@
+openapi: 3.0.3
+info:
+  title: Inventory Management API
+  description: |
+    RESTful API for managing product inventory with CRUD operations, pagination,
+    filtering, and real-time stock updates.
+
+    **Features:**
+    - Full CRUD operations for products
+    - Advanced filtering and search
+    - Pagination with cursor support
+    - Stock level tracking
+    - Low stock alerts
+    - Bulk operations
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8001
+    description: Local development server
+  - url: https://api.toolkit.example.com/inventory
+    description: Production server
+
+tags:
+  - name: Products
+    description: Product management operations
+  - name: Stock
+    description: Stock level management
+  - name: Categories
+    description: Product category operations
+  - name: Health
+    description: Service health checks
+
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List all products
+      description: Retrieve a paginated list of products with optional filtering
+      operationId: listProducts
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+        - name: min_stock
+          in: query
+          description: Filter by minimum stock level
+          schema:
+            type: integer
+            minimum: 0
+        - name: max_stock
+          in: query
+          description: Filter by maximum stock level
+          schema:
+            type: integer
+            minimum: 0
+        - name: search
+          in: query
+          description: Search in product name and description
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+              examples:
+                success:
+                  value:
+                    products:
+                      - id: "prod_001"
+                        name: "Laptop Pro 15"
+                        description: "High-performance laptop"
+                        category: "electronics"
+                        price: 1299.99
+                        stock: 45
+                        created_at: "2024-01-15T10:30:00Z"
+                        updated_at: "2024-01-20T14:22:00Z"
+                      - id: "prod_002"
+                        name: "Wireless Mouse"
+                        description: "Ergonomic wireless mouse"
+                        category: "accessories"
+                        price: 29.99
+                        stock: 150
+                        created_at: "2024-01-16T09:15:00Z"
+                        updated_at: "2024-01-18T11:45:00Z"
+                    pagination:
+                      page: 1
+                      page_size: 20
+                      total: 245
+                      has_next: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      description: Add a new product to the inventory
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+            examples:
+              newProduct:
+                value:
+                  name: "USB-C Cable"
+                  description: "Fast charging USB-C cable, 6ft"
+                  category: "accessories"
+                  price: 15.99
+                  stock: 200
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                created:
+                  value:
+                    id: "prod_123"
+                    name: "USB-C Cable"
+                    description: "Fast charging USB-C cable, 6ft"
+                    category: "accessories"
+                    price: 15.99
+                    stock: 200
+                    created_at: "2024-01-22T15:30:00Z"
+                    updated_at: "2024-01-22T15:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /products/{product_id}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Retrieve detailed information about a specific product
+      operationId: getProduct
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          description: Unique product identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                product:
+                  value:
+                    id: "prod_001"
+                    name: "Laptop Pro 15"
+                    description: "High-performance laptop with 16GB RAM"
+                    category: "electronics"
+                    price: 1299.99
+                    stock: 45
+                    created_at: "2024-01-15T10:30:00Z"
+                    updated_at: "2024-01-20T14:22:00Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    put:
+      tags:
+        - Products
+      summary: Update product
+      description: Update all fields of an existing product
+      operationId: updateProduct
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdate'
+            examples:
+              update:
+                value:
+                  name: "Laptop Pro 15 (Updated)"
+                  description: "High-performance laptop with 32GB RAM"
+                  category: "electronics"
+                  price: 1499.99
+                  stock: 40
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Products
+      summary: Delete product
+      description: Remove a product from the inventory
+      operationId: deleteProduct
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Product deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /products/{product_id}/stock:
+    patch:
+      tags:
+        - Stock
+      summary: Update stock level
+      description: Adjust the stock level for a product
+      operationId: updateStock
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - stock
+              properties:
+                stock:
+                  type: integer
+                  minimum: 0
+                  description: New stock level
+                operation:
+                  type: string
+                  enum: [set, increment, decrement]
+                  description: Type of stock operation
+            examples:
+              setStock:
+                value:
+                  stock: 100
+                  operation: "set"
+              decrementStock:
+                value:
+                  stock: 5
+                  operation: "decrement"
+      responses:
+        '200':
+          description: Stock updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: string
+                  old_stock:
+                    type: integer
+                  new_stock:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /products/low-stock:
+    get:
+      tags:
+        - Stock
+      summary: Get low stock products
+      description: Retrieve products with stock below threshold
+      operationId: getLowStock
+      parameters:
+        - name: threshold
+          in: query
+          description: Stock threshold
+          schema:
+            type: integer
+            default: 10
+            minimum: 0
+      responses:
+        '200':
+          description: Low stock products retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  threshold:
+                    type: integer
+              examples:
+                lowStock:
+                  value:
+                    products:
+                      - id: "prod_045"
+                        name: "Premium Headphones"
+                        stock: 5
+                        category: "electronics"
+                        price: 199.99
+                    threshold: 10
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: List all categories
+      description: Retrieve all product categories with product counts
+      operationId: listCategories
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        product_count:
+                          type: integer
+              examples:
+                categories:
+                  value:
+                    categories:
+                      - name: "electronics"
+                        product_count: 125
+                      - name: "accessories"
+                        product_count: 83
+                      - name: "furniture"
+                        product_count: 37
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /products/bulk:
+    post:
+      tags:
+        - Products
+      summary: Bulk create products
+      description: Create multiple products in a single request
+      operationId: bulkCreateProducts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          description: Products created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: integer
+                  failed:
+                    type: integer
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the service is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                healthy:
+                  value:
+                    status: "healthy"
+                    timestamp: "2024-01-22T15:30:00Z"
+                    version: "1.0.0"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PageSizeParam:
+      name: page_size
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  headers:
+    X-RateLimit-Limit:
+      description: Request limit per hour
+      schema:
+        type: integer
+
+    X-RateLimit-Remaining:
+      description: Remaining requests in current window
+      schema:
+        type: integer
+
+  schemas:
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - price
+        - stock
+      properties:
+        id:
+          type: string
+          description: Unique product identifier
+          example: "prod_001"
+        name:
+          type: string
+          description: Product name
+          example: "Laptop Pro 15"
+        description:
+          type: string
+          description: Product description
+          example: "High-performance laptop with 16GB RAM"
+        category:
+          type: string
+          description: Product category
+          example: "electronics"
+        price:
+          type: number
+          format: float
+          minimum: 0
+          description: Product price in USD
+          example: 1299.99
+        stock:
+          type: integer
+          minimum: 0
+          description: Current stock level
+          example: 45
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    ProductCreate:
+      type: object
+      required:
+        - name
+        - category
+        - price
+        - stock
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        category:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          format: float
+          minimum: 0
+        stock:
+          type: integer
+          minimum: 0
+
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        category:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+        stock:
+          type: integer
+          minimum: 0
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        page_size:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        has_next:
+          type: boolean
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            validationError:
+              value:
+                error: "VALIDATION_ERROR"
+                message: "Invalid request parameters"
+                details:
+                  field: "price"
+                  issue: "must be a positive number"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notFound:
+              value:
+                error: "NOT_FOUND"
+                message: "Product not found"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds until rate limit resets
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            rateLimitExceeded:
+              value:
+                error: "RATE_LIMIT_EXCEEDED"
+                message: "Too many requests. Please try again later."
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            serverError:
+              value:
+                error: "INTERNAL_ERROR"
+                message: "An unexpected error occurred"
+
+security:
+  - bearerAuth: []

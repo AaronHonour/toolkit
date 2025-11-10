@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  distributed-tracing:
+    build:
+      context: ../..
+      dockerfile: examples/18_distributed_tracing/Dockerfile
+    container_name: distributed-tracing
+    ports:
+      - "8018:8018"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8018/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

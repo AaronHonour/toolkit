@@ -1,0 +1,370 @@
+openapi: 3.0.3
+info:
+  title: Message Queue Monitor API
+  description: |
+    Queue visualization, message browsing, dead letter handling, and performance
+    monitoring for RabbitMQ/Kafka.
+
+    **Features:**
+    - Queue depth monitoring
+    - Message browsing (non-destructive)
+    - Dead letter queue management
+    - Consumer lag tracking
+    - Queue topology visualization
+    - Performance metrics
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8010
+    description: Local development server
+  - url: https://api.toolkit.example.com/queues
+    description: Production server
+
+tags:
+  - name: Queues
+    description: Queue management (RabbitMQ)
+  - name: Topics
+    description: Topic management (Kafka)
+  - name: Messages
+    description: Message operations
+  - name: Dead Letter
+    description: Dead letter queue management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /rabbitmq/queues:
+    get:
+      tags:
+        - Queues
+      summary: List RabbitMQ queues
+      operationId: listQueues
+      responses:
+        '200':
+          description: Queues list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  queues:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QueueInfo'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /rabbitmq/queue/{queue_name}:
+    get:
+      tags:
+        - Queues
+      summary: Get queue details
+      operationId: getQueueDetails
+      parameters:
+        - name: queue_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Queue details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /rabbitmq/queue/{queue_name}/messages:
+    get:
+      tags:
+        - Messages
+      summary: Browse messages
+      description: Browse messages without consuming (peek)
+      operationId: browseMessages
+      parameters:
+        - name: queue_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: count
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+      responses:
+        '200':
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessagePreview'
+                  count:
+                    type: integer
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /rabbitmq/queue/{queue_name}/purge:
+    post:
+      tags:
+        - Queues
+      summary: Purge queue
+      description: Remove all messages from queue
+      operationId: purgeQueue
+      parameters:
+        - name: queue_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Queue purged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  queue:
+                    type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /rabbitmq/deadletter/retry:
+    post:
+      tags:
+        - Dead Letter
+      summary: Retry dead letters
+      description: Republish messages from dead letter queue
+      operationId: retryDeadLetters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queue_name:
+                  type: string
+                  default: "dead_letter_queue"
+                count:
+                  type: integer
+                  default: 10
+      responses:
+        '200':
+          description: Messages retried
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  retried:
+                    type: integer
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /kafka/topics:
+    get:
+      tags:
+        - Topics
+      summary: List Kafka topics
+      operationId: listKafkaTopics
+      responses:
+        '200':
+          description: Topics list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topics:
+                    type: array
+                    items:
+                      type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /kafka/consumer-groups:
+    get:
+      tags:
+        - Topics
+      summary: List consumer groups
+      description: List Kafka consumer groups with lag
+      operationId: listConsumerGroups
+      responses:
+        '200':
+          description: Consumer groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  consumer_groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConsumerGroup'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    QueueInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        messages:
+          type: integer
+        consumers:
+          type: integer
+        message_rate:
+          type: number
+        memory:
+          type: integer
+
+    QueueDetails:
+      allOf:
+        - $ref: '#/components/schemas/QueueInfo'
+        - type: object
+          properties:
+            messages_ready:
+              type: integer
+            messages_unacknowledged:
+              type: integer
+            state:
+              type: string
+
+    MessagePreview:
+      type: object
+      properties:
+        message_id:
+          type: string
+        routing_key:
+          type: string
+        payload:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+        retry_count:
+          type: integer
+
+    ConsumerGroup:
+      type: object
+      properties:
+        group_id:
+          type: string
+        topic:
+          type: string
+        lag:
+          type: integer
+        members:
+          type: integer
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,197 @@
+# <%= projectName %>
+
+<%= description || 'A Composable Toolkit application' %>
+
+## Overview
+
+This project was generated using **create-composable-app**, a CLI tool for scaffolding production-ready applications with the Composable Toolkit.
+
+**Template**: <%= template %>
+**Framework**: <%= framework %>
+
+## Features
+
+This application includes the following patterns:
+
+<% patterns.forEach(pattern => { %>
+- **<%= pattern %>**: <%= getPatternDescription(pattern) %>
+<% }); %>
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+<% if (patterns.includes('database')) { %>
+- PostgreSQL
+<% } %>
+<% if (patterns.includes('cache')) { %>
+- Redis
+<% } %>
+- Docker & Docker Compose (optional)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/<%= projectName %>.git
+cd <%= projectName %>
+
+# Install dependencies
+make install
+
+# Start development environment
+make dev
+```
+
+### Running with Docker
+
+```bash
+# Start all services
+make docker-up
+
+# View logs
+make docker-logs
+
+# Stop services
+make docker-down
+```
+
+## Documentation
+
+- [Architecture](ARCHITECTURE.md) - System architecture and design decisions
+- [Development Guide](DEVELOPMENT.md) - Development workflow and guidelines
+- [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
+
+## API Documentation
+
+<% if (framework === 'fastapi') { %>
+Interactive API documentation is available at:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+<% } else if (framework === 'django') { %>
+API documentation is available at:
+- Browsable API: http://localhost:8000/api/
+- Admin panel: http://localhost:8000/admin/
+<% } else if (framework === 'flask') { %>
+API documentation: http://localhost:8000/
+<% } %>
+
+## Testing
+
+```bash
+# Run all tests
+make test
+
+# Run specific tests
+pytest tests/test_api.py -v
+
+# Run with coverage
+pytest --cov --cov-report=html
+```
+
+## Performance
+
+```bash
+# Run benchmarks
+make benchmarks
+
+# View benchmark results
+open benchmarks/results/latest.html
+```
+
+## Monitoring
+
+<% if (patterns.includes('metrics')) { %>
+### Metrics
+
+Prometheus metrics are exposed at `/metrics`
+
+Access Grafana dashboards:
+```bash
+open http://localhost:3001  # Login: admin/admin
+```
+<% } %>
+
+<% if (patterns.includes('tracing')) { %>
+### Distributed Tracing
+
+Access Jaeger UI:
+```bash
+open http://localhost:16686
+```
+<% } %>
+
+## Project Structure
+
+<% if (template === 'monorepo') { %>
+```
+<%= projectName %>/
+├── shared/              # Shared toolkit components
+│   └── src/
+│       └── toolkit/     # Pattern implementations
+├── services/            # Service implementations
+│   └── api/            # Main API service
+├── tests/              # Test suites
+├── docs/               # Documentation
+├── scripts/            # Utility scripts
+└── docker-compose.yml  # Docker orchestration
+```
+<% } else if (template === 'microservices') { %>
+```
+<%= projectName %>/
+├── services/           # Individual microservices
+│   ├── api/           # API Gateway
+│   ├── cache/         # Cache service
+│   └── ...
+├── infrastructure/     # Infrastructure as code
+├── tests/             # Test suites
+└── docker-compose.yml # Docker orchestration
+```
+<% } else { %>
+```
+<%= projectName %>/
+├── functions/         # Lambda functions
+├── layers/           # Lambda layers (toolkit)
+├── infrastructure/   # SAM/Terraform templates
+└── tests/           # Test suites
+```
+<% } %>
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Run tests and linters
+4. Submit a pull request
+
+## License
+
+MIT
+
+<%
+function getPatternDescription(pattern) {
+  const descriptions = {
+    cache: 'Redis + in-memory caching',
+    database: 'PostgreSQL with migrations',
+    ratelimit: 'Token bucket rate limiting',
+    auth: 'JWT + OAuth2 authentication',
+    gateway: 'Reverse proxy + routing',
+    events: 'Pub/sub event system',
+    queue: 'Task queue with workers',
+    storage: 'S3-compatible file storage',
+    search: 'Full-text search',
+    notifications: 'Email/SMS/Push notifications',
+    features: 'Dynamic feature toggles',
+    audit: 'Audit trail for compliance',
+    metrics: 'Prometheus metrics',
+    tracing: 'Distributed tracing',
+    pagination: 'Cursor + offset pagination',
+    webhooks: 'Webhook delivery system',
+    graphql: 'GraphQL API layer',
+    multitenant: 'Multi-tenancy support',
+    scheduler: 'Cron-like job scheduler'
+  };
+  return descriptions[pattern] || pattern;
+}
+%>

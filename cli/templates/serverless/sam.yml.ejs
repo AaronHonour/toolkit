@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: <%= projectName %> - Serverless Application
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        PROJECT_NAME: <%= projectName %>
+<% if (patterns.includes('database')) { %>
+        DATABASE_URL: !Ref DatabaseUrl
+<% } %>
+<% if (patterns.includes('cache')) { %>
+        REDIS_URL: !Ref RedisUrl
+<% } %>
+    Layers:
+      - !Ref ToolkitLayer
+
+Parameters:
+<% if (patterns.includes('database')) { %>
+  DatabaseUrl:
+    Type: String
+    Description: PostgreSQL connection URL
+    NoEcho: true
+<% } %>
+<% if (patterns.includes('cache')) { %>
+  RedisUrl:
+    Type: String
+    Description: Redis connection URL
+    NoEcho: true
+<% } %>
+
+Resources:
+  # API Gateway
+  <%= projectName %>Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+  # Shared Lambda Layer (Toolkit)
+  ToolkitLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: <%= projectName %>-toolkit
+      Description: Composable Toolkit shared code
+      ContentUri: layers/toolkit/
+      CompatibleRuntimes:
+        - python3.11
+    Metadata:
+      BuildMethod: python3.11
+
+  # Lambda Functions (one per pattern)
+<% patterns.forEach((pattern, index) => { %>
+  <%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/<%= pattern %>/
+      Handler: handler.lambda_handler
+      Events:
+        Get<%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>:
+          Type: Api
+          Properties:
+            RestApiId: !Ref <%= projectName %>Api
+            Path: /api/<%= pattern %>
+            Method: GET
+        Post<%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>:
+          Type: Api
+          Properties:
+            RestApiId: !Ref <%= projectName %>Api
+            Path: /api/<%= pattern %>
+            Method: POST
+        Health<%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>:
+          Type: Api
+          Properties:
+            RestApiId: !Ref <%= projectName %>Api
+            Path: /health
+            Method: GET
+      Policies:
+        - AWSLambdaBasicExecutionRole
+  <% if (pattern === 'storage') { %>
+        - S3CrudPolicy:
+            BucketName: !Ref StorageBucket
+  <% } %>
+  <% if (pattern === 'queue') { %>
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt Queue.QueueName
+  <% } %>
+
+<% }); %>
+
+<% if (patterns.includes('storage')) { %>
+  # S3 Bucket for storage pattern
+  StorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-storage'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+<% } %>
+
+<% if (patterns.includes('queue')) { %>
+  # SQS Queue
+  Queue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${AWS::StackName}-queue'
+      VisibilityTimeout: 120
+<% } %>
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${<%= projectName %>Api}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+
+  ApiId:
+    Description: "API Gateway ID"
+    Value: !Ref <%= projectName %>Api
+
+<% patterns.forEach(pattern => { %>
+  <%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>FunctionArn:
+    Description: "<%= pattern %> Function ARN"
+    Value: !GetAtt <%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>Function.Arn
+<% }); %>
+
+<% if (patterns.includes('storage')) { %>
+  StorageBucketName:
+    Description: "S3 Bucket Name"
+    Value: !Ref StorageBucket
+<% } %>
+
+<% if (patterns.includes('queue')) { %>
+  QueueUrl:
+    Description: "SQS Queue URL"
+    Value: !Ref Queue
+<% } %>

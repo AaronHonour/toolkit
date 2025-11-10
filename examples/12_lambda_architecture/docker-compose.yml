@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  lambda-architecture:
+    build:
+      context: ../..
+      dockerfile: examples/12_lambda_architecture/Dockerfile
+    container_name: lambda-architecture
+    ports:
+      - "8012:8012"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

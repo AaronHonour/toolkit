@@ -1,0 +1,316 @@
+name: Performance Benchmarks
+
+on:
+  # Run nightly at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      quick:
+        description: 'Run quick benchmarks only'
+        required: false
+        default: 'false'
+
+  # Run on benchmark-related PRs
+  pull_request:
+    paths:
+      - 'src/toolkit/**/*.py'
+      - 'tests/benchmarks/**'
+      - 'tests/performance/**'
+      - 'scripts/run-benchmarks.py'
+
+jobs:
+  benchmarks:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[dev,all]"
+
+      - name: Run benchmarks
+        id: benchmarks
+        run: |
+          python scripts/run-benchmarks.py ${{ github.event.inputs.quick == 'true' && '--quick' || '' }}
+        continue-on-error: true
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results-py${{ matrix.python-version }}
+          path: benchmarks/results/
+          retention-days: 90
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-report-py${{ matrix.python-version }}
+          path: benchmarks/results/latest.html
+          retention-days: 90
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('benchmarks/results/latest.json', 'utf8'));
+            const summary = `## 🚀 Performance Benchmark Results (Python ${{ matrix.python-version }})
+
+            - **Total Benchmarks**: ${Object.keys(results.benchmarks).length}
+            - **Timestamp**: ${results.timestamp}
+            - **Environment**: ${results.environment.platform}
+
+            ### Results by Category
+            ${Object.entries(results.benchmarks).map(([name, data]) =>
+              `- **${name}**: ${data.success ? '✅ Passed' : '❌ Failed'}`
+            ).join('\n')}
+
+            [View Full Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: summary
+            });
+
+      - name: Check for performance regressions
+        if: github.event_name == 'pull_request'
+        run: |
+          # Compare with baseline (if exists)
+          if [ -f "benchmarks/baseline/latest.json" ]; then
+            python scripts/compare-benchmarks.py \
+              benchmarks/baseline/latest.json \
+              benchmarks/results/latest.json \
+              --threshold 10  # Fail if >10% regression
+          else
+            echo "No baseline found, skipping regression check"
+          fi
+
+  publish-results:
+    name: Publish Benchmark Dashboard
+    runs-on: ubuntu-latest
+    needs: benchmarks
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Download all benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          path: results
+
+      - name: Update dashboard
+        run: |
+          # Create benchmarks directory if it doesn't exist
+          mkdir -p benchmarks
+
+          # Copy latest results
+          for dir in results/benchmark-results-py*/; do
+            python_version=$(basename "$dir" | sed 's/benchmark-results-py//')
+            mkdir -p "benchmarks/py${python_version}"
+            cp -r "$dir"/* "benchmarks/py${python_version}/"
+          done
+
+          # Generate index page
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Composable Toolkit - Performance Benchmarks</title>
+              <style>
+                  * {
+                      margin: 0;
+                      padding: 0;
+                      box-sizing: border-box;
+                  }
+
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                      line-height: 1.6;
+                      color: #333;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                      padding: 40px 20px;
+                  }
+
+                  .container {
+                      max-width: 1200px;
+                      margin: 0 auto;
+                      background: white;
+                      border-radius: 12px;
+                      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                      padding: 60px;
+                  }
+
+                  h1 {
+                      font-size: 3em;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      -webkit-background-clip: text;
+                      -webkit-text-fill-color: transparent;
+                      margin-bottom: 10px;
+                  }
+
+                  .subtitle {
+                      color: #666;
+                      font-size: 1.3em;
+                      margin-bottom: 40px;
+                  }
+
+                  .grid {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                      gap: 30px;
+                      margin-top: 40px;
+                  }
+
+                  .card {
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      padding: 30px;
+                      border-radius: 12px;
+                      color: white;
+                      text-decoration: none;
+                      transition: transform 0.3s ease, box-shadow 0.3s ease;
+                  }
+
+                  .card:hover {
+                      transform: translateY(-5px);
+                      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                  }
+
+                  .card h2 {
+                      font-size: 1.8em;
+                      margin-bottom: 15px;
+                  }
+
+                  .card p {
+                      opacity: 0.9;
+                      font-size: 1.1em;
+                  }
+
+                  .badge {
+                      display: inline-block;
+                      background: rgba(255,255,255,0.2);
+                      padding: 5px 15px;
+                      border-radius: 20px;
+                      font-size: 0.9em;
+                      margin-top: 15px;
+                  }
+
+                  .footer {
+                      margin-top: 60px;
+                      text-align: center;
+                      color: #666;
+                      padding-top: 30px;
+                      border-top: 2px solid #eee;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🚀 Composable Toolkit</h1>
+                  <div class="subtitle">Performance Benchmark Dashboard</div>
+
+                  <p style="font-size: 1.1em; color: #666; margin-bottom: 30px;">
+                      Automated nightly performance benchmarks for all toolkit patterns.
+                      Benchmarks run daily at 2 AM UTC across multiple Python versions.
+                  </p>
+
+                  <div class="grid">
+                      <a href="benchmarks/py3.10/latest.html" class="card">
+                          <h2>Python 3.10</h2>
+                          <p>Latest benchmark results for Python 3.10</p>
+                          <span class="badge">View Report →</span>
+                      </a>
+
+                      <a href="benchmarks/py3.11/latest.html" class="card">
+                          <h2>Python 3.11</h2>
+                          <p>Latest benchmark results for Python 3.11</p>
+                          <span class="badge">View Report →</span>
+                      </a>
+
+                      <a href="benchmarks/py3.12/latest.html" class="card">
+                          <h2>Python 3.12</h2>
+                          <p>Latest benchmark results for Python 3.12</p>
+                          <span class="badge">View Report →</span>
+                      </a>
+                  </div>
+
+                  <div class="footer">
+                      <p><strong>About These Benchmarks</strong></p>
+                      <p>All benchmarks are run on GitHub Actions with Ubuntu latest runners.</p>
+                      <p>Results are automatically updated daily and retained for 90 days.</p>
+                      <p style="margin-top: 20px;">
+                          <a href="https://github.com/yourusername/toolkit" style="color: #667eea; text-decoration: none;">
+                              View Source Code →
+                          </a>
+                      </p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Update benchmark results - $(date -u +%Y-%m-%d)" || echo "No changes to commit"
+          git push
+
+  store-baseline:
+    name: Store Performance Baseline
+    runs-on: ubuntu-latest
+    needs: benchmarks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          name: benchmark-results-py3.11
+          path: benchmarks/results
+
+      - name: Store as baseline
+        run: |
+          mkdir -p benchmarks/baseline
+          cp benchmarks/results/latest.json benchmarks/baseline/latest.json
+          cp benchmarks/results/latest.html benchmarks/baseline/latest.html
+
+      - name: Commit baseline
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add benchmarks/baseline/
+          git commit -m "Update performance baseline" || echo "No changes"
+          git push

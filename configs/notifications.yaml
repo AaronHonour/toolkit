@@ -1,0 +1,35 @@
+# Notifications Configuration
+
+notifications:
+  # Email channel
+  email:
+    enabled: true
+    smtp_host: "${SMTP_HOST:-smtp.gmail.com}"
+    smtp_port: "${SMTP_PORT:-587}"
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+    from_address: "${EMAIL_FROM:-noreply@example.com}"
+    from_name: "My App"
+
+  # SMS channel
+  sms:
+    enabled: false
+    provider: twilio  # twilio, sns
+    api_key: "${SMS_API_KEY}"
+    api_secret: "${SMS_API_SECRET}"
+    from_number: "${SMS_FROM_NUMBER}"
+
+  # Push notification channel
+  push:
+    enabled: false
+    provider: fcm  # fcm, apns
+    api_key: "${PUSH_API_KEY}"
+    server_key: "${FCM_SERVER_KEY}"
+
+  # Webhook channel
+  webhook:
+    enabled: false
+    endpoints:
+      - url: "${WEBHOOK_URL}"
+        headers:
+          Authorization: "Bearer ${WEBHOOK_TOKEN}"

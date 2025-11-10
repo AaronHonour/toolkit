@@ -1,0 +1,217 @@
+"""Built-in middleware implementations."""
+
+import time
+from typing import Any, Dict, List, Optional
+
+from .pipeline import Middleware, Request, Response, NextHandler
+
+
+class LoggingMiddleware(Middleware):
+    """
+    Logs request/response information.
+
+    Logs method, path, status code, and duration.
+    """
+
+    def __init__(self, logger: Optional[Any] = None):
+        self.logger = logger
+
+    async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        start_time = time.time()
+
+        # Log request
+        if self.logger:
+            self.logger.info(
+                f"Request: {request.method} {request.path}",
+                extra={"method": request.method, "path": request.path},
+            )
+
+        # Process request
+        try:
+            response = await next_handler(request)
+
+            # Log response
+            duration = time.time() - start_time
+            if self.logger:
+                self.logger.info(
+                    f"Response: {response.status_code} ({duration:.3f}s)",
+                    extra={
+                        "status_code": response.status_code,
+                        "duration_ms": duration * 1000,
+                    },
+                )
+
+            return response
+
+        except Exception as e:
+            duration = time.time() - start_time
+            if self.logger:
+                self.logger.error(
+                    f"Error: {str(e)} ({duration:.3f}s)",
+                    extra={"error": str(e), "duration_ms": duration * 1000},
+                )
+            raise
+
+
+class MetricsMiddleware(Middleware):
+    """
+    Collects request metrics.
+
+    Tracks request count, duration, and status codes.
+    """
+
+    def __init__(self, metrics: Optional[Any] = None):
+        self.metrics = metrics
+
+    async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        start_time = time.time()
+
+        # Track request
+        if self.metrics:
+            self.metrics.counter(
+                "http.requests.total",
+                labels={"method": request.method, "path": request.path},
+            )
+
+        try:
+            response = await next_handler(request)
+
+            # Track response
+            duration = time.time() - start_time
+            if self.metrics:
+                self.metrics.histogram(
+                    "http.request.duration",
+                    duration,
+                    labels={
+                        "method": request.method,
+                        "path": request.path,
+                        "status": str(response.status_code),
+                    },
+                )
+                self.metrics.counter(
+                    "http.responses.total",
+                    labels={
+                        "method": request.method,
+                        "status": str(response.status_code),
+                    },
+                )
+
+            return response
+
+        except Exception as e:
+            duration = time.time() - start_time
+            if self.metrics:
+                self.metrics.histogram("http.request.duration", duration)
+                self.metrics.counter(
+                    "http.errors.total", labels={"error_type": type(e).__name__}
+                )
+            raise
+
+
+class ErrorHandlerMiddleware(Middleware):
+    """
+    Handles exceptions and converts to responses.
+
+    Catches exceptions and returns appropriate error responses.
+    """
+
+    async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        try:
+            return await next_handler(request)
+
+        except Exception as e:
+            # Convert exception to response
+            # In production, you'd map specific exceptions to status codes
+            return Response(
+                status_code=500,
+                body={"error": type(e).__name__, "message": str(e)},
+            )
+
+
+class CORSMiddleware(Middleware):
+    """
+    Adds CORS headers to responses.
+
+    Handles preflight requests and adds CORS headers.
+    """
+
+    def __init__(
+        self,
+        allow_origins: List[str] = None,
+        allow_methods: List[str] = None,
+        allow_headers: List[str] = None,
+        max_age: int = 3600,
+    ):
+        self.allow_origins = allow_origins or ["*"]
+        self.allow_methods = allow_methods or ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        self.allow_headers = allow_headers or ["*"]
+        self.max_age = max_age
+
+    async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        # Handle preflight request
+        if request.method == "OPTIONS":
+            return Response(
+                status_code=200,
+                headers=self._get_cors_headers(request),
+            )
+
+        # Process request
+        response = await next_handler(request)
+
+        # Add CORS headers to response
+        response.headers.update(self._get_cors_headers(request))
+
+        return response
+
+    def _get_cors_headers(self, request: Request) -> Dict[str, str]:
+        """Get CORS headers."""
+        origin = request.headers.get("Origin", "*")
+
+        # Check if origin is allowed
+        if "*" not in self.allow_origins and origin not in self.allow_origins:
+            origin = self.allow_origins[0] if self.allow_origins else "*"
+
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Methods": ", ".join(self.allow_methods),
+            "Access-Control-Allow-Headers": ", ".join(self.allow_headers),
+            "Access-Control-Max-Age": str(self.max_age),
+        }
+
+
+class CompressionMiddleware(Middleware):
+    """
+    Compresses response bodies.
+
+    Uses gzip compression for large responses.
+    """
+
+    def __init__(self, min_size: int = 1024):
+        self.min_size = min_size
+
+    async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        response = await next_handler(request)
+
+        # Check if client accepts gzip
+        accept_encoding = request.headers.get("Accept-Encoding", "")
+        if "gzip" not in accept_encoding:
+            return response
+
+        # Check response size
+        if response.body and isinstance(response.body, (str, bytes)):
+            body_size = len(response.body if isinstance(response.body, bytes) else response.body.encode())
+
+            if body_size >= self.min_size:
+                import gzip
+
+                # Compress body
+                if isinstance(response.body, str):
+                    compressed = gzip.compress(response.body.encode())
+                else:
+                    compressed = gzip.compress(response.body)
+
+                response.body = compressed
+                response.headers["Content-Encoding"] = "gzip"
+                response.headers["Content-Length"] = str(len(compressed))
+
+        return response

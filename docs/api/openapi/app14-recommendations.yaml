@@ -1,0 +1,232 @@
+openapi: 3.0.3
+info:
+  title: Recommendation Engine API
+  description: |
+    ML-powered recommendation engine with collaborative filtering, content-based
+    recommendations, and real-time personalization.
+
+    **Features:**
+    - Collaborative filtering
+    - Content-based recommendations
+    - Hybrid recommendation models
+    - Real-time personalization
+    - A/B testing support
+    - Feedback loop integration
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8014
+    description: Local development server
+  - url: https://api.toolkit.example.com/recommendations
+    description: Production server
+
+tags:
+  - name: Recommendations
+    description: Recommendation operations
+  - name: Feedback
+    description: User feedback collection
+  - name: Health
+    description: Service health checks
+
+paths:
+  /recommend:
+    post:
+      tags:
+        - Recommendations
+      summary: Get recommendations
+      description: Get personalized recommendations for a user
+      operationId: getRecommendations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+            examples:
+              request:
+                value:
+                  user_id: "user_123"
+                  context:
+                    category: "electronics"
+                    page: "product_page"
+                  limit: 10
+      responses:
+        '200':
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+              examples:
+                response:
+                  value:
+                    user_id: "user_123"
+                    recommendations:
+                      - item_id: "prod_456"
+                        score: 0.95
+                        reason: "Users like you also liked this"
+                      - item_id: "prod_789"
+                        score: 0.87
+                        reason: "Based on your browsing history"
+                    algorithm: "collaborative"
+                    score: 0.85
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /feedback:
+    post:
+      tags:
+        - Feedback
+      summary: Record feedback
+      description: Record user interaction with recommended items
+      operationId: recordFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - item_id
+                - interaction
+              properties:
+                user_id:
+                  type: string
+                item_id:
+                  type: string
+                interaction:
+                  type: string
+                  enum: [click, purchase, ignore, dislike]
+            examples:
+              click:
+                value:
+                  user_id: "user_123"
+                  item_id: "prod_456"
+                  interaction: "click"
+      responses:
+        '200':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RecommendationRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+        context:
+          type: object
+          additionalProperties: true
+        limit:
+          type: integer
+          default: 10
+          maximum: 50
+
+    RecommendationResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              item_id:
+                type: string
+              score:
+                type: number
+              reason:
+                type: string
+        algorithm:
+          type: string
+        score:
+          type: number
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        model:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

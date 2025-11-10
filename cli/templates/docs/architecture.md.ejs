@@ -1,0 +1,206 @@
+# Architecture
+
+## Overview
+
+<%= projectName %> uses a **<%= template %>** architecture built with **<%= framework %>**.
+
+<% if (template === 'monorepo') { %>
+## Monorepo Architecture
+
+```
+┌─────────────────────────────────────┐
+│         Shared Toolkit              │
+│  (cache, database, patterns, etc.)  │
+└──────────────┬──────────────────────┘
+               │
+    ┌──────────┼──────────┐
+    ▼          ▼          ▼
+┌────────┐ ┌────────┐ ┌────────┐
+│Service │ │Service │ │Service │
+│   1    │ │   2    │ │   3    │
+└────────┘ └────────┘ └────────┘
+```
+
+### Benefits
+- Shared code and patterns
+- Easy dependency management
+- Simplified CI/CD
+- Atomic commits across services
+
+<% } else if (template === 'microservices') { %>
+## Microservices Architecture
+
+```
+                ┌──────────────┐
+                │ API Gateway  │
+                └───────┬──────┘
+                        │
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   Service A  │ │   Service B  │ │   Service C  │
+└──────┬───────┘ └──────┬───────┘ └──────┬───────┘
+       │                │                │
+       └────────────────┼────────────────┘
+                        ▼
+              ┌─────────────────┐
+              │  Infrastructure │
+              │ (DB, Cache, etc)│
+              └─────────────────┘
+```
+
+### Service Boundaries
+
+Each microservice is independently deployable and owns:
+- Its own database schema
+- Business logic
+- API endpoints
+- Tests
+
+<% } else { %>
+## Serverless Architecture
+
+```
+┌─────────────┐
+│  API GW     │
+└──────┬──────┘
+       │
+       ▼
+┌──────────────────────────┐
+│   Lambda Functions       │
+│  ┌────┐ ┌────┐ ┌────┐  │
+│  │ F1 │ │ F2 │ │ F3 │  │
+│  └────┘ └────┘ └────┘  │
+└──────────┬───────────────┘
+           │
+           ▼
+    ┌──────────────┐
+    │ Shared Layer │
+    │  (Toolkit)   │
+    └──────────────┘
+```
+
+### Event-Driven Design
+- Functions triggered by HTTP, events, schedules
+- Stateless execution
+- Auto-scaling
+<% } %>
+
+## Technology Stack
+
+### Runtime
+- **Language**: Python 3.11
+- **Framework**: <%= framework %>
+
+### Patterns Implemented
+
+<% patterns.forEach(pattern => { %>
+#### <%= pattern.charAt(0).toUpperCase() + pattern.slice(1) %>
+<% if (pattern === 'cache') { %>
+- Redis for distributed caching
+- In-memory LRU cache as L1
+- Cache-aside pattern
+<% } else if (pattern === 'database') { %>
+- PostgreSQL for persistence
+- SQLAlchemy ORM
+- Alembic migrations
+<% } else if (pattern === 'ratelimit') { %>
+- Token bucket algorithm
+- Redis-backed for distributed systems
+<% } else if (pattern === 'auth') { %>
+- JWT tokens
+- Password hashing with bcrypt
+- OAuth2 flows
+<% } else if (pattern === 'metrics') { %>
+- Prometheus metrics
+- Grafana dashboards
+- Alert rules
+<% } else if (pattern === 'tracing') { %>
+- OpenTelemetry
+- Jaeger backend
+- Request correlation
+<% } %>
+
+<% }); %>
+
+## Data Flow
+
+### Request Lifecycle
+
+1. **Request arrives** at API endpoint
+2. **Authentication** middleware validates token
+3. **Rate limiting** checks quota
+4. **Cache lookup** for cached responses
+5. **Business logic** processes request
+6. **Database query** if cache miss
+7. **Response** sent to client
+8. **Metrics** recorded
+
+## Scalability
+
+<% if (template === 'microservices') { %>
+### Horizontal Scaling
+- Each service scales independently
+- Load balancer distributes traffic
+- Stateless design enables easy scaling
+<% } %>
+
+### Caching Strategy
+- L1: In-memory cache (local)
+- L2: Redis (distributed)
+- TTL-based expiration
+
+### Database Scaling
+<% if (patterns.includes('database')) { %>
+- Read replicas for read-heavy workloads
+- Connection pooling
+- Query optimization
+<% } %>
+
+## Security
+
+- HTTPS/TLS encryption
+<% if (patterns.includes('auth')) { %>
+- JWT authentication
+- Password hashing (bcrypt)
+<% } %>
+- CORS configuration
+- Input validation
+- SQL injection prevention (ORM)
+- Environment variable secrets
+
+## Observability
+
+<% if (patterns.includes('metrics')) { %>
+### Metrics
+- Request rate, latency, errors
+- Resource utilization
+- Business metrics
+<% } %>
+
+<% if (patterns.includes('tracing')) { %>
+### Tracing
+- Distributed request tracing
+- Service dependency mapping
+- Performance bottleneck identification
+<% } %>
+
+### Logging
+- Structured JSON logs
+- Log aggregation
+- Correlation IDs
+
+## Deployment
+
+<% if (template === 'serverless') { %>
+### Serverless Deployment
+- AWS Lambda / GCP Cloud Functions
+- API Gateway for routing
+- Auto-scaling built-in
+<% } else { %>
+### Container Deployment
+- Docker containers
+- Kubernetes orchestration
+- Rolling updates
+- Health checks
+<% } %>

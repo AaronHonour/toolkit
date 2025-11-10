@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: CDC Monitor API
+  description: |
+    Database change stream visualization with Debezium, replication lag monitoring,
+    and event replay.
+
+    **Features:**
+    - Real-time change data capture
+    - Multiple database connectors (PostgreSQL, MySQL, MongoDB)
+    - Replication lag monitoring (< 100ms)
+    - Change event browsing
+    - Connector management
+    - Stream replay
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8013
+    description: Local development server
+  - url: https://api.toolkit.example.com/cdc
+    description: Production server
+
+tags:
+  - name: Connectors
+    description: CDC connector management
+  - name: Events
+    description: Change event operations
+  - name: Health
+    description: Service health checks
+
+paths:
+  /connectors:
+    get:
+      tags:
+        - Connectors
+      summary: List connectors
+      description: List all CDC connectors
+      operationId: listConnectors
+      responses:
+        '200':
+          description: Connectors list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /connectors/{connector_name}/status:
+    get:
+      tags:
+        - Connectors
+      summary: Get connector status
+      operationId: getConnectorStatus
+      parameters:
+        - name: connector_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Connector status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectorStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /connectors/{connector_name}/restart:
+    post:
+      tags:
+        - Connectors
+      summary: Restart connector
+      operationId: restartConnector
+      parameters:
+        - name: connector_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Connector restarted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  connector:
+                    type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /connectors/{connector_name}/lag:
+    get:
+      tags:
+        - Connectors
+      summary: Get replication lag
+      operationId: getReplicationLag
+      parameters:
+        - name: connector_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Replication lag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplicationLag'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /events/{topic}/recent:
+    get:
+      tags:
+        - Events
+      summary: Get recent events
+      description: Get recent change events from topic
+      operationId: getRecentEvents
+      parameters:
+        - name: topic
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: count
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+      responses:
+        '200':
+          description: Change events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChangeEvent'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ConnectorStatus:
+      type: object
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+        worker_id:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: object
+
+    ReplicationLag:
+      type: object
+      properties:
+        connector:
+          type: string
+        lag_ms:
+          type: integer
+        last_event_timestamp:
+          type: string
+          format: date-time
+
+    ChangeEvent:
+      type: object
+      properties:
+        source:
+          type: string
+        operation:
+          type: string
+          enum: [INSERT, UPDATE, DELETE]
+        table:
+          type: string
+        before:
+          type: object
+        after:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        connect:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

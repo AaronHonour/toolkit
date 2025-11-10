@@ -1,0 +1,56 @@
+# Error Handling Configuration Example
+# Demonstrates error handling and retry strategies
+
+handlers:
+  # Log all errors
+  - type: logging
+    level: ERROR
+    traceback: true
+
+  # Retry transient errors
+  - type: retry
+    max_retries: 3
+    backoff_factor: 2.0
+    retry_on:
+      - NetworkError
+      - DatabaseError
+
+# Error categories and codes mapping
+error_mapping:
+  validation_errors:
+    - VALIDATION_FAILED
+    - INVALID_INPUT
+    - INVALID_FORMAT
+    - MISSING_REQUIRED
+
+  resource_errors:
+    - RESOURCE_NOT_FOUND
+    - RESOURCE_ALREADY_EXISTS
+    - RESOURCE_CONFLICT
+
+  auth_errors:
+    - AUTH_INVALID_CREDENTIALS
+    - AUTH_TOKEN_EXPIRED
+    - AUTH_TOKEN_INVALID
+    - AUTHZ_FORBIDDEN
+
+# HTTP status code mapping
+http_status_mapping:
+  VALIDATION_FAILED: 400
+  INVALID_INPUT: 400
+  AUTH_INVALID_CREDENTIALS: 401
+  AUTH_TOKEN_EXPIRED: 401
+  AUTHZ_FORBIDDEN: 403
+  RESOURCE_NOT_FOUND: 404
+  RESOURCE_CONFLICT: 409
+  RATE_LIMIT_EXCEEDED: 429
+  DATABASE_ERROR: 500
+  INTERNAL_ERROR: 500
+
+# Error reporting
+reporting:
+  enabled: ${ERROR_REPORTING:false}
+  service: sentry
+  dsn: ${SENTRY_DSN}
+  environment: ${ENV:development}
+  sample_rate: 1.0

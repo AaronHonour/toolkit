@@ -1,0 +1,275 @@
+# Development Guide
+
+## Setup
+
+### Install Dependencies
+
+```bash
+# Using Make
+make install
+
+# Or manually
+pip install -e ".[dev]"
+```
+
+### Environment Variables
+
+Create a `.env` file:
+
+```bash
+# Application
+DEBUG=True
+SECRET_KEY=your-secret-key
+
+<% if (patterns.includes('database')) { %>
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/<%= projectName %>
+<% } %>
+
+<% if (patterns.includes('cache')) { %>
+# Redis
+REDIS_URL=redis://localhost:6379/0
+<% } %>
+
+<% if (patterns.includes('events') || patterns.includes('queue')) { %>
+# Kafka
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+<% } %>
+```
+
+## Running Locally
+
+### Start Infrastructure
+
+```bash
+# Start databases, cache, etc.
+docker compose up -d postgres redis
+```
+
+### Run Application
+
+<% if (framework === 'fastapi') { %>
+```bash
+# Development server with auto-reload
+uvicorn services.api.main:app --reload --port 8000
+
+# Or using Make
+make dev
+```
+<% } else if (framework === 'django') { %>
+```bash
+# Run migrations
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+
+# Start server
+python manage.py runserver 8000
+
+# Or using Make
+make dev
+```
+<% } else if (framework === 'flask') { %>
+```bash
+# Development server
+flask run --port 8000 --debug
+
+# Or using Make
+make dev
+```
+<% } %>
+
+## Development Workflow
+
+### 1. Create Feature Branch
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+### 2. Write Code
+
+Follow the project structure:
+<% if (template === 'monorepo') { %>
+- **shared/src/toolkit/** - Shared patterns
+- **services/api/** - API implementation
+- **tests/** - Test files
+<% } %>
+
+### 3. Run Tests
+
+```bash
+# All tests
+make test
+
+# Specific test file
+pytest tests/test_api.py -v
+
+# With coverage
+pytest --cov --cov-report=html
+```
+
+### 4. Run Linters
+
+```bash
+# Format code
+make format
+
+# Check linting
+make lint
+```
+
+### 5. Commit Changes
+
+```bash
+git add .
+git commit -m "feat: add your feature"
+git push origin feature/your-feature-name
+```
+
+## Testing
+
+### Unit Tests
+
+```python
+import pytest
+from services.api.main import app
+from fastapi.testclient import TestClient
+
+client = TestClient(app)
+
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+```
+
+### Integration Tests
+
+```python
+import pytest
+
+@pytest.mark.integration
+async def test_database_integration(db_session):
+    # Test database operations
+    pass
+```
+
+### Benchmarks
+
+```python
+import pytest
+
+def test_cache_performance(benchmark):
+    result = benchmark(cache.get, "key")
+    assert result is not None
+```
+
+## Code Style
+
+### Python Style Guide
+
+- Follow PEP 8
+- Use type hints
+- Write docstrings
+- Max line length: 100 characters
+
+### Example
+
+```python
+from typing import Optional
+
+def get_user(user_id: int) -> Optional[dict]:
+    """
+    Retrieve user by ID.
+
+    Args:
+        user_id: The user's unique identifier
+
+    Returns:
+        User dict if found, None otherwise
+    """
+    return users.get(user_id)
+```
+
+## Debugging
+
+<% if (framework === 'fastapi') { %>
+### FastAPI Debugging
+
+```python
+import uvicorn
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="debug"
+    )
+```
+<% } %>
+
+### VS Code Launch Configuration
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["services.api.main:app", "--reload"],
+      "jinja": true
+    }
+  ]
+}
+```
+
+## Database Migrations
+
+<% if (patterns.includes('database')) { %>
+### Create Migration
+
+```bash
+<% if (framework === 'django') { %>
+python manage.py makemigrations
+python manage.py migrate
+<% } else { %>
+# Using Alembic
+alembic revision --autogenerate -m "Add users table"
+alembic upgrade head
+<% } %>
+```
+
+### Rollback Migration
+
+```bash
+<% if (framework === 'django') { %>
+python manage.py migrate app_name 0001
+<% } else { %>
+alembic downgrade -1
+<% } %>
+```
+<% } %>
+
+## Troubleshooting
+
+### Common Issues
+
+**Import errors**: Ensure virtual environment is activated
+**Database connection**: Check DATABASE_URL and database is running
+**Redis connection**: Verify Redis is running on correct port
+**Port already in use**: Change port or kill process
+
+```bash
+# Find process on port 8000
+lsof -i :8000
+
+# Kill process
+kill -9 <PID>
+```

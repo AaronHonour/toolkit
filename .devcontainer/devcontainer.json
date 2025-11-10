@@ -1,0 +1,157 @@
+{
+  "name": "Composable Toolkit Development",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app01-inventory",
+  "workspaceFolder": "/app",
+
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Python
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": false,
+        "python.linting.mypyEnabled": true,
+        "python.formatting.provider": "black",
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": ["tests"],
+
+        // Editor
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "editor.rulers": [88, 120],
+
+        // Files
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.pytest_cache": true,
+          "**/.mypy_cache": true,
+          "**/.ruff_cache": true
+        },
+
+        // Terminal
+        "terminal.integrated.defaultProfile.linux": "bash",
+
+        // Git
+        "git.autofetch": true,
+        "git.confirmSync": false
+      },
+
+      "extensions": [
+        // Python
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "charliermarsh.ruff",
+
+        // Testing
+        "littlefoxteam.vscode-python-test-adapter",
+        "hbenl.vscode-test-explorer",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // Git
+        "eamodio.gitlens",
+
+        // YAML
+        "redhat.vscode-yaml",
+
+        // Markdown
+        "yzhang.markdown-all-in-one",
+        "davidanson.vscode-markdownlint",
+
+        // REST Client
+        "humao.rest-client",
+
+        // Database
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+
+        // Code Quality
+        "sonarsource.sonarlint-vscode",
+
+        // Productivity
+        "streetsidesoftware.code-spell-checker",
+        "wayou.vscode-todo-highlight",
+        "gruntfuggly.todo-tree",
+
+        // Theme
+        "github.github-vscode-theme"
+      ]
+    }
+  },
+
+  // Forward ports
+  "forwardPorts": [
+    8001,  // App 01
+    8002,  // App 02
+    8003,  // App 03
+    5432,  // PostgreSQL
+    6379,  // Redis
+    9092,  // Kafka
+    3000,  // Frontend
+    5173   // Docs
+  ],
+
+  // Port attributes
+  "portsAttributes": {
+    "8001": {
+      "label": "App 01 - Inventory",
+      "onAutoForward": "notify"
+    },
+    "8002": {
+      "label": "App 02 - Analytics"
+    },
+    "3000": {
+      "label": "Frontend Dev Server",
+      "onAutoForward": "openBrowser"
+    },
+    "5173": {
+      "label": "Documentation Site",
+      "onAutoForward": "openBrowser"
+    }
+  },
+
+  // Set environment variables
+  "remoteEnv": {
+    "PYTHONPATH": "/app/src",
+    "DATABASE_URL": "postgresql://toolkit:toolkit_dev@postgres:5432/toolkit",
+    "REDIS_URL": "redis://redis:6379/0"
+  },
+
+  // Post create command
+  "postCreateCommand": "pip install -e '.[dev,all]' && echo 'Development environment ready!'",
+
+  // Post start command
+  "postStartCommand": "make dev-infra",
+
+  // Features to install
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  // Mount the workspace as a volume
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+
+  // Lifecycle scripts
+  "initializeCommand": "echo 'Initializing Composable Toolkit development environment...'",
+  "updateContentCommand": "pip install -e '.[dev,all]'",
+
+  // Run as non-root user
+  "remoteUser": "toolkit",
+  "containerUser": "toolkit"
+}

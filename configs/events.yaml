@@ -1,0 +1,50 @@
+# Event System Configuration
+
+events:
+  # Event bus settings
+  bus:
+    async: true
+    enable_retry: true
+    max_retries: 3
+
+  # Event handlers
+  handlers:
+    # User events
+    user_created:
+      - handler: send_welcome_email
+        priority: 1
+        async: true
+
+      - handler: create_user_profile
+        priority: 2
+        async: true
+
+      - handler: log_user_creation
+        priority: 3
+        async: false
+
+    user_updated:
+      - handler: invalidate_user_cache
+        priority: 1
+
+    # Order events
+    order_placed:
+      - handler: process_payment
+        priority: 1
+
+      - handler: send_order_confirmation
+        priority: 2
+
+      - handler: update_inventory
+        priority: 3
+
+  # Dead letter queue
+  dlq:
+    enabled: true
+    max_attempts: 5
+    retry_delay: 60
+
+  # Event store (optional)
+  store:
+    enabled: false
+    backend: database

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # File Processing Service
+  file-processor:
+    build:
+      context: ../..
+      dockerfile: examples/03_file_processing_service/Dockerfile
+    container_name: file-processing-service
+    ports:
+      - "8004:8004"
+    volumes:
+      - uploads:/app/uploads
+      - outputs:/app/outputs
+    environment:
+      - NUM_WORKERS=10
+      - POOL_SIZE=100
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  uploads:
+  outputs:

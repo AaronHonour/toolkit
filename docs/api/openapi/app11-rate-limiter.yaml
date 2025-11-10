@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Rate Limiter Dashboard API
+  description: |
+    Rate limiting visualization, token bucket monitoring, and quota management.
+
+    **Features:**
+    - Multiple rate limit algorithms (token bucket, sliding window)
+    - Per-user/IP/endpoint limits
+    - Real-time usage tracking
+    - Quota management
+    - Rate limit tiers
+    - Redis-backed distributed limiting
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: api@toolkit.example.com
+
+servers:
+  - url: http://localhost:8011
+    description: Local development server
+  - url: https://api.toolkit.example.com/ratelimit
+    description: Production server
+
+tags:
+  - name: Status
+    description: Rate limit status queries
+  - name: Configuration
+    description: Rate limit configuration
+  - name: Management
+    description: Rate limit management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /ratelimit/status/{identifier}:
+    get:
+      tags:
+        - Status
+      summary: Get rate limit status
+      description: Get current rate limit status for an identifier
+      operationId: getRateLimitStatus
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID or IP address
+        - name: tier
+          in: query
+          schema:
+            type: string
+            default: "default"
+      responses:
+        '200':
+          description: Rate limit status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitStatus'
+              examples:
+                status:
+                  value:
+                    identifier: "user:demo"
+                    limit: 100
+                    remaining: 67
+                    reset_at: 1705939200
+                    current_usage: 33
+                    percentage_used: 33.0
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /ratelimit/stats/{identifier}:
+    get:
+      tags:
+        - Status
+      summary: Get usage statistics
+      description: Get historical usage statistics for an identifier
+      operationId: getUsageStats
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageStats'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /ratelimit/reset/{identifier}:
+    post:
+      tags:
+        - Management
+      summary: Reset rate limit
+      description: Reset rate limit counter for an identifier
+      operationId: resetRateLimit
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tier
+          in: query
+          schema:
+            type: string
+            default: "default"
+      responses:
+        '200':
+          description: Rate limit reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  identifier:
+                    type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /ratelimit/tiers:
+    get:
+      tags:
+        - Configuration
+      summary: List rate limit tiers
+      description: Get all available rate limit tiers
+      operationId: listTiers
+      responses:
+        '200':
+          description: Rate limit tiers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tiers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RateLimitTier'
+              examples:
+                tiers:
+                  value:
+                    tiers:
+                      - tier: "default"
+                        rate: 100
+                        period: 60
+                      - tier: "premium"
+                        rate: 1000
+                        period: 60
+                      - tier: "strict"
+                        rate: 10
+                        period: 60
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RateLimitStatus:
+      type: object
+      properties:
+        identifier:
+          type: string
+        limit:
+          type: integer
+        remaining:
+          type: integer
+        reset_at:
+          type: integer
+          description: Unix timestamp
+        current_usage:
+          type: integer
+        percentage_used:
+          type: number
+
+    UsageStats:
+      type: object
+      properties:
+        identifier:
+          type: string
+        total_requests:
+          type: integer
+        allowed_requests:
+          type: integer
+        rejected_requests:
+          type: integer
+        rejection_rate:
+          type: number
+
+    RateLimitTier:
+      type: object
+      properties:
+        tier:
+          type: string
+        rate:
+          type: integer
+          description: Requests allowed
+        period:
+          type: integer
+          description: Period in seconds
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        redis:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+security:
+  - bearerAuth: []

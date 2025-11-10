@@ -1,0 +1,97 @@
+.PHONY: help install dev test lint format build clean docker-build docker-up docker-down deploy
+
+help:
+	@echo "Available commands:"
+	@echo "  make install      - Install dependencies"
+	@echo "  make dev          - Start development environment"
+	@echo "  make test         - Run tests"
+	@echo "  make lint         - Run linters"
+	@echo "  make format       - Format code"
+	@echo "  make build        - Build for production"
+	@echo "  make clean        - Clean build artifacts"
+	@echo "  make docker-build - Build Docker images"
+	@echo "  make docker-up    - Start Docker services"
+	@echo "  make docker-down  - Stop Docker services"
+
+<% if (template === 'monorepo') { %>
+install:
+	pip install -e ".[dev]"
+	cd shared && pip install -e ".[all]"
+
+dev:
+	docker compose up -d postgres redis<% if (patterns.includes('events') || patterns.includes('queue')) { %> kafka<% } %>
+	uvicorn services.api.main:app --reload --host 0.0.0.0 --port 8000
+<% } else if (template === 'microservices') { %>
+install:
+	@for service in services/*; do \
+		if [ -f $$service/requirements.txt ]; then \
+			pip install -r $$service/requirements.txt; \
+		fi; \
+	done
+
+dev:
+	docker compose up
+<% } else if (template === 'serverless') { %>
+install:
+	pip install -r layers/toolkit/requirements.txt
+	@for function in functions/*; do \
+		if [ -f $$function/requirements.txt ]; then \
+			pip install -r $$function/requirements.txt; \
+		fi; \
+	done
+
+dev:
+	sam local start-api
+<% } %>
+
+test:
+	pytest tests/ -v --cov=<% if (template === 'monorepo') { %>shared/src<% } else { %>services<% } %> --cov-report=html --cov-report=term
+
+lint:
+	ruff check <% if (template === 'monorepo') { %>shared/src services<% } else { %>services<% } %>
+	mypy <% if (template === 'monorepo') { %>shared/src<% } else { %>services<% } %>
+
+format:
+	ruff format <% if (template === 'monorepo') { %>shared/src services<% } else { %>services<% } %>
+	ruff check --fix <% if (template === 'monorepo') { %>shared/src services<% } else { %>services<% } %>
+
+<% if (template === 'serverless') { %>
+build:
+	sam build
+
+deploy:
+	sam deploy --guided
+<% } else { %>
+build:
+	docker compose build
+
+deploy:
+	@echo "Run deployment workflow: make deploy-<% if (cloudProvider) { %><%= cloudProvider %><% } else { %>aws<% } %>"
+<% } %>
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf .pytest_cache .coverage htmlcov dist build
+
+docker-build:
+	docker compose build
+
+docker-up:
+	docker compose up -d
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs -f
+
+benchmarks:
+	pytest tests/benchmarks/ --benchmark-only --benchmark-json=benchmarks/results/latest.json
+	python scripts/run-benchmarks.py
+
+ci:
+	make lint
+	make test
+	make benchmarks
