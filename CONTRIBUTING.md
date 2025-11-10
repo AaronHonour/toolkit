@@ -1,239 +1,377 @@
-# Contributing to Backend Toolkit
+# Contributing to Unistax
 
-## Development Setup
+Thank you for your interest in contributing to Unistax! This document outlines our development workflow, branching strategy, and release process.
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd toolkit
-```
+## Table of Contents
 
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install in development mode:
-```bash
-pip install -e ".[dev]"
-```
+- [Development Workflow](#development-workflow)
+- [Branching Strategy](#branching-strategy)
+- [Making Changes](#making-changes)
+- [Testing](#testing)
+- [Release Process](#release-process)
+- [Code Quality Standards](#code-quality-standards)
 
 ## Development Workflow
 
-### Code Style
+We follow **GitHub Flow** - a simple, branch-based workflow optimized for continuous releases:
 
-We follow PEP 8 and use automated tools:
-
-```bash
-# Format code
-black src/ tests/
-
-# Lint code
-ruff check src/ tests/
-
-# Type checking
-mypy src/
+```
+main (always stable, production-ready)
+  ↑
+feature/* branches (short-lived)
 ```
 
-### Running Tests
+### Key Principles
+
+1. **Main is always deployable** - All code in `main` is production-ready
+2. **Feature branches** - Create descriptive feature branches for all work
+3. **Pull Requests** - All changes go through PR review before merging
+4. **CI/CD automation** - Automated testing and deployment on merge
+
+## Branching Strategy
+
+### Main Branch
+
+- **Purpose**: Production-ready code, always stable
+- **Protection**: Requires PR approval and passing CI checks
+- **Deployment**: Tagged releases trigger automatic package publishing
+
+### Feature Branches
+
+Create feature branches from `main` using descriptive names:
 
 ```bash
+# Format
+feature/descriptive-name
+feature/add-auth-module
+feature/fix-validation-bug
+feature/improve-logging
+```
+
+**Naming conventions:**
+- `feature/*` - New features or enhancements
+- `fix/*` - Bug fixes
+- `docs/*` - Documentation updates
+- `refactor/*` - Code refactoring
+- `test/*` - Test additions or improvements
+
+### Branch Lifecycle
+
+1. **Create** from latest `main`
+2. **Develop** with frequent commits
+3. **Push** and open PR when ready
+4. **Review** by team member
+5. **Merge** to main (squash or merge commit)
+6. **Delete** feature branch after merge
+
+## Making Changes
+
+### 1. Setup Development Environment
+
+**Backend:**
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e ".[dev]"
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+```
+
+### 2. Create Feature Branch
+
+```bash
+# Ensure main is up to date
+git checkout main
+git pull origin main
+
+# Create and switch to feature branch
+git checkout -b feature/your-feature-name
+```
+
+### 3. Make Your Changes
+
+- Write clear, focused commits
+- Follow code quality standards (see below)
+- Add tests for new functionality
+- Update documentation as needed
+
+### 4. Run Tests Locally
+
+**Backend:**
+```bash
+cd backend
+pytest                    # Run tests
+ruff check src tests      # Lint
+black src tests           # Format
+mypy src                  # Type check
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm test                  # Run tests
+npm run lint              # Lint
+npm run typecheck         # Type check
+npm run format            # Format
+```
+
+### 5. Push and Create PR
+
+```bash
+git push origin feature/your-feature-name
+```
+
+Then open a Pull Request on GitHub:
+- Fill in the PR template
+- Link any related issues
+- Request review from team member
+- Ensure CI checks pass
+
+### 6. Address Review Comments
+
+- Make requested changes in new commits
+- Push updates to the same branch
+- Re-request review when ready
+
+### 7. Merge
+
+Once approved and CI passes:
+- Squash merge (for clean history) or merge commit (to preserve history)
+- Delete feature branch after merge
+
+## Testing
+
+### Backend Testing
+
+```bash
+cd backend
+
 # Run all tests
 pytest
 
 # Run with coverage
-pytest --cov=src/toolkit --cov-report=html
+pytest --cov=toolkit --cov-report=html
 
 # Run specific test file
-pytest tests/test_config/test_manager.py
+pytest tests/test_specific.py
 
 # Run with verbose output
 pytest -v
 ```
 
-### Adding New Features
+### Frontend Testing
 
-1. **Design First**: Consider how it fits into the architecture
-2. **Configuration**: Make it configurable via YAML
-3. **Type Hints**: Add complete type annotations
-4. **Documentation**: Add docstrings and examples
-5. **Tests**: Write comprehensive tests
-6. **Examples**: Add usage examples
+```bash
+cd frontend
 
-### Module Checklist
+# Run all tests
+npm test
 
-When adding a new module:
+# Run in watch mode
+npm run test:watch
 
-- [ ] Module directory under `src/toolkit/`
-- [ ] `__init__.py` with exports
-- [ ] Core implementation files
-- [ ] Configuration schema
-- [ ] Example YAML config in `configs/`
-- [ ] Unit tests in `tests/test_<module>/`
-- [ ] Integration examples in `examples/`
-- [ ] Documentation in docstrings
-- [ ] Update main README.md
-
-### Code Review Guidelines
-
-- **Readability**: Code should be self-documenting
-- **Simplicity**: Avoid over-engineering
-- **Performance**: Consider optimization opportunities
-- **Security**: Check for vulnerabilities
-- **Testing**: Ensure adequate test coverage
-- **Documentation**: Update docs as needed
-
-## Architecture Guidelines
-
-### Composability
-- Modules should work independently
-- Avoid tight coupling
-- Use dependency injection
-
-### Configuration-Driven
-- No hardcoded values
-- Support environment variables
-- Provide sensible defaults
-
-### Type Safety
-- Use type hints everywhere
-- Validate at runtime when appropriate
-- Use Pydantic for complex validation
-
-### Performance
-- Profile before optimizing
-- Cache intelligently
-- Consider thread safety
-
-### Enterprise Features
-- Comprehensive error handling
-- Structured logging
-- Security considerations
-- Extensibility
-
-## Testing Standards
-
-### Test Coverage
-- Aim for >90% coverage
-- Test happy paths and edge cases
-- Test error conditions
-- Test thread safety when relevant
-
-### Test Organization
+# Run with coverage
+npm run test:coverage
 ```
-tests/
-├── conftest.py              # Shared fixtures
-├── test_<module>/
-│   ├── __init__.py
-│   ├── test_<component>.py
-│   └── fixtures/            # Test data
-```
-
-### Test Naming
-- Test classes: `TestClassName`
-- Test methods: `test_what_is_being_tested`
-- Be descriptive and specific
-
-### Fixtures
-- Use pytest fixtures for reusable test data
-- Keep fixtures in `conftest.py` if shared
-- Local fixtures for module-specific needs
-
-## Documentation Standards
-
-### Docstrings
-Use Google-style docstrings:
-
-```python
-def function(arg1: str, arg2: int) -> bool:
-    """
-    Brief description.
-
-    Longer description if needed.
-
-    Args:
-        arg1: Description of arg1
-        arg2: Description of arg2
-
-    Returns:
-        Description of return value
-
-    Raises:
-        ValueError: When something is invalid
-
-    Examples:
-        >>> function("test", 42)
-        True
-    """
-```
-
-### Comments
-- Explain **why**, not **what**
-- Keep comments up-to-date
-- Remove dead code instead of commenting it out
-
-## Git Workflow
-
-### Branches
-- `main`: Stable release branch
-- `develop`: Development branch
-- `feature/name`: New features
-- `fix/name`: Bug fixes
-- `docs/name`: Documentation updates
-
-### Commit Messages
-Follow conventional commits:
-
-```
-type(scope): subject
-
-body (optional)
-
-footer (optional)
-```
-
-Types:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation
-- `style`: Formatting
-- `refactor`: Code restructuring
-- `test`: Adding tests
-- `chore`: Maintenance
-
-Examples:
-```
-feat(config): add hot-reload support
-fix(logging): correct thread safety issue
-docs(readme): update installation instructions
-```
-
-### Pull Requests
-1. Create feature branch from `develop`
-2. Make changes with tests
-3. Update documentation
-4. Create PR with clear description
-5. Address review feedback
-6. Squash and merge
 
 ## Release Process
 
-1. Update version in `pyproject.toml`
-2. Update CHANGELOG.md
-3. Run full test suite
-4. Create release tag
-5. Build and publish to PyPI
+We use **tag-based continuous releases** - tagging `main` triggers automatic publishing.
 
-## Questions?
+### Semantic Versioning
 
-- Open an issue for bugs
-- Use discussions for questions
-- Check existing issues before creating new ones
+We follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH):
+
+- **MAJOR** (1.0.0): Breaking changes
+- **MINOR** (0.1.0): New features (backwards compatible)
+- **PATCH** (0.0.1): Bug fixes (backwards compatible)
+
+### Creating a Release
+
+1. **Ensure main is stable**
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+2. **Determine version number**
+   - Check current version: `git tag -l`
+   - Decide next version based on changes
+
+3. **Create and push tag**
+   ```bash
+   # Create annotated tag
+   git tag -a v1.2.3 -m "Release v1.2.3: Brief description of changes"
+
+   # Push tag to trigger release workflow
+   git push origin v1.2.3
+   ```
+
+4. **Automated publishing**
+   - GitHub Actions workflow automatically:
+     - Runs full test suite
+     - Builds both packages
+     - Publishes backend to PyPI
+     - Publishes frontend to npm
+     - Creates GitHub release with changelog
+
+5. **Verify release**
+   - Check GitHub Actions for successful workflow
+   - Verify package on PyPI: https://pypi.org/project/toolkit/
+   - Verify package on npm: https://www.npmjs.com/package/@toolkit/frontend
+   - Review GitHub release notes
+
+### Pre-releases
+
+For alpha, beta, or release candidates:
+
+```bash
+git tag -a v1.0.0-beta.1 -m "Beta release"
+git push origin v1.0.0-beta.1
+```
+
+Pre-release versions are marked as such on GitHub.
+
+### Hotfixes
+
+For urgent production fixes:
+
+```bash
+# Create hotfix branch from main
+git checkout -b hotfix/critical-security-fix main
+
+# Make fix, test thoroughly
+# ... make changes ...
+
+# Create PR, get expedited review
+# After merge, immediately create release tag
+git checkout main
+git pull origin main
+git tag -a v1.2.4 -m "Hotfix: Security vulnerability patch"
+git push origin v1.2.4
+```
+
+## Code Quality Standards
+
+### Backend (Python)
+
+- **Style**: PEP 8 (enforced by Black with 100 char line length)
+- **Linting**: Ruff
+- **Type hints**: Required for all functions (checked by mypy)
+- **Testing**: Pytest with 80%+ coverage
+- **Documentation**: Docstrings for all public APIs
+
+Example:
+```python
+def calculate_total(items: list[Item], tax_rate: float) -> Decimal:
+    """
+    Calculate total price including tax.
+
+    Args:
+        items: List of items to calculate total for
+        tax_rate: Tax rate as decimal (e.g., 0.08 for 8%)
+
+    Returns:
+        Total price including tax
+
+    Raises:
+        ValueError: If tax_rate is negative
+    """
+    if tax_rate < 0:
+        raise ValueError("Tax rate cannot be negative")
+
+    subtotal = sum(item.price for item in items)
+    return subtotal * (1 + tax_rate)
+```
+
+### Frontend (TypeScript)
+
+- **Style**: Prettier (100 char line length)
+- **Linting**: ESLint with TypeScript plugin
+- **Type safety**: Strict TypeScript (no `any` without justification)
+- **Testing**: Jest with 80%+ coverage
+- **Documentation**: TSDoc for all exported APIs
+
+Example:
+```typescript
+/**
+ * Formats a date according to the specified locale and options
+ *
+ * @param date - The date to format
+ * @param locale - BCP 47 language tag (e.g., 'en-US', 'fr-FR')
+ * @param options - Intl.DateTimeFormat options
+ * @returns Formatted date string
+ *
+ * @example
+ * ```typescript
+ * formatDate(new Date(), 'en-US', { dateStyle: 'full' })
+ * // Returns: "Monday, January 1, 2024"
+ * ```
+ */
+export function formatDate(
+  date: Date,
+  locale: string = 'en-US',
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  return new Intl.DateTimeFormat(locale, options).format(date);
+}
+```
+
+### Commit Messages
+
+Use clear, descriptive commit messages:
+
+```
+<type>: <short summary>
+
+<optional detailed description>
+
+<optional footer>
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `refactor`: Code refactoring
+- `test`: Test additions/changes
+- `chore`: Maintenance tasks
+
+**Examples:**
+```
+feat: add JWT authentication module
+
+Implements JWT token generation and validation with refresh token support.
+Includes middleware for protecting routes.
+
+Closes #123
+```
+
+```
+fix: resolve memory leak in event handlers
+
+Event listeners were not being properly cleaned up on component unmount.
+Added cleanup in useEffect return function.
+```
+
+## Getting Help
+
+- Open an issue for bugs or feature requests
+- Start a discussion for questions or ideas
+- Review existing issues and PRs before creating new ones
 
 ## Code of Conduct
 
 - Be respectful and inclusive
-- Welcome newcomers
 - Focus on constructive feedback
-- Keep discussions on topic
+- Help others learn and grow
+- Celebrate contributions of all sizes
+
+---
+
+Thank you for contributing to Unistax! 🚀
