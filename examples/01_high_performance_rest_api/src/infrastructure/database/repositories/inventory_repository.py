@@ -14,14 +14,14 @@ from uuid import UUID
 from sqlalchemy import select, update, delete, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
+from src.domain.models.inventory import (
     InventoryItem,
-    InventoryStatus,
+    StockStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.inventory_repository import (
+from src.domain.repositories.inventory_repository import (
     InventoryRepository,
 )
-from examples.01_high_performance_rest_api.src.infrastructure.database.models import (
+from src.infrastructure.database.models import (
     InventoryModel,
     ProductModel,
 )
@@ -120,7 +120,7 @@ class SQLInventoryRepository(InventoryRepository):
         self,
         skip: int = 0,
         limit: int = 100,
-        status: Optional[InventoryStatus] = None,
+        status: Optional[StockStatus] = None,
     ) -> List[InventoryItem]:
         """Get all inventory with pagination and filtering."""
         stmt = select(InventoryModel)
@@ -215,7 +215,7 @@ class SQLInventoryRepository(InventoryRepository):
 
     async def get_by_status(
         self,
-        status: InventoryStatus,
+        status: StockStatus,
         skip: int = 0,
         limit: int = 100,
     ) -> List[InventoryItem]:
@@ -481,7 +481,7 @@ class SQLInventoryRepository(InventoryRepository):
 
         return result.rowcount > 0
 
-    async def count(self, status: Optional[InventoryStatus] = None) -> int:
+    async def count(self, status: Optional[StockStatus] = None) -> int:
         """Count inventory items."""
         stmt = select(func.count()).select_from(InventoryModel)
 

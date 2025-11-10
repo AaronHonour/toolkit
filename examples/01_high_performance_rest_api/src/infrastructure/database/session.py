@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
 )
-from sqlalchemy.pool import NullPool, QueuePool
+from sqlalchemy.pool import NullPool
 
-from examples.01_high_performance_rest_api.src.infrastructure.database.models import Base
+from src.infrastructure.database.models import Base
 
 
 class DatabaseSession:
@@ -62,8 +62,8 @@ class DatabaseSession:
             pool_size=self._pool_size,
             max_overflow=self._max_overflow,
             pool_pre_ping=self._pool_pre_ping,
-            # Use QueuePool for production
-            poolclass=QueuePool if self._pool_size > 0 else NullPool,
+            # poolclass is automatically set for async engines
+            poolclass=NullPool if self._pool_size == 0 else None,
         )
 
         # Create session factory

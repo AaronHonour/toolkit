@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict
 from uuid import UUID
 
-from examples.02_realtime_analytics_dashboard.src.domain.models.event import Event
+from src.domain.models.event import Event
 
 
 class InMemoryEventStore:

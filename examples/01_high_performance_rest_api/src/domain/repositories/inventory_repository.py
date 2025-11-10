@@ -8,9 +8,9 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
+from src.domain.models.inventory import (
     InventoryItem,
-    InventoryStatus,
+    StockStatus,
 )
 
 
@@ -50,7 +50,7 @@ class InventoryRepository(ABC):
         self,
         skip: int = 0,
         limit: int = 100,
-        status: Optional[InventoryStatus] = None
+        status: Optional[StockStatus] = None
     ) -> List[InventoryItem]:
         """Get all inventory items with pagination and filtering.
 
@@ -137,7 +137,7 @@ class InventoryRepository(ABC):
     @abstractmethod
     async def get_by_status(
         self,
-        status: InventoryStatus,
+        status: StockStatus,
         skip: int = 0,
         limit: int = 100
     ) -> List[InventoryItem]:
@@ -323,7 +323,7 @@ class InventoryRepository(ABC):
         pass
 
     @abstractmethod
-    async def count(self, status: Optional[InventoryStatus] = None) -> int:
+    async def count(self, status: Optional[StockStatus] = None) -> int:
         """Count inventory items.
 
         Args:

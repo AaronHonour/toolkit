@@ -1,6 +1,6 @@
 """Application commands for write operations (CQRS pattern)."""
 
-from examples.01_high_performance_rest_api.src.application.commands.product_commands import (
+from src.application.commands.product_commands import (
     CreateProductCommand,
     UpdateProductCommand,
     DeleteProductCommand,
@@ -8,7 +8,7 @@ from examples.01_high_performance_rest_api.src.application.commands.product_comm
     BulkUpdateProductStatusCommand,
     ProductCommandHandler,
 )
-from examples.01_high_performance_rest_api.src.application.commands.inventory_commands import (
+from src.application.commands.inventory_commands import (
     CreateInventoryCommand,
     UpdateInventoryCommand,
     ReserveStockCommand,

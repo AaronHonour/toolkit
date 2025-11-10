@@ -7,8 +7,8 @@ from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
-from examples.02_realtime_analytics_dashboard.src.domain.models.event import Event, EventBatch
-from examples.02_realtime_analytics_dashboard.src.domain.models.metric import (
+from src.domain.models.event import Event, EventBatch
+from src.domain.models.metric import (
     Counter as MetricCounter,
     Gauge,
     Histogram,

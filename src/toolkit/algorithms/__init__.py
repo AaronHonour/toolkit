@@ -17,6 +17,7 @@ from toolkit.algorithms.hashing import (
     xxhash_fast,
     hash_combine,
     FastHasher,
+    ConsistentHashRing,
 )
 from toolkit.algorithms.serialization import (
     fast_serialize,
@@ -59,6 +60,7 @@ __all__ = [
     "xxhash_fast",
     "hash_combine",
     "FastHasher",
+    "ConsistentHashRing",
     # Serialization
     "fast_serialize",
     "fast_deserialize",

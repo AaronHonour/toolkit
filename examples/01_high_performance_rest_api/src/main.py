@@ -18,8 +18,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from examples.01_high_performance_rest_api.src.presentation.api import api_router
-from examples.01_high_performance_rest_api.src.infrastructure.database.session import (
+from src.presentation.api import api_router
+from src.infrastructure.database.session import (
     init_database,
     close_database,
 )

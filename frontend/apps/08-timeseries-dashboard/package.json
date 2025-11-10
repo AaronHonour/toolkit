@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build"
   },
   "dependencies": {
-    "@frontend-toolkit/atoms": "workspace:*",
+    "@frontend-toolkit/atoms": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

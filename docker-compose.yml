@@ -128,12 +128,14 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app01
-    command: python -m uvicorn examples.01_ecommerce_inventory.main:app --host 0.0.0.0 --port 8001 --reload
+    working_dir: /app/examples/01_high_performance_rest_api
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
     ports:
       - "8001:8001"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
       REDIS_URL: redis://redis:6379/0
+      PYTHONPATH: /app:/app/examples/01_high_performance_rest_api
     depends_on:
       - postgres
       - redis
@@ -155,13 +157,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app02
-    command: python -m uvicorn examples.02_realtime_analytics_dashboard.main:app --host 0.0.0.0 --port 8002 --reload
+    working_dir: /app/examples/02_realtime_analytics_dashboard
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
     ports:
       - "8002:8002"
     environment:
       KAFKA_BROKERS: kafka:9092
-      REDIS_URL: redis://redis:6379/1
-      TIMESCALE_URL: postgresql://toolkit:toolkit_dev@timescale:5432/timeseries
+      PYTHONPATH: /app:/app/examples/02_realtime_analytics_dashboard
     depends_on:
       - kafka
       - redis
@@ -179,11 +181,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app03
-    command: python -m uvicorn examples.03_file_processing_service.main:app --host 0.0.0.0 --port 8003 --reload
+    working_dir: /app/examples/03_file_processing_service
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8003 --reload
     ports:
       - "8003:8003"
     environment:
       REDIS_URL: redis://redis:6379/2
+      PYTHONPATH: /app:/app/examples/03_file_processing_service
     depends_on:
       - redis
     volumes:
@@ -200,11 +204,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app04
-    command: python -m uvicorn examples.04_microservices_gateway.main:app --host 0.0.0.0 --port 8004 --reload
+    working_dir: /app/examples/04_microservices_gateway
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8004 --reload
     ports:
       - "8004:8004"
     environment:
       REDIS_URL: redis://redis:6379/3
+      PYTHONPATH: /app:/app/examples/04_microservices_gateway
     depends_on:
       - redis
     volumes:
@@ -220,11 +226,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app05
-    command: python -m uvicorn examples.05_data_export_service.main:app --host 0.0.0.0 --port 8005 --reload
+    working_dir: /app/examples/05_data_export_service
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8005 --reload
     ports:
       - "8005:8005"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
+      PYTHONPATH: /app:/app/examples/05_data_export_service
     depends_on:
       - postgres
     volumes:
@@ -240,11 +248,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app06
-    command: python -m uvicorn examples.06_kappa_architecture_monitor.main:app --host 0.0.0.0 --port 8006 --reload
+    working_dir: /app/examples/06_kappa_architecture
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8006 --reload
     ports:
       - "8006:8006"
     environment:
       KAFKA_BROKERS: kafka:9092
+      PYTHONPATH: /app:/app/examples/06_kappa_architecture
     depends_on:
       - kafka
     volumes:
@@ -260,11 +270,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app07
-    command: python -m uvicorn examples.07_event_sourcing.main:app --host 0.0.0.0 --port 8007 --reload
+    working_dir: /app/examples/07_event_sourcing
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8007 --reload
     ports:
       - "8007:8007"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
+      PYTHONPATH: /app:/app/examples/07_event_sourcing
     depends_on:
       - postgres
     volumes:
@@ -280,11 +292,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app08
-    command: python -m uvicorn examples.08_timeseries_database.main:app --host 0.0.0.0 --port 8008 --reload
+    working_dir: /app/examples/08_timeseries_db
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8008 --reload
     ports:
       - "8008:8008"
     environment:
       TIMESCALE_URL: postgresql://toolkit:toolkit_dev@timescale:5432/timeseries
+      PYTHONPATH: /app:/app/examples/08_timeseries_db
     depends_on:
       - timescale
     volumes:
@@ -300,11 +314,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app09
-    command: python -m uvicorn examples.09_distributed_cache.main:app --host 0.0.0.0 --port 8009 --reload
+    working_dir: /app/examples/09_distributed_cache
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8009 --reload
     ports:
       - "8009:8009"
     environment:
       REDIS_URL: redis://redis:6379/4
+      PYTHONPATH: /app:/app/examples/09_distributed_cache
     depends_on:
       - redis
     volumes:
@@ -320,11 +336,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app10
-    command: python -m uvicorn examples.10_message_queue_manager.main:app --host 0.0.0.0 --port 8010 --reload
+    working_dir: /app/examples/10_message_queue
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8010 --reload
     ports:
       - "8010:8010"
     environment:
       KAFKA_BROKERS: kafka:9092
+      PYTHONPATH: /app:/app/examples/10_message_queue
     depends_on:
       - kafka
     volumes:
@@ -340,11 +358,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app11
-    command: python -m uvicorn examples.11_distributed_rate_limiter.main:app --host 0.0.0.0 --port 8011 --reload
+    working_dir: /app/examples/11_rate_limiter
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8011 --reload
     ports:
       - "8011:8011"
     environment:
       REDIS_URL: redis://redis:6379/5
+      PYTHONPATH: /app:/app/examples/11_rate_limiter
     depends_on:
       - redis
     volumes:
@@ -360,12 +380,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app12
-    command: python -m uvicorn examples.12_lambda_architecture.main:app --host 0.0.0.0 --port 8012 --reload
+    working_dir: /app/examples/12_lambda_architecture
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8012 --reload
     ports:
       - "8012:8012"
     environment:
       KAFKA_BROKERS: kafka:9092
-      DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
+      PYTHONPATH: /app:/app/examples/12_lambda_architecture
     depends_on:
       - kafka
       - postgres
@@ -382,12 +403,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app13
-    command: python -m uvicorn examples.13_cdc_pipeline.main:app --host 0.0.0.0 --port 8013 --reload
+    working_dir: /app/examples/13_cdc_pipeline
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8013 --reload
     ports:
       - "8013:8013"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
-      KAFKA_BROKERS: kafka:9092
+      PYTHONPATH: /app:/app/examples/13_cdc_pipeline
     depends_on:
       - postgres
       - kafka
@@ -404,12 +426,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app14
-    command: python -m uvicorn examples.14_recommendation_engine.main:app --host 0.0.0.0 --port 8014 --reload
+    working_dir: /app/examples/14_recommendation_engine
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8014 --reload
     ports:
       - "8014:8014"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
-      REDIS_URL: redis://redis:6379/6
+      PYTHONPATH: /app:/app/examples/14_recommendation_engine
     depends_on:
       - postgres
       - redis
@@ -426,11 +449,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app15
-    command: python -m uvicorn examples.15_search_engine.main:app --host 0.0.0.0 --port 8015 --reload
+    working_dir: /app/examples/15_fulltext_search
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8015 --reload
     ports:
       - "8015:8015"
     environment:
       REDIS_URL: redis://redis:6379/7
+      PYTHONPATH: /app:/app/examples/15_fulltext_search
     depends_on:
       - redis
     volumes:
@@ -446,12 +471,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app16
-    command: python -m uvicorn examples.16_feature_store.main:app --host 0.0.0.0 --port 8016 --reload
+    working_dir: /app/examples/16_feature_store
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8016 --reload
     ports:
       - "8016:8016"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
-      REDIS_URL: redis://redis:6379/8
+      PYTHONPATH: /app:/app/examples/16_feature_store
     depends_on:
       - postgres
       - redis
@@ -468,11 +494,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app17
-    command: python -m uvicorn examples.17_realtime_olap.main:app --host 0.0.0.0 --port 8017 --reload
+    working_dir: /app/examples/17_realtime_olap
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8017 --reload
     ports:
       - "8017:8017"
     environment:
       DATABASE_URL: postgresql://toolkit:toolkit_dev@postgres:5432/toolkit
+      PYTHONPATH: /app:/app/examples/17_realtime_olap
     depends_on:
       - postgres
     volumes:
@@ -488,11 +516,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app18
-    command: python -m uvicorn examples.18_distributed_tracing.main:app --host 0.0.0.0 --port 8018 --reload
+    working_dir: /app/examples/18_distributed_tracing
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8018 --reload
     ports:
       - "8018:8018"
     environment:
       REDIS_URL: redis://redis:6379/9
+      PYTHONPATH: /app:/app/examples/18_distributed_tracing
     depends_on:
       - redis
     volumes:
@@ -508,11 +538,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: toolkit-app19
-    command: python -m uvicorn examples.19_probabilistic_structures.main:app --host 0.0.0.0 --port 8019 --reload
+    working_dir: /app/examples/19_probabilistic_structures
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8019 --reload
     ports:
       - "8019:8019"
     environment:
       REDIS_URL: redis://redis:6379/10
+      PYTHONPATH: /app:/app/examples/19_probabilistic_structures
     depends_on:
       - redis
     volumes:
@@ -533,7 +565,7 @@ services:
       target: development
     container_name: toolkit-frontend
     ports:
-      - "3000:3000"
+      - "3000-3019:3000-3019"
     environment:
       VITE_API_BASE_URL: http://localhost:8001
     volumes:
@@ -595,7 +627,7 @@ services:
     image: grafana/grafana:latest
     container_name: toolkit-grafana
     ports:
-      - "3001:3000"
+      - "9999:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false

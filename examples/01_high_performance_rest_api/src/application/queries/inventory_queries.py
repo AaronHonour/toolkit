@@ -8,11 +8,11 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
+from src.domain.models.inventory import (
     InventoryItem,
-    InventoryStatus,
+    StockStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.inventory_repository import (
+from src.domain.repositories.inventory_repository import (
     InventoryRepository,
 )
 
@@ -40,7 +40,7 @@ class GetAllInventoryQuery:
 
     skip: int = 0
     limit: int = 100
-    status: Optional[InventoryStatus] = None
+    status: Optional[StockStatus] = None
 
 
 @dataclass
@@ -209,7 +209,7 @@ class InventoryQueryHandler:
         )
 
     async def handle_get_by_status(
-        self, status: InventoryStatus, skip: int = 0, limit: int = 100
+        self, status: StockStatus, skip: int = 0, limit: int = 100
     ) -> List[InventoryItem]:
         """Handle get inventory by status query.
 
@@ -242,7 +242,7 @@ class InventoryQueryHandler:
             as_of_date=query.as_of_date
         )
 
-    async def handle_count(self, status: Optional[InventoryStatus] = None) -> int:
+    async def handle_count(self, status: Optional[StockStatus] = None) -> int:
         """Handle count inventory query.
 
         Args:

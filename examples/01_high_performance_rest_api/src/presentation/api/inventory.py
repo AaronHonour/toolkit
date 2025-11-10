@@ -12,21 +12,21 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from examples.01_high_performance_rest_api.src.application.services.inventory_service import (
+from src.application.services.inventory_service import (
     InventoryService,
 )
-from examples.01_high_performance_rest_api.src.application.dtos.inventory_dtos import (
+from src.application.dtos.inventory_dtos import (
     CreateInventoryDTO,
     UpdateInventoryDTO,
 )
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
-    InventoryStatus,
+from src.domain.models.inventory import (
+    StockStatus,
 )
-from examples.01_high_performance_rest_api.src.presentation.dependencies import (
+from src.presentation.dependencies import (
     get_db_session,
     get_inventory_service,
 )
-from examples.01_high_performance_rest_api.src.presentation.schemas.inventory_schemas import (
+from src.presentation.schemas.inventory_schemas import (
     InventoryCreate,
     InventoryUpdate,
     InventoryResponse,
@@ -66,7 +66,7 @@ def _to_response(dto) -> dict:
 async def list_inventory(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum items to return"),
-    status: Optional[InventoryStatus] = Query(None, description="Filter by status"),
+    status: Optional[StockStatus] = Query(None, description="Filter by status"),
     session: AsyncSession = Depends(get_db_session),
 ) -> InventoryListResponse:
     """List all inventory with pagination."""

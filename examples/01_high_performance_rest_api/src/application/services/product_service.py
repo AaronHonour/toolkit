@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.application.commands.product_commands import (
+from src.application.commands.product_commands import (
     CreateProductCommand,
     UpdateProductCommand,
     DeleteProductCommand,
@@ -15,7 +15,7 @@ from examples.01_high_performance_rest_api.src.application.commands.product_comm
     BulkUpdateProductStatusCommand,
     ProductCommandHandler,
 )
-from examples.01_high_performance_rest_api.src.application.queries.product_queries import (
+from src.application.queries.product_queries import (
     GetProductByIdQuery,
     GetProductBySkuQuery,
     GetAllProductsQuery,
@@ -26,16 +26,16 @@ from examples.01_high_performance_rest_api.src.application.queries.product_queri
     GetLowMarginProductsQuery,
     ProductQueryHandler,
 )
-from examples.01_high_performance_rest_api.src.application.dtos.product_dtos import (
+from src.application.dtos.product_dtos import (
     ProductDTO,
     CreateProductDTO,
     UpdateProductDTO,
     ProductListDTO,
 )
-from examples.01_high_performance_rest_api.src.domain.models.product import (
+from src.domain.models.product import (
     ProductStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.product_repository import (
+from src.domain.repositories.product_repository import (
     ProductRepository,
 )
 

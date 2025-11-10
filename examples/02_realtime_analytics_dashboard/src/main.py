@@ -12,18 +12,18 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Quer
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from examples.02_realtime_analytics_dashboard.src.domain.models.event import Event, EventType
-from examples.02_realtime_analytics_dashboard.src.infrastructure.streaming.event_buffer import (
+from src.domain.models.event import Event, EventType
+from src.infrastructure.streaming.event_buffer import (
     EventBuffer,
     EventBufferReader,
 )
-from examples.02_realtime_analytics_dashboard.src.infrastructure.streaming.deduplicator import (
+from src.infrastructure.streaming.deduplicator import (
     EventDeduplicator,
 )
-from examples.02_realtime_analytics_dashboard.src.infrastructure.event_store.memory_store import (
+from src.infrastructure.event_store.memory_store import (
     InMemoryEventStore,
 )
-from examples.02_realtime_analytics_dashboard.src.application.projections.analytics_projection import (
+from src.application.projections.analytics_projection import (
     AnalyticsProjection,
 )
 

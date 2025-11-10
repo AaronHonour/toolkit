@@ -31,7 +31,7 @@ class TimeSeriesDB:
     """Time-series database."""
 
     def __init__(self):
-        self.buffer_pool = BufferPool(buffer_size=8192, max_buffers=1000)
+        self.buffer_pool = BufferPool(buffer_size=8192, pool_size=1000)
         self.hash_ring = ConsistentHashRing()
         self.cache = LRUCache(capacity=100_000)
 

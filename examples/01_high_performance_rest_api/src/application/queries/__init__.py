@@ -1,6 +1,6 @@
 """Application queries for read operations (CQRS pattern)."""
 
-from examples.01_high_performance_rest_api.src.application.queries.product_queries import (
+from src.application.queries.product_queries import (
     GetProductByIdQuery,
     GetProductBySkuQuery,
     GetAllProductsQuery,
@@ -11,7 +11,7 @@ from examples.01_high_performance_rest_api.src.application.queries.product_queri
     GetLowMarginProductsQuery,
     ProductQueryHandler,
 )
-from examples.01_high_performance_rest_api.src.application.queries.inventory_queries import (
+from src.application.queries.inventory_queries import (
     GetInventoryByIdQuery,
     GetInventoryByProductIdQuery,
     GetAllInventoryQuery,

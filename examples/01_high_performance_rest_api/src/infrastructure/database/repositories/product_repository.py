@@ -14,14 +14,14 @@ from uuid import UUID
 from sqlalchemy import select, update, delete, func, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from examples.01_high_performance_rest_api.src.domain.models.product import (
+from src.domain.models.product import (
     Product,
     ProductStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.product_repository import (
+from src.domain.repositories.product_repository import (
     ProductRepository,
 )
-from examples.01_high_performance_rest_api.src.infrastructure.database.models import (
+from src.infrastructure.database.models import (
     ProductModel,
 )
 from toolkit.database import QueryCache, QueryCacheConfig, cached_query
@@ -66,7 +66,7 @@ class SQLProductRepository(ProductRepository):
             cost=model.cost,
             status=model.status,
             tags=list(model.tags) if model.tags else [],
-            metadata=dict(model.metadata) if model.metadata else {},
+            metadata=dict(model.product_metadata) if model.product_metadata else {},
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -90,7 +90,7 @@ class SQLProductRepository(ProductRepository):
             cost=product.cost,
             status=product.status,
             tags=product.tags,
-            metadata=product.metadata,
+            product_metadata=product.metadata,
             created_at=product.created_at,
             updated_at=product.updated_at,
         )

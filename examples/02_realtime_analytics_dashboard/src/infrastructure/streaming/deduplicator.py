@@ -7,7 +7,7 @@ from typing import Set
 from datetime import datetime, timedelta
 
 from toolkit.algorithms import BloomFilter
-from examples.02_realtime_analytics_dashboard.src.domain.models.event import Event
+from src.domain.models.event import Event
 
 
 class EventDeduplicator:

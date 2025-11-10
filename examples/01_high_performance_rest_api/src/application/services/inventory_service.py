@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.application.commands.inventory_commands import (
+from src.application.commands.inventory_commands import (
     CreateInventoryCommand,
     UpdateInventoryCommand,
     ReserveStockCommand,
@@ -19,7 +19,7 @@ from examples.01_high_performance_rest_api.src.application.commands.inventory_co
     BulkUpdateReorderPointsCommand,
     InventoryCommandHandler,
 )
-from examples.01_high_performance_rest_api.src.application.queries.inventory_queries import (
+from src.application.queries.inventory_queries import (
     GetInventoryByIdQuery,
     GetInventoryByProductIdQuery,
     GetAllInventoryQuery,
@@ -30,16 +30,16 @@ from examples.01_high_performance_rest_api.src.application.queries.inventory_que
     GetInventorySnapshotQuery,
     InventoryQueryHandler,
 )
-from examples.01_high_performance_rest_api.src.application.dtos.inventory_dtos import (
+from src.application.dtos.inventory_dtos import (
     InventoryItemDTO,
     CreateInventoryDTO,
     UpdateInventoryDTO,
     InventoryListDTO,
 )
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
-    InventoryStatus,
+from src.domain.models.inventory import (
+    StockStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.inventory_repository import (
+from src.domain.repositories.inventory_repository import (
     InventoryRepository,
 )
 
@@ -102,7 +102,7 @@ class InventoryService:
         self,
         skip: int = 0,
         limit: int = 100,
-        status: Optional[InventoryStatus] = None,
+        status: Optional[StockStatus] = None,
     ) -> InventoryListDTO:
         """Get all inventory with pagination.
 

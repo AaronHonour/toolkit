@@ -48,7 +48,7 @@ export function App() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-neutral-900">🎯 Recommendation Engine</h1>
-          <p className="text-sm text-neutral-600">Example 14: ML Recommendations (< 10ms P99, 100K+ recs/sec)</p>
+          <p className="text-sm text-neutral-600">Example 14: ML Recommendations {'(<'} 10ms P99, 100K+ recs/sec)</p>
         </div>
       </header>
 

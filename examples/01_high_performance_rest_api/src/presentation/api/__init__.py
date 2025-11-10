@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from examples.01_high_performance_rest_api.src.presentation.api import (
+from . import (
     products,
     inventory,
 )

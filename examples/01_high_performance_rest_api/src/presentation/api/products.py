@@ -14,21 +14,21 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from examples.01_high_performance_rest_api.src.application.services.product_service import (
+from src.application.services.product_service import (
     ProductService,
 )
-from examples.01_high_performance_rest_api.src.application.dtos.product_dtos import (
+from src.application.dtos.product_dtos import (
     CreateProductDTO,
     UpdateProductDTO,
 )
-from examples.01_high_performance_rest_api.src.domain.models.product import (
+from src.domain.models.product import (
     ProductStatus,
 )
-from examples.01_high_performance_rest_api.src.presentation.dependencies import (
+from src.presentation.dependencies import (
     get_db_session,
     get_product_service,
 )
-from examples.01_high_performance_rest_api.src.presentation.schemas.product_schemas import (
+from src.presentation.schemas.product_schemas import (
     ProductCreate,
     ProductUpdate,
     ProductResponse,

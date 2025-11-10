@@ -33,8 +33,6 @@ class Document:
 @dataclass
 class PostingList:
     """Posting list for a term."""
-    __slots__ = ('doc_ids', 'positions', 'doc_count')
-
     doc_ids: Set[str] = field(default_factory=set)
     positions: Dict[str, List[int]] = field(default_factory=dict)
     doc_count: int = 0

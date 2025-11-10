@@ -82,18 +82,27 @@ FROM node:20-alpine as development
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files first for dependency installation
 COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+COPY packages/atoms/package.json ./packages/atoms/
+COPY packages/performance/package.json ./packages/performance/
+COPY packages/design-tokens/package.json ./packages/design-tokens/
 
-# Copy source code
-COPY . .
+# Install all dependencies including turbo
+RUN if [ -f package-lock.json ]; then npm ci --prefer-offline --no-audit; else npm install; fi
 
-# Expose Vite dev server port
-EXPOSE 3000
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Expose Vite dev server ports for all 19 apps
+EXPOSE 3000-3019
+
+# Set entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Start development server with hot reload
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["npm", "run", "dev"]
 
 # =============================================================================
 # Stage 5: Testing Runtime

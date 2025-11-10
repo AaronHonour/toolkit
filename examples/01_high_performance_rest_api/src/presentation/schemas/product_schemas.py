@@ -9,7 +9,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from examples.01_high_performance_rest_api.src.domain.models.product import (
+from src.domain.models.product import (
     ProductStatus,
 )
 

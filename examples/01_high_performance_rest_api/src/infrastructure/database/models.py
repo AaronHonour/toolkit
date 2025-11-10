@@ -20,15 +20,15 @@ from sqlalchemy import (
     Text,
     JSON,
 )
-from sqlalchemy.dialects.postgresql import UUID as PGUUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
 
-from examples.01_high_performance_rest_api.src.domain.models.product import (
+from src.domain.models.product import (
     ProductStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
-    InventoryStatus,
+from src.domain.models.inventory import (
+    StockStatus,
 )
 
 Base = declarative_base()
@@ -73,9 +73,9 @@ class ProductModel(Base):
         index=True,
     )
 
-    # Tags and metadata
-    tags = Column(ARRAY(String), nullable=False, default=list)
-    metadata = Column(JSON, nullable=False, default=dict)
+    # Tags and metadata (using JSON for SQLite compatibility)
+    tags = Column(JSON, nullable=False, default=list)
+    product_metadata = Column("metadata", JSON, nullable=False, default=dict)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -146,9 +146,9 @@ class InventoryModel(Base):
 
     # Status
     status = Column(
-        SQLEnum(InventoryStatus),
+        SQLEnum(StockStatus),
         nullable=False,
-        default=InventoryStatus.IN_STOCK,
+        default=StockStatus.IN_STOCK,
         index=True,
     )
 

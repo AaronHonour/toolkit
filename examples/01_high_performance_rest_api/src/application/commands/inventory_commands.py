@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
+from src.domain.models.inventory import (
     InventoryItem,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.inventory_repository import (
+from src.domain.repositories.inventory_repository import (
     InventoryRepository,
 )
 

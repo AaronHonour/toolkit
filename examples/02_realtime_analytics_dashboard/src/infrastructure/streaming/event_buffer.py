@@ -8,7 +8,7 @@ from typing import Optional, List
 from datetime import datetime
 
 from toolkit.algorithms import RingBuffer
-from examples.02_realtime_analytics_dashboard.src.domain.models.event import Event, EventBatch
+from src.domain.models.event import Event, EventBatch
 
 
 class EventBuffer:

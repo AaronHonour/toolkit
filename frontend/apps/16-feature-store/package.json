@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@frontend-toolkit/atoms": "workspace:*",
-    "@frontend-toolkit/design-tokens": "workspace:*",
-    "@frontend-toolkit/performance": "workspace:*",
+    "@frontend-toolkit/atoms": "*",
+    "@frontend-toolkit/design-tokens": "*",
+    "@frontend-toolkit/performance": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

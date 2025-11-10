@@ -7,16 +7,16 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from examples.01_high_performance_rest_api.src.application.services.product_service import (
+from src.application.services.product_service import (
     ProductService,
 )
-from examples.01_high_performance_rest_api.src.application.services.inventory_service import (
+from src.application.services.inventory_service import (
     InventoryService,
 )
-from examples.01_high_performance_rest_api.src.infrastructure.database.session import (
+from src.infrastructure.database.session import (
     get_session,
 )
-from examples.01_high_performance_rest_api.src.infrastructure.database.repositories import (
+from src.infrastructure.database.repositories import (
     SQLProductRepository,
     SQLInventoryRepository,
 )

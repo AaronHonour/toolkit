@@ -8,9 +8,9 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.domain.models.inventory import (
+from src.domain.models.inventory import (
     InventoryItem,
-    InventoryStatus,
+    StockStatus,
 )
 
 
@@ -29,7 +29,7 @@ class InventoryItemDTO:
     reorder_point: int
     reorder_quantity: int
     warehouse_location: str
-    status: str  # InventoryStatus as string
+    status: str  # StockStatus as string
     needs_reorder: bool  # Computed field
     last_restock_date: Optional[str]  # datetime as ISO string
     updated_at: str  # datetime as ISO string

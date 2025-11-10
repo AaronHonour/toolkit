@@ -8,11 +8,11 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
-from examples.01_high_performance_rest_api.src.domain.models.product import (
+from src.domain.models.product import (
     Product,
     ProductStatus,
 )
-from examples.01_high_performance_rest_api.src.domain.repositories.product_repository import (
+from src.domain.repositories.product_repository import (
     ProductRepository,
 )
 

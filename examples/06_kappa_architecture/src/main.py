@@ -48,8 +48,6 @@ class EventBatch(BaseModel):
 @dataclass
 class Event:
     """Stream event."""
-    __slots__ = ('id', 'timestamp', 'event_type', 'user_id', 'session_id', 'data', 'metadata', 'offset')
-
     id: str
     timestamp: datetime
     event_type: EventType

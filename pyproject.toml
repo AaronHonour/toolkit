@@ -73,6 +73,7 @@ metrics = [
 # Database support
 database = [
     "sqlalchemy>=2.0.0",
+    "aiosqlite>=0.19.0",  # Async SQLite
     "psycopg2-binary>=2.9.0",  # PostgreSQL
     "pymysql>=1.0.0",  # MySQL
     "alembic>=1.13.0",  # Migrations
@@ -99,6 +100,8 @@ tracing = [
 api = [
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
+    "httpx>=0.25.0",  # HTTP client for async requests
+    "python-multipart>=0.0.6",  # File upload support
 ]
 
 # File storage support
