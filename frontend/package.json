@@ -43,18 +43,19 @@
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "jest": "^29.7.0",
+    "postcss": "^8.5.6",
     "prettier": "^3.0.0",
     "rollup": "^4.0.0",
     "rollup-plugin-typescript2": "^0.36.0",
+    "tailwindcss": "^4.1.17",
     "ts-jest": "^29.1.0",
     "typescript": "^5.2.0"
   },
-  "peerDependencies": {},
-  "dependencies": {},
   "publishConfig": {
     "access": "public"
   }
