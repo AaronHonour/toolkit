@@ -8,10 +8,18 @@
  * - Sliding window counters
  * - Multi-tenant rate limiting
  * - 1M+ checks/sec performance
+ *
+ * REFACTORED: Now uses unified design system components
  */
 
 import { useState, useEffect } from 'react';
-import { Button, Badge, Spinner } from '@frontend-toolkit/atoms';
+import { Button, Badge } from '@frontend-toolkit/atoms';
+import {
+  AppLayout,
+  StatsBar,
+  EmptyState,
+  DataCard,
+} from '@frontend-toolkit/layouts';
 
 interface RateLimitStatus {
   allowed: boolean;
@@ -95,214 +103,217 @@ export function App() {
     ? (status.tokens_remaining / status.tokens_capacity) * 100
     : 0;
 
-  return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">🚦 Distributed Rate Limiter</h1>
-          <p className="text-sm text-neutral-600 mt-1">
-            Powered by Example 11: Token Bucket + Sliding Window (1M+ checks/sec)
-          </p>
-        </div>
-      </header>
+  // Convert stats to StatsBar format
+  const statsData = [
+    {
+      label: 'Total Checks',
+      value: stats.checks_total.toLocaleString(),
+    },
+    {
+      label: 'Allowed',
+      value: stats.checks_allowed.toLocaleString(),
+      variant: 'success' as const,
+    },
+    {
+      label: 'Rejected',
+      value: stats.checks_rejected.toLocaleString(),
+      variant: 'danger' as const,
+    },
+    {
+      label: 'Rate',
+      value: `${stats.checks_per_sec.toLocaleString()}/sec`,
+    },
+  ];
 
-      {/* Stats Bar */}
-      <div className="bg-primary-50 border-b border-primary-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex gap-6">
-              <div>
-                <span className="font-semibold text-primary-900">Total Checks:</span>
-                <span className="ml-2 text-primary-700">{stats.checks_total.toLocaleString()}</span>
-              </div>
-              <div>
-                <span className="font-semibold text-success-900">Allowed:</span>
-                <span className="ml-2 text-success-700">
-                  {stats.checks_allowed.toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold text-error-900">Rejected:</span>
-                <span className="ml-2 text-error-700">
-                  {stats.checks_rejected.toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold text-primary-900">Rate:</span>
-                <span className="ml-2 text-primary-700">{stats.checks_per_sec.toLocaleString()}/sec</span>
-              </div>
-            </div>
+  return (
+    <AppLayout
+      title="Distributed Rate Limiter"
+      description="Token Bucket + Sliding Window (1M+ checks/sec)"
+      icon="🚦"
+      footerContent={
+        <div className="flex items-center justify-between text-sm text-neutral-600">
+          <div>
+            <span className="font-semibold">Backend:</span> localhost:8011
+          </div>
+          <div>
+            <span className="font-semibold">Powered by:</span> LRUCache + ConsistentHashRing
           </div>
         </div>
+      }
+    >
+      {/* Stats Bar */}
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-8">
+        <StatsBar stats={statsData} variant="compact" />
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Configuration */}
-          <div>
-            <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6">
-              <h2 className="text-lg font-semibold text-neutral-900 mb-4">Configuration</h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Client ID
-                  </label>
-                  <input
-                    type="text"
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
-                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Token Capacity: {rateLimit.capacity}
-                  </label>
-                  <input
-                    type="range"
-                    min="10"
-                    max="1000"
-                    value={rateLimit.capacity}
-                    onChange={(e) =>
-                      setRateLimit({ ...rateLimit, capacity: parseInt(e.target.value) })
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Refill Rate: {rateLimit.refill_rate}/sec
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={rateLimit.refill_rate}
-                    onChange={(e) =>
-                      setRateLimit({ ...rateLimit, refill_rate: parseInt(e.target.value) })
-                    }
-                    className="w-full"
-                  />
-                </div>
-
-                <Button onClick={checkRateLimit} disabled={loading} fullWidth>
-                  Check Rate Limit
-                </Button>
-
-                <Button
-                  onClick={() => setAutoTest(!autoTest)}
-                  variant={autoTest ? 'danger' : 'secondary'}
-                  fullWidth
-                >
-                  {autoTest ? 'Stop Auto-Test' : 'Start Auto-Test'}
-                </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Configuration */}
+        <div>
+          <DataCard
+            title="Configuration"
+            subtitle="Rate limiting parameters"
+          >
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Client ID
+                </label>
+                <input
+                  type="text"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Token Capacity: {rateLimit.capacity}
+                </label>
+                <input
+                  type="range"
+                  min="10"
+                  max="1000"
+                  value={rateLimit.capacity}
+                  onChange={(e) =>
+                    setRateLimit({ ...rateLimit, capacity: parseInt(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Refill Rate: {rateLimit.refill_rate}/sec
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={rateLimit.refill_rate}
+                  onChange={(e) =>
+                    setRateLimit({ ...rateLimit, refill_rate: parseInt(e.target.value) })
+                  }
+                  className="w-full"
+                />
+              </div>
+
+              <Button onClick={checkRateLimit} disabled={loading} fullWidth>
+                Check Rate Limit
+              </Button>
+
+              <Button
+                onClick={() => setAutoTest(!autoTest)}
+                variant={autoTest ? 'danger' : 'secondary'}
+                fullWidth
+              >
+                {autoTest ? 'Stop Auto-Test' : 'Start Auto-Test'}
+              </Button>
             </div>
-          </div>
+          </DataCard>
+        </div>
 
-          {/* Token Bucket Visualization */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6">
-              <h2 className="text-lg font-semibold text-neutral-900 mb-4">Token Bucket Status</h2>
-
-              {status ? (
-                <div className="space-y-6">
-                  {/* Status Badge */}
-                  <div className="flex items-center justify-between">
-                    <Badge
-                      variant={status.allowed ? 'success' : 'error'}
-                      size="lg"
-                      dot
-                      dotColor={status.allowed ? 'success' : 'error'}
-                    >
-                      {status.allowed ? 'Request Allowed' : 'Request Rejected'}
-                    </Badge>
-                    <div className="text-sm text-neutral-600">
-                      {status.tokens_remaining} / {status.tokens_capacity} tokens
-                    </div>
-                  </div>
-
-                  {/* Token Bucket Visual */}
-                  <div className="relative">
-                    <div className="h-64 bg-neutral-100 rounded-lg overflow-hidden relative">
-                      {/* Bucket outline */}
-                      <div className="absolute inset-0 border-4 border-neutral-300 rounded-lg" />
-
-                      {/* Token level */}
-                      <div
-                        className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ${
-                          tokensPercentage > 66
-                            ? 'bg-success-500'
-                            : tokensPercentage > 33
-                              ? 'bg-amber-500'
-                              : 'bg-error-500'
-                        }`}
-                        style={{ height: `${tokensPercentage}%` }}
-                      />
-
-                      {/* Tokens count overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-neutral-900">
-                            {status.tokens_remaining}
-                          </div>
-                          <div className="text-sm text-neutral-600 mt-1">
-                            tokens remaining
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Refill indicator */}
-                      <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center">
-                        <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-neutral-700 shadow-sm">
-                          Refilling at {rateLimit.refill_rate}/sec
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Scale markers */}
-                    <div className="absolute left-0 top-0 bottom-0 -ml-12 flex flex-col justify-between text-xs text-neutral-500">
-                      <span>{status.tokens_capacity}</span>
-                      <span>{Math.floor(status.tokens_capacity / 2)}</span>
-                      <span>0</span>
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-200">
-                    <div>
-                      <dt className="text-sm font-medium text-neutral-600">Capacity</dt>
-                      <dd className="mt-1 text-xl font-semibold text-neutral-900">
-                        {status.tokens_capacity}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-neutral-600">Refill Rate</dt>
-                      <dd className="mt-1 text-xl font-semibold text-neutral-900">
-                        {rateLimit.refill_rate}/sec
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-neutral-600">Utilization</dt>
-                      <dd className="mt-1 text-xl font-semibold text-neutral-900">
-                        {tokensPercentage.toFixed(1)}%
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-neutral-600">Reset In</dt>
-                      <dd className="mt-1 text-xl font-semibold text-neutral-900">
-                        {status.reset_time.toFixed(1)}s
-                      </dd>
-                    </div>
+        {/* Token Bucket Visualization */}
+        <div className="lg:col-span-2">
+          <DataCard
+            title="Token Bucket Status"
+            subtitle="Real-time token availability"
+          >
+            {status ? (
+              <div className="space-y-6">
+                {/* Status Badge */}
+                <div className="flex items-center justify-between">
+                  <Badge
+                    variant={status.allowed ? 'success' : 'error'}
+                    size="lg"
+                    dot
+                    dotColor={status.allowed ? 'success' : 'error'}
+                  >
+                    {status.allowed ? 'Request Allowed' : 'Request Rejected'}
+                  </Badge>
+                  <div className="text-sm text-neutral-600">
+                    {status.tokens_remaining} / {status.tokens_capacity} tokens
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-12">
+
+                {/* Token Bucket Visual */}
+                <div className="relative">
+                  <div className="h-64 bg-neutral-100 rounded-lg overflow-hidden relative">
+                    {/* Bucket outline */}
+                    <div className="absolute inset-0 border-4 border-neutral-300 rounded-lg" />
+
+                    {/* Token level */}
+                    <div
+                      className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ${
+                        tokensPercentage > 66
+                          ? 'bg-success-500'
+                          : tokensPercentage > 33
+                            ? 'bg-amber-500'
+                            : 'bg-error-500'
+                      }`}
+                      style={{ height: `${tokensPercentage}%` }}
+                    />
+
+                    {/* Tokens count overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-4xl font-bold text-neutral-900">
+                          {status.tokens_remaining}
+                        </div>
+                        <div className="text-sm text-neutral-600 mt-1">
+                          tokens remaining
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Refill indicator */}
+                    <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center">
+                      <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-neutral-700 shadow-sm">
+                        Refilling at {rateLimit.refill_rate}/sec
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scale markers */}
+                  <div className="absolute left-0 top-0 bottom-0 -ml-12 flex flex-col justify-between text-xs text-neutral-500">
+                    <span>{status.tokens_capacity}</span>
+                    <span>{Math.floor(status.tokens_capacity / 2)}</span>
+                    <span>0</span>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-200">
+                  <div>
+                    <dt className="text-sm font-medium text-neutral-600">Capacity</dt>
+                    <dd className="mt-1 text-xl font-semibold text-neutral-900">
+                      {status.tokens_capacity}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-neutral-600">Refill Rate</dt>
+                    <dd className="mt-1 text-xl font-semibold text-neutral-900">
+                      {rateLimit.refill_rate}/sec
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-neutral-600">Utilization</dt>
+                    <dd className="mt-1 text-xl font-semibold text-neutral-900">
+                      {tokensPercentage.toFixed(1)}%
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-neutral-600">Reset In</dt>
+                    <dd className="mt-1 text-xl font-semibold text-neutral-900">
+                      {status.reset_time.toFixed(1)}s
+                    </dd>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <EmptyState
+                icon={
                   <svg
                     className="mx-auto h-12 w-12 text-neutral-400"
                     fill="none"
@@ -316,55 +327,39 @@ export function App() {
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <h3 className="mt-2 text-sm font-medium text-neutral-900">
-                    No status yet
-                  </h3>
-                  <p className="mt-1 text-sm text-neutral-500">
-                    Click "Check Rate Limit" to test
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+                }
+                title="No status yet"
+                message='Click "Check Rate Limit" to test'
+              />
+            )}
+          </DataCard>
         </div>
+      </div>
 
-        {/* Performance Info */}
-        <div className="mt-6 bg-white rounded-lg shadow-sm border border-neutral-200 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4">Rate Limiter Performance</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-success-50 rounded-lg border border-success-200">
-              <div className="text-2xl font-bold text-success-700">1M+</div>
-              <div className="text-sm text-success-900 mt-1">Checks/sec</div>
-            </div>
-            <div className="p-4 bg-primary-50 rounded-lg border border-primary-200">
-              <div className="text-2xl font-bold text-primary-700">Token Bucket</div>
-              <div className="text-sm text-primary-900 mt-1">Algorithm</div>
-            </div>
-            <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <div className="text-2xl font-bold text-amber-700">Multi-tenant</div>
-              <div className="text-sm text-amber-900 mt-1">ConsistentHashRing</div>
-            </div>
-            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-              <div className="text-2xl font-bold text-purple-700">326K+</div>
-              <div className="text-sm text-purple-900 mt-1">LRUCache ops/sec</div>
-            </div>
+      {/* Performance Info */}
+      <DataCard
+        title="Rate Limiter Performance"
+        subtitle="System capabilities and algorithms"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-success-50 rounded-lg border border-success-200">
+            <div className="text-2xl font-bold text-success-700">1M+</div>
+            <div className="text-sm text-success-900 mt-1">Checks/sec</div>
+          </div>
+          <div className="p-4 bg-primary-50 rounded-lg border border-primary-200">
+            <div className="text-2xl font-bold text-primary-700">Token Bucket</div>
+            <div className="text-sm text-primary-900 mt-1">Algorithm</div>
+          </div>
+          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+            <div className="text-2xl font-bold text-amber-700">Multi-tenant</div>
+            <div className="text-sm text-amber-900 mt-1">ConsistentHashRing</div>
+          </div>
+          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="text-2xl font-bold text-purple-700">326K+</div>
+            <div className="text-sm text-purple-900 mt-1">LRUCache ops/sec</div>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-12 border-t border-neutral-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between text-sm text-neutral-600">
-            <div>
-              <span className="font-semibold">Backend:</span> localhost:8011
-            </div>
-            <div>
-              <span className="font-semibold">Powered by:</span> LRUCache + ConsistentHashRing
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </DataCard>
+    </AppLayout>
   );
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-toolkit/app-05-data-export-ui",
+  "name": "@frontend-toolkit/app-$app",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@frontend-toolkit/atoms": "*",
+    "@frontend-toolkit/layouts": "*",
+    "@frontend-toolkit/performance": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

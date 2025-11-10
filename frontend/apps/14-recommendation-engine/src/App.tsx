@@ -1,9 +1,17 @@
 /**
  * Recommendation Engine UI - Example 14 (localhost:8014)
  * ML-powered recommendations with < 10ms P99 latency, 100K+ recs/sec
+ *
+ * REFACTORED: Now uses unified design system components
  */
 import { useState, useEffect } from 'react';
 import { Button, Badge } from '@frontend-toolkit/atoms';
+import {
+  AppLayout,
+  StatsBar,
+  DataCard,
+  EmptyState,
+} from '@frontend-toolkit/layouts';
 
 const API_URL = 'http://localhost:8014';
 
@@ -43,88 +51,156 @@ export function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">🎯 Recommendation Engine</h1>
-          <p className="text-sm text-neutral-600">Example 14: ML Recommendations {'(<'} 10ms P99, 100K+ recs/sec)</p>
-        </div>
-      </header>
+  // Convert stats to StatsBar format
+  const statsData = stats
+    ? [
+        {
+          label: 'Total Recommendations',
+          value: stats.recommendations_served?.toLocaleString() || '0',
+        },
+        {
+          label: 'Rate',
+          value: `${stats.recs_per_sec?.toLocaleString() || 0}/sec`,
+          variant: 'success' as const,
+        },
+        ...(latency > 0
+          ? [
+              {
+                label: 'Last Latency',
+                value: `${latency.toFixed(2)}ms`,
+                variant: (latency < 10 ? 'success' : 'warning') as const,
+              },
+            ]
+          : []),
+      ]
+    : [];
 
-      {stats && (
-        <div className="bg-primary-50 border-b">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex gap-6 text-sm">
-            <div><span className="font-semibold">Total Recommendations:</span> {stats.recommendations_served?.toLocaleString() || 0}</div>
-            <div><span className="font-semibold">Rate:</span> {stats.recs_per_sec?.toLocaleString() || 0}/sec</div>
-            {latency > 0 && (
-              <div><span className="font-semibold">Last Latency:</span> <span className={latency < 10 ? 'text-success-700' : 'text-amber-700'}>{latency.toFixed(2)}ms</span></div>
-            )}
+  return (
+    <AppLayout
+      title="Recommendation Engine"
+      description="ML Recommendations (< 10ms P99, 100K+ recs/sec)"
+      icon="🎯"
+      footerContent={
+        <div className="flex items-center justify-between text-sm text-neutral-600">
+          <div>
+            <span className="font-semibold">Backend:</span> localhost:8014
           </div>
+          <div>
+            <span className="font-semibold">Powered by:</span> LRUCache + fast_hash
+          </div>
+        </div>
+      }
+    >
+      {/* Stats Bar */}
+      {stats && (
+        <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-8">
+          <StatsBar stats={statsData} variant="compact" />
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg border p-6 mb-6">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="Enter user ID..."
-              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            <Button onClick={getRecommendations} disabled={!userId || loading} loading={loading}>
-              Get Recommendations
-            </Button>
-          </div>
+      {/* Query Interface */}
+      <DataCard
+        title="Get Recommendations"
+        subtitle="Enter a user ID to get personalized recommendations"
+        className="mb-6"
+      >
+        <div className="flex gap-4">
+          <input
+            type="text"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            placeholder="Enter user ID..."
+            className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            onKeyPress={(e) => e.key === 'Enter' && getRecommendations()}
+          />
+          <Button onClick={getRecommendations} disabled={!userId || loading} loading={loading}>
+            Get Recommendations
+          </Button>
         </div>
+      </DataCard>
 
-        {recommendations.length > 0 && (
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-lg font-semibold mb-4">Recommended for {userId}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recommendations.map((rec) => (
-                <div key={rec.item_id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="font-semibold text-neutral-900">{rec.item_id}</div>
-                    <Badge variant="primary" size="sm">{rec.score.toFixed(3)}</Badge>
-                  </div>
-                  <div className="text-sm text-neutral-600">
-                    {rec.reason || 'Based on your preferences'}
-                  </div>
-                  {rec.features && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {Object.entries(rec.features).slice(0, 3).map(([key, value]: [string, any]) => (
-                        <span key={key} className="px-2 py-0.5 text-xs bg-neutral-100 rounded">{key}</span>
-                      ))}
-                    </div>
-                  )}
+      {/* Recommendations Grid */}
+      {recommendations.length > 0 ? (
+        <DataCard
+          title={`Recommended for ${userId}`}
+          subtitle={`${recommendations.length} personalized recommendations`}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recommendations.map((rec) => (
+              <div
+                key={rec.item_id}
+                className="p-4 border border-neutral-200 rounded-lg hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="font-semibold text-neutral-900">{rec.item_id}</div>
+                  <Badge variant="primary" size="sm">
+                    {rec.score.toFixed(3)}
+                  </Badge>
                 </div>
-              ))}
-            </div>
+                <div className="text-sm text-neutral-600">
+                  {rec.reason || 'Based on your preferences'}
+                </div>
+                {rec.features && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {Object.entries(rec.features)
+                      .slice(0, 3)
+                      .map(([key, value]: [string, any]) => (
+                        <span
+                          key={key}
+                          className="px-2 py-0.5 text-xs bg-neutral-100 rounded"
+                        >
+                          {key}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        )}
+        </DataCard>
+      ) : (
+        !loading && (
+          <EmptyState
+            icon={
+              <svg
+                className="mx-auto h-12 w-12 text-neutral-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                />
+              </svg>
+            }
+            title="No recommendations yet"
+            message="Enter a user ID and click 'Get Recommendations' to see personalized results"
+          />
+        )
+      )}
 
-        <div className="mt-6 grid grid-cols-4 gap-4">
-          <div className="bg-success-50 p-4 rounded-lg border border-success-200">
-            <div className="text-2xl font-bold text-success-700">100K+</div>
-            <div className="text-sm text-success-900">Recs/sec</div>
-          </div>
-          <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
-            <div className="text-2xl font-bold text-primary-700">&lt; 10ms</div>
-            <div className="text-sm text-primary-900">P99 Latency</div>
-          </div>
-          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-            <div className="text-2xl font-bold text-amber-700">326K+</div>
-            <div className="text-sm text-amber-900">LRUCache ops/sec</div>
-          </div>
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <div className="text-2xl font-bold text-purple-700">886K+</div>
-            <div className="text-sm text-purple-900">fast_hash ops/sec</div>
-          </div>
+      {/* Performance Info */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-success-50 p-4 rounded-lg border border-success-200">
+          <div className="text-2xl font-bold text-success-700">100K+</div>
+          <div className="text-sm text-success-900">Recs/sec</div>
         </div>
-      </main>
-    </div>
+        <div className="bg-primary-50 p-4 rounded-lg border border-primary-200">
+          <div className="text-2xl font-bold text-primary-700">&lt; 10ms</div>
+          <div className="text-sm text-primary-900">P99 Latency</div>
+        </div>
+        <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+          <div className="text-2xl font-bold text-amber-700">326K+</div>
+          <div className="text-sm text-amber-900">LRUCache ops/sec</div>
+        </div>
+        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="text-2xl font-bold text-purple-700">886K+</div>
+          <div className="text-sm text-purple-900">fast_hash ops/sec</div>
+        </div>
+      </div>
+    </AppLayout>
   );
 }

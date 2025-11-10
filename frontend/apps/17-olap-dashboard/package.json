@@ -10,6 +10,7 @@
   "dependencies": {
     "@frontend-toolkit/atoms": "*",
     "@frontend-toolkit/design-tokens": "*",
+    "@frontend-toolkit/layouts": "*",
     "@frontend-toolkit/performance": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
