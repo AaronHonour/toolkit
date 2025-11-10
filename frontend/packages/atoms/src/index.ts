@@ -9,3 +9,5 @@ export { Input, type InputProps } from './Input/Input';
 export { Badge, type BadgeProps } from './Badge/Badge';
 export { Spinner, type SpinnerProps } from './Spinner/Spinner';
 export { Icon, IconPaths, type IconProps } from './Icon/Icon';
+export { Select, type SelectProps, type SelectOption } from './Select/Select';
+export { ErrorMessage, type ErrorMessageProps } from './ErrorMessage/ErrorMessage';

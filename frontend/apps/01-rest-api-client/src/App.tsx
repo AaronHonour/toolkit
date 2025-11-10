@@ -7,10 +7,19 @@
  * - Inventory management
  * - Stock operations (reserve, release, fulfill)
  * - Real-time performance metrics
+ *
+ * REFACTORED: Now uses unified design system components
  */
 
 import { useState, useEffect } from 'react';
-import { Button, Badge, Input } from '@frontend-toolkit/atoms';
+import { Button, Badge, Input, Select } from '@frontend-toolkit/atoms';
+import {
+  AppLayout,
+  StatsBar,
+  LoadingState,
+  EmptyState,
+  DataCard,
+} from '@frontend-toolkit/layouts';
 import { useDebounce } from '@frontend-toolkit/performance';
 
 interface Product {
@@ -124,226 +133,204 @@ export function App() {
     }
   };
 
-  const categories = ['all', 'electronics', 'widgets', 'gadgets', 'tools', 'accessories'];
+  const categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'electronics', label: 'Electronics' },
+    { value: 'widgets', label: 'Widgets' },
+    { value: 'gadgets', label: 'Gadgets' },
+    { value: 'tools', label: 'Tools' },
+    { value: 'accessories', label: 'Accessories' },
+  ];
+
+  // Convert stats to StatsBar format
+  const statsData = [
+    {
+      label: 'Products',
+      value: stats.total_products?.toLocaleString() || '0',
+    },
+    {
+      label: 'Requests',
+      value: stats.total_requests?.toLocaleString() || '0',
+    },
+    {
+      label: 'Avg Response',
+      value: `${stats.avg_response_time_ms?.toFixed(2) || 0}ms`,
+      variant: 'success' as const,
+    },
+    {
+      label: 'Cache Hit Rate',
+      value: `${((stats.cache_hit_rate || 0) * 100).toFixed(1)}%`,
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">🛍️ E-commerce Inventory</h1>
-          <p className="text-sm text-neutral-600 mt-1">
-            High-Performance REST API (445K RPS, P99 &lt; 100ms)
-          </p>
+    <AppLayout
+      title="E-commerce Inventory"
+      description="High-Performance REST API (445K RPS, P99 < 100ms)"
+      icon="🛍️"
+      footerContent={
+        <div className="flex items-center justify-between text-sm text-neutral-600">
+          <div>
+            <span className="font-semibold">Backend:</span> localhost:8000
+          </div>
+          <div>
+            <span className="font-semibold">Powered by:</span> LRUCache (203K+ cache hits/sec)
+          </div>
         </div>
-      </header>
-
+      }
+    >
       {/* Stats Bar */}
-      <div className="bg-primary-50 border-b border-primary-200">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex gap-6 text-sm">
-            <div>
-              <span className="font-semibold text-primary-900">Products:</span>
-              <span className="ml-2 text-primary-700">{stats.total_products?.toLocaleString() || 0}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-primary-900">Requests:</span>
-              <span className="ml-2 text-primary-700">{stats.total_requests?.toLocaleString() || 0}</span>
-            </div>
-            <div>
-              <span className="font-semibold text-primary-900">Avg Response:</span>
-              <span className="ml-2 text-success-700">{stats.avg_response_time_ms?.toFixed(2) || 0}ms</span>
-            </div>
-            <div>
-              <span className="font-semibold text-primary-900">Cache Hit Rate:</span>
-              <span className="ml-2 text-primary-700">{((stats.cache_hit_rate || 0) * 100).toFixed(1)}%</span>
-            </div>
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-8">
+        <StatsBar stats={statsData} variant="compact" />
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products by name, SKU, or description..."
+              fullWidth
+              leftIcon={
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              }
+            />
+          </div>
+          <div className="w-full sm:w-48">
+            <Select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              options={categories}
+              fullWidth
+            />
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6 mb-6">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products by name, SKU, or description..."
-                leftIcon={
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                }
-              />
-            </div>
-            <div>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat === 'all' ? 'All Categories' : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Products Grid */}
+      {/* Products Grid */}
+      {loading ? (
+        <LoadingState message="Loading products..." />
+      ) : products.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loading ? (
-            <div className="col-span-full text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              <p className="mt-2 text-sm text-neutral-600">Loading products...</p>
-            </div>
-          ) : products.length > 0 ? (
-            products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-lg border border-neutral-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => {
-                  setSelectedProduct(product);
-                  fetchInventory(product.id);
-                }}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-semibold text-neutral-900">{product.name}</h3>
-                    <p className="text-xs text-neutral-500 font-mono">{product.sku}</p>
-                  </div>
-                  <Badge variant={product.status === 'active' ? 'success' : 'secondary'} size="sm">
-                    {product.status}
-                  </Badge>
-                </div>
-
-                <p className="text-sm text-neutral-600 mb-3 line-clamp-2">{product.description}</p>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-lg font-bold text-neutral-900">${product.price.toFixed(2)}</span>
-                    <span className="text-xs text-neutral-500 ml-2">Cost: ${product.cost.toFixed(2)}</span>
-                  </div>
-                  <Badge variant="primary" size="sm">{product.category}</Badge>
-                </div>
-
-                {product.tags && product.tags.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {product.tags.slice(0, 3).map((tag, idx) => (
-                      <span key={idx} className="px-2 py-0.5 text-xs bg-neutral-100 text-neutral-700 rounded">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+          {products.map((product) => (
+            <DataCard
+              key={product.id}
+              title={product.name}
+              subtitle={product.sku}
+              badge={{
+                label: product.status,
+                variant: product.status === 'active' ? 'success' : 'secondary',
+              }}
+              metadata={[
+                { label: 'Price', value: `$${product.price.toFixed(2)}` },
+                { label: 'Cost', value: `$${product.cost.toFixed(2)}` },
+              ]}
+              tags={product.tags?.slice(0, 3)}
+              onClick={() => {
+                setSelectedProduct(product);
+                fetchInventory(product.id);
+              }}
+            >
+              <p className="line-clamp-2">{product.description}</p>
+              <div className="mt-2">
+                <Badge variant="primary" size="sm">{product.category}</Badge>
               </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-neutral-900">No products found</h3>
-              <p className="mt-1 text-sm text-neutral-500">Try adjusting your search or filters</p>
-            </div>
-          )}
+            </DataCard>
+          ))}
         </div>
+      ) : (
+        <EmptyState
+          icon="📦"
+          title="No products found"
+          description="Try adjusting your search or filters to find what you're looking for."
+        />
+      )}
 
-        {/* Product Detail Modal */}
-        {selectedProduct && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedProduct(null)}>
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-neutral-900">{selectedProduct.name}</h2>
-                    <p className="text-sm text-neutral-500 font-mono">{selectedProduct.sku}</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedProduct(null)}
-                    className="text-neutral-400 hover:text-neutral-600"
-                  >
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setSelectedProduct(null)}
+        >
+          <div
+            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-neutral-900">{selectedProduct.name}</h2>
+                  <p className="text-sm text-neutral-500 font-mono">{selectedProduct.sku}</p>
                 </div>
-
-                <p className="text-neutral-600 mb-4">{selectedProduct.description}</p>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="p-3 bg-neutral-50 rounded">
-                    <div className="text-sm text-neutral-600">Price</div>
-                    <div className="text-xl font-bold text-neutral-900">${selectedProduct.price.toFixed(2)}</div>
-                  </div>
-                  <div className="p-3 bg-neutral-50 rounded">
-                    <div className="text-sm text-neutral-600">Cost</div>
-                    <div className="text-xl font-bold text-neutral-900">${selectedProduct.cost.toFixed(2)}</div>
-                  </div>
-                </div>
-
-                {/* Inventory Section */}
-                {inventory.has(selectedProduct.id) && (
-                  <div className="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
-                    <h3 className="font-semibold text-primary-900 mb-3">Inventory Status</h3>
-                    {(() => {
-                      const inv = inventory.get(selectedProduct.id)!;
-                      const available = inv.quantity - inv.reserved;
-                      return (
-                        <>
-                          <div className="grid grid-cols-3 gap-3 mb-4">
-                            <div>
-                              <div className="text-xs text-primary-700">Total</div>
-                              <div className="text-lg font-bold text-primary-900">{inv.quantity}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-amber-700">Reserved</div>
-                              <div className="text-lg font-bold text-amber-900">{inv.reserved}</div>
-                            </div>
-                            <div>
-                              <div className="text-xs text-success-700">Available</div>
-                              <div className="text-lg font-bold text-success-900">{available}</div>
-                            </div>
-                          </div>
-                          <div className="text-xs text-primary-700 mb-2">
-                            Location: <span className="font-semibold">{inv.warehouse_location}</span>
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={() => reserveStock(selectedProduct.id, 1)}
-                            disabled={available <= 0}
-                          >
-                            Reserve 1 Unit
-                          </Button>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
+                <button
+                  onClick={() => setSelectedProduct(null)}
+                  className="text-neutral-400 hover:text-neutral-600"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-            </div>
-          </div>
-        )}
-      </main>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-neutral-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between text-sm text-neutral-600">
-            <div>
-              <span className="font-semibold">Backend:</span> localhost:8000
-            </div>
-            <div>
-              <span className="font-semibold">Powered by:</span> LRUCache (203K+ cache hits/sec)
+              <p className="text-neutral-600 mb-4">{selectedProduct.description}</p>
+
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="p-3 bg-neutral-50 rounded">
+                  <div className="text-sm text-neutral-600">Price</div>
+                  <div className="text-xl font-bold text-neutral-900">${selectedProduct.price.toFixed(2)}</div>
+                </div>
+                <div className="p-3 bg-neutral-50 rounded">
+                  <div className="text-sm text-neutral-600">Cost</div>
+                  <div className="text-xl font-bold text-neutral-900">${selectedProduct.cost.toFixed(2)}</div>
+                </div>
+              </div>
+
+              {/* Inventory Section */}
+              {inventory.has(selectedProduct.id) && (
+                <div className="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
+                  <h3 className="font-semibold text-primary-900 mb-3">Inventory Status</h3>
+                  {(() => {
+                    const inv = inventory.get(selectedProduct.id)!;
+                    const available = inv.quantity - inv.reserved;
+                    return (
+                      <>
+                        <div className="grid grid-cols-3 gap-3 mb-4">
+                          <div>
+                            <div className="text-xs text-primary-700">Total</div>
+                            <div className="text-lg font-bold text-primary-900">{inv.quantity}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-amber-700">Reserved</div>
+                            <div className="text-lg font-bold text-amber-900">{inv.reserved}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-success-700">Available</div>
+                            <div className="text-lg font-bold text-success-900">{available}</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-primary-700 mb-2">
+                          Location: <span className="font-semibold">{inv.warehouse_location}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => reserveStock(selectedProduct.id, 1)}
+                          disabled={available <= 0}
+                        >
+                          Reserve 1 Unit
+                        </Button>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      )}
+    </AppLayout>
   );
 }
