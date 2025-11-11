@@ -70,7 +70,7 @@ def mock_redis_client():
 @pytest.fixture
 def in_memory_cache():
     """Provide in-memory cache for testing."""
-    from toolkit.cache import CacheManager
+    from unistax.cache import CacheManager
     return CacheManager(backend="memory")
 
 
@@ -132,7 +132,7 @@ def mock_event_bus():
 @pytest.fixture
 def test_container():
     """Provide DI container for testing."""
-    from toolkit.di import Container
+    from unistax.di import Container
     container = Container()
     yield container
     # Cleanup
@@ -142,7 +142,7 @@ def test_container():
 @pytest.fixture
 def temp_storage(temp_dir):
     """Provide temporary file storage."""
-    from toolkit.storage import LocalStorage
+    from unistax.storage import LocalStorage
     return LocalStorage(base_path=temp_dir)
 
 
@@ -216,7 +216,7 @@ def mock_repository():
 def test_client():
     """Provide FastAPI test client."""
     from fastapi.testclient import TestClient
-    from toolkit.api import APIApplication
+    from unistax.api import APIApplication
 
     app = APIApplication(title="Test API")
     return TestClient(app.get_app())
@@ -226,7 +226,7 @@ def test_client():
 @pytest.fixture
 def pagination_params():
     """Provide test pagination params."""
-    from toolkit.pagination import PaginationParams
+    from unistax.pagination import PaginationParams
     return PaginationParams(page=1, page_size=20)
 
 

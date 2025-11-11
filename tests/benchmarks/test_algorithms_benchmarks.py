@@ -10,7 +10,7 @@ import json
 import pickle
 from collections import OrderedDict
 
-from toolkit.algorithms import (
+from unistax.algorithms import (
     RingBuffer,
     LRUCache,
     BloomFilter,

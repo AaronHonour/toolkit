@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from toolkit.errors import (
+from unistax.errors import (
     ApplicationError,
     ErrorCode,
     ValidationError,

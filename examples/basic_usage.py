@@ -7,7 +7,7 @@ Demonstrates how to use configuration, logging, errors, and environment modules.
 from pathlib import Path
 
 # Configuration Management
-from toolkit.config import ConfigManager
+from unistax.config import ConfigManager
 
 print("=" * 60)
 print("Configuration Management Example")
@@ -34,7 +34,7 @@ config.set("app.version", "1.0.1")
 print()
 
 # Logging
-from toolkit.logging import LoggerFactory, get_logger
+from unistax.logging import LoggerFactory, get_logger
 
 print("=" * 60)
 print("Logging Example")
@@ -61,7 +61,7 @@ logger.clear_context()
 print()
 
 # Error Handling
-from toolkit.errors import (
+from unistax.errors import (
     ApplicationError,
     ValidationError,
     DatabaseError,
@@ -107,7 +107,7 @@ except DatabaseError as e:
 print()
 
 # Error handlers
-from toolkit.errors import LoggingErrorHandler, ErrorHandlerChain
+from unistax.errors import LoggingErrorHandler, ErrorHandlerChain
 
 handler_chain = ErrorHandlerChain()
 handler_chain.add_handler(LoggingErrorHandler(logger=logger._logger))
@@ -120,7 +120,7 @@ except ApplicationError as e:
 print()
 
 # Environment Management
-from toolkit.env import EnvManager, Environment
+from unistax.env import EnvManager, Environment
 
 print("=" * 60)
 print("Environment Management Example")

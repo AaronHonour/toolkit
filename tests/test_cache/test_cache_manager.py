@@ -15,8 +15,8 @@ Testing Strategy:
 import pytest
 import time
 from unittest.mock import Mock, patch
-from toolkit.cache.manager import CacheManager
-from toolkit.cache.backends import InMemoryCache
+from unistax.cache.manager import CacheManager
+from unistax.cache.backends import InMemoryCache
 
 
 class TestCacheManagerBasics:

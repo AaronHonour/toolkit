@@ -1,0 +1,665 @@
+version: '3.8'
+
+# =============================================================================
+# Unistax - Full Stack Docker Compose
+# All 19 backend services + frontend + infrastructure
+# =============================================================================
+
+networks:
+  unistax-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  kafka-data:
+  zookeeper-data:
+  timescale-data:
+  prometheus-data:
+  grafana-data:
+  frontend-node-modules:
+
+services:
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: unistax-postgres
+    environment:
+      POSTGRES_USER: unistax
+      POSTGRES_PASSWORD: unistax_dev
+      POSTGRES_DB: unistax
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - unistax-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unistax"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: unistax-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - unistax-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Kafka + Zookeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: unistax-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - unistax-network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: unistax-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - unistax-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # TimescaleDB (for time-series data)
+  timescale:
+    image: timescale/timescaledb:latest-pg15
+    container_name: unistax-timescale
+    environment:
+      POSTGRES_USER: unistax
+      POSTGRES_PASSWORD: unistax_dev
+      POSTGRES_DB: timeseries
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    networks:
+      - unistax-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unistax"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: unistax-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+    networks:
+      - unistax-network
+    restart: unless-stopped
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: unistax-grafana
+    ports:
+      - "3020:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - unistax-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # Jaeger - Distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: unistax-jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - unistax-network
+    restart: unless-stopped
+
+  # Loki - Log aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: unistax-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - unistax-network
+    restart: unless-stopped
+
+  # Backend Services
+  # App 01: E-Commerce Inventory
+  app01:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app01
+    working_dir: /app/backends/01_high_performance_rest_api
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/01_high_performance_rest_api:/app/backends/01_high_performance_rest_api
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 02: Analytics Dashboard
+  app02:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app02
+    working_dir: /app/backends/02_realtime_analytics_dashboard
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/02_realtime_analytics_dashboard:/app/backends/02_realtime_analytics_dashboard
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 03: File Processing Service
+  app03:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app03
+    working_dir: /app/backends/03_file_processing_service
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8003 --reload
+    ports:
+      - "8003:8003"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/03_file_processing_service:/app/backends/03_file_processing_service
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 04: Microservices Gateway
+  app04:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app04
+    working_dir: /app/backends/04_microservices_gateway
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8004 --reload
+    ports:
+      - "8004:8004"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/04_microservices_gateway:/app/backends/04_microservices_gateway
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 05: Data Export Service
+  app05:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app05
+    working_dir: /app/backends/05_data_export_service
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8005 --reload
+    ports:
+      - "8005:8005"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/05_data_export_service:/app/backends/05_data_export_service
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 06: Kappa Architecture
+  app06:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app06
+    working_dir: /app/backends/06_kappa_architecture
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8006 --reload
+    ports:
+      - "8006:8006"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/06_kappa_architecture:/app/backends/06_kappa_architecture
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 07: Event Sourcing
+  app07:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app07
+    working_dir: /app/backends/07_event_sourcing
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8007 --reload
+    ports:
+      - "8007:8007"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/07_event_sourcing:/app/backends/07_event_sourcing
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 08: Timeseries DB
+  app08:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app08
+    working_dir: /app/backends/08_timeseries_db
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8008 --reload
+    ports:
+      - "8008:8008"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/08_timeseries_db:/app/backends/08_timeseries_db
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 09: Distributed Cache
+  app09:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app09
+    working_dir: /app/backends/09_distributed_cache
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8009 --reload
+    ports:
+      - "8009:8009"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/09_distributed_cache:/app/backends/09_distributed_cache
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 10: Message Queue Manager
+  app10:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app10
+    working_dir: /app/backends/10_message_queue
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8010 --reload
+    ports:
+      - "8010:8010"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/10_message_queue:/app/backends/10_message_queue
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 11: Rate Limiter
+  app11:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app11
+    working_dir: /app/backends/11_rate_limiter
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8011 --reload
+    ports:
+      - "8011:8011"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/11_rate_limiter:/app/backends/11_rate_limiter
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 12: Lambda Architecture
+  app12:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app12
+    working_dir: /app/backends/12_lambda_architecture
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8012 --reload
+    ports:
+      - "8012:8012"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/12_lambda_architecture:/app/backends/12_lambda_architecture
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 13: CDC Pipeline
+  app13:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app13
+    working_dir: /app/backends/13_cdc_pipeline
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8013 --reload
+    ports:
+      - "8013:8013"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/13_cdc_pipeline:/app/backends/13_cdc_pipeline
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 14: Recommendation Engine
+  app14:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app14
+    working_dir: /app/backends/14_recommendation_engine
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8014 --reload
+    ports:
+      - "8014:8014"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/14_recommendation_engine:/app/backends/14_recommendation_engine
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 15: Fulltext Search
+  app15:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app15
+    working_dir: /app/backends/15_fulltext_search
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8015 --reload
+    ports:
+      - "8015:8015"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/15_fulltext_search:/app/backends/15_fulltext_search
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 16: Feature Store
+  app16:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app16
+    working_dir: /app/backends/16_feature_store
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8016 --reload
+    ports:
+      - "8016:8016"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/16_feature_store:/app/backends/16_feature_store
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 17: Realtime OLAP
+  app17:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app17
+    working_dir: /app/backends/17_realtime_olap
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8017 --reload
+    ports:
+      - "8017:8017"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/17_realtime_olap:/app/backends/17_realtime_olap
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 18: Distributed Tracing
+  app18:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app18
+    working_dir: /app/backends/18_distributed_tracing
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8018 --reload
+    ports:
+      - "8018:8018"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/18_distributed_tracing:/app/backends/18_distributed_tracing
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  # App 19: Probabilistic Structures
+  app19:
+    build:
+      context: ../python
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-app19
+    working_dir: /app/backends/19_probabilistic_structures
+    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8019 --reload
+    ports:
+      - "8019:8019"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://unistax:unistax_dev@postgres:5432/unistax
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./backends/19_probabilistic_structures:/app/backends/19_probabilistic_structures
+      - ../python/src:/app/src
+    networks:
+      - unistax-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: unistax-frontend
+    working_dir: /app
+    command: sh -c "npm install --prefer-offline && npm run dev"
+    ports:
+      - "3000-3019:3000-3019"
+    environment:
+      - NODE_ENV=development
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ../frontend:/app
+      - ./frontends:/app/../examples/frontends
+      - frontend-node-modules:/app/node_modules
+    networks:
+      - unistax-network
+    restart: unless-stopped

@@ -5,7 +5,7 @@ import time
 from tests.benchmark import Benchmark, MemoryBenchmark
 from tests.factories import StringFactory, NumberFactory
 from tests.utils import assert_time_limit, PerformanceAssertion
-from toolkit.performance import MultiLevelCache, BatchProcessor
+from unistax.performance import MultiLevelCache, BatchProcessor
 
 
 class TestCachePerformance:
