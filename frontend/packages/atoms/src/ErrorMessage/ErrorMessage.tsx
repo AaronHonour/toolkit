@@ -1,9 +1,10 @@
 /**
- * ErrorMessage Component
- * Displays user-facing error messages with consistent styling
+ * ErrorMessage Component - Professional Error Display
+ *
+ * Unified design with seamless light/dark mode transitions
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 
 export interface ErrorMessageProps {
   title?: string;
@@ -13,7 +14,7 @@ export interface ErrorMessageProps {
   variant?: 'inline' | 'banner' | 'toast';
 }
 
-export const ErrorMessage = React.memo<ErrorMessageProps>(({
+export const ErrorMessage = memo<ErrorMessageProps>(({
   title = 'Error',
   message,
   onRetry,
@@ -21,23 +22,27 @@ export const ErrorMessage = React.memo<ErrorMessageProps>(({
   variant = 'inline',
 }) => {
   const variantStyles = {
-    inline: 'border border-error-300 bg-error-50 rounded-lg p-4',
-    banner: 'bg-error-500 text-white p-4',
-    toast: 'bg-error-600 text-white rounded-lg shadow-lg p-4 max-w-md',
+    inline: 'border-2 border-error-300 dark:border-error-800 bg-error-50 dark:bg-error-900/20 rounded-xl p-4 shadow-sm',
+    banner: 'bg-error-500 dark:bg-error-600 text-white p-4 border-b-2 border-error-600 dark:border-error-700',
+    toast: 'bg-error-600 dark:bg-error-700 text-white rounded-xl shadow-xl p-4 max-w-md border border-error-700 dark:border-error-800',
   };
 
   const textStyles = {
-    inline: 'text-error-900',
+    inline: 'text-error-900 dark:text-error-100',
     banner: 'text-white',
     toast: 'text-white',
   };
 
+  const iconColor = variant === 'inline'
+    ? 'text-error-500 dark:text-error-400'
+    : 'text-white';
+
   return (
-    <div className={variantStyles[variant]} role="alert">
-      <div className="flex items-start">
+    <div className={`${variantStyles[variant]} transition-all duration-normal animate-scale-in`} role="alert">
+      <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           <svg
-            className={`h-5 w-5 ${variant === 'inline' ? 'text-error-400' : 'text-white'}`}
+            className={`h-5 w-5 ${iconColor}`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -48,23 +53,27 @@ export const ErrorMessage = React.memo<ErrorMessageProps>(({
             />
           </svg>
         </div>
-        <div className="ml-3 flex-1">
-          <h3 className={`text-sm font-medium ${textStyles[variant]}`}>
+        <div className="flex-1 min-w-0">
+          <h3 className={`text-sm font-bold ${textStyles[variant]}`}>
             {title}
           </h3>
-          <div className={`mt-1 text-sm ${variant === 'inline' ? 'text-error-700' : 'text-white opacity-90'}`}>
+          <div className={`mt-1 text-sm ${
+            variant === 'inline'
+              ? 'text-error-800 dark:text-error-200'
+              : 'text-white opacity-95'
+          }`}>
             <p>{message}</p>
           </div>
           {(onRetry || onDismiss) && (
-            <div className="mt-3 flex gap-3">
+            <div className="mt-4 flex gap-3">
               {onRetry && (
                 <button
                   type="button"
                   onClick={onRetry}
-                  className={`text-sm font-medium ${
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all duration-normal ${
                     variant === 'inline'
-                      ? 'text-error-700 hover:text-error-800'
-                      : 'text-white hover:text-error-100'
+                      ? 'bg-error-600 text-white hover:bg-error-700 dark:bg-error-700 dark:hover:bg-error-800'
+                      : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
                   }`}
                 >
                   Try again
@@ -74,10 +83,10 @@ export const ErrorMessage = React.memo<ErrorMessageProps>(({
                 <button
                   type="button"
                   onClick={onDismiss}
-                  className={`text-sm font-medium ${
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all duration-normal ${
                     variant === 'inline'
-                      ? 'text-error-700 hover:text-error-800'
-                      : 'text-white hover:text-error-100'
+                      ? 'text-error-700 dark:text-error-300 hover:bg-error-100 dark:hover:bg-error-900/40'
+                      : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm'
                   }`}
                 >
                   Dismiss

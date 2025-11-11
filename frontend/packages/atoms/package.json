@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-toolkit/atoms",
+  "name": "@unistax/atoms",
   "version": "1.0.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -11,8 +11,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@frontend-toolkit/design-tokens": "*",
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "@unistax/design-tokens": "*"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Spinner, type SpinnerProps } from '@frontend-toolkit/atoms';
+import { Spinner, type SpinnerProps } from '@unistax/atoms';
 
 export interface LoadingStateProps {
   /** Size of the loading indicator */

@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { Button, type ButtonProps } from '@frontend-toolkit/atoms';
+import { Button, type ButtonProps } from '@unistax/atoms';
 
 export interface ModalProps {
   /** Whether the modal is open */

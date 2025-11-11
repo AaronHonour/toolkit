@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Button, type ButtonProps } from '@frontend-toolkit/atoms';
+import { Button, type ButtonProps } from '@unistax/atoms';
 
 export interface EmptyStateProps {
   /** Icon to display (can be emoji or SVG element) */

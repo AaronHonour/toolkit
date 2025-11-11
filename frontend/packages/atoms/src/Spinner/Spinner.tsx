@@ -1,7 +1,7 @@
 /**
- * Spinner Component
+ * Spinner Component - Professional Loading Indicator
  *
- * Performance optimized loading spinner
+ * Unified design with brand colors and dark mode support
  * Target: 60fps animation (< 16ms per frame)
  */
 
@@ -11,7 +11,7 @@ export interface SpinnerProps {
   /** Spinner size */
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   /** Spinner color */
-  color?: 'primary' | 'white' | 'neutral';
+  color?: 'primary' | 'secondary' | 'white' | 'neutral';
   /** Custom className */
   className?: string;
   /** Accessibility label */
@@ -20,7 +20,6 @@ export interface SpinnerProps {
 
 export const Spinner = memo<SpinnerProps>(
   ({ size = 'md', color = 'primary', className = '', label = 'Loading...' }) => {
-    // Size styles (optimized for performance)
     const sizeStyles = {
       xs: 'w-3 h-3',
       sm: 'w-4 h-4',
@@ -29,20 +28,12 @@ export const Spinner = memo<SpinnerProps>(
       xl: 'w-12 h-12',
     };
 
-    // Color styles
+    // Brand-aligned color styles with dark mode
     const colorStyles = {
-      primary: 'text-primary-600',
+      primary: 'text-primary-600 dark:text-primary-400',
+      secondary: 'text-secondary-600 dark:text-secondary-400',
       white: 'text-white',
-      neutral: 'text-neutral-600',
-    };
-
-    // Border width based on size
-    const borderWidth = {
-      xs: 'border',
-      sm: 'border-2',
-      md: 'border-2',
-      lg: 'border-[3px]',
-      xl: 'border-4',
+      neutral: 'text-neutral-600 dark:text-neutral-400',
     };
 
     return (

@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-toolkit/performance",
+  "name": "@unistax/performance",
   "version": "1.0.0",
   "type": "module",
   "main": "./src/index.ts",

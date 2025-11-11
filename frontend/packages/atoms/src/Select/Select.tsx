@@ -1,9 +1,10 @@
 /**
- * Select Component
- * Accessible dropdown select with consistent styling
+ * Select Component - Professional Dropdown
+ *
+ * Unified design with seamless light/dark mode transitions
  */
 
-import React from 'react';
+import React, { memo, forwardRef } from 'react';
 
 export interface SelectOption {
   value: string;
@@ -20,73 +21,93 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
   fullWidth?: boolean;
 }
 
-export const Select = React.memo<SelectProps>(({
-  label,
-  error,
-  helperText,
-  options,
-  size = 'md',
-  fullWidth = false,
-  className = '',
-  disabled,
-  ...props
-}) => {
-  const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-5 py-3 text-lg',
-  };
+export const Select = memo(
+  forwardRef<HTMLSelectElement, SelectProps>(
+    (
+      {
+        label,
+        error,
+        helperText,
+        options,
+        size = 'md',
+        fullWidth = false,
+        className = '',
+        disabled,
+        ...props
+      },
+      ref
+    ) => {
+      const sizeStyles = {
+        sm: 'px-3 py-2 text-sm',
+        md: 'px-4 py-3 text-base',
+        lg: 'px-5 py-4 text-lg',
+      };
 
-  const baseStyles = `
-    border rounded-lg
-    transition-colors duration-200
-    focus:outline-none focus:ring-2
-    disabled:opacity-50 disabled:cursor-not-allowed
-    appearance-none bg-no-repeat
-    ${fullWidth ? 'w-full' : ''}
-  `;
+      const baseStyles = `
+        border-2 rounded-xl
+        transition-all duration-normal
+        focus:outline-none focus:ring-2
+        disabled:opacity-50 disabled:cursor-not-allowed
+        appearance-none
+        ${fullWidth ? 'w-full' : ''}
+      `;
 
-  const stateStyles = error
-    ? 'border-error-500 focus:border-error-500 focus:ring-error-200'
-    : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-200';
+      const stateStyles = error
+        ? 'border-error-500 focus:border-error-600 focus:ring-error-500/20 bg-white dark:bg-dark-200'
+        : 'border-neutral-300 dark:border-dark-100 focus:border-primary-500 dark:focus:border-primary-400 focus:ring-primary-500/20 bg-white dark:bg-dark-200';
 
-  const backgroundStyles = `
-    bg-white
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")
-    background-position: right 0.5rem center
-    background-size: 1.5em 1.5em
-    pr-10
-  `;
+      const textStyles = 'text-neutral-900 dark:text-white';
 
-  return (
-    <div className={fullWidth ? 'w-full' : ''}>
-      {label && (
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
-          {label}
-        </label>
-      )}
-      <select
-        className={`${baseStyles} ${stateStyles} ${sizeStyles[size]} ${backgroundStyles} ${className}`}
-        disabled={disabled}
-        {...props}
-      >
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            disabled={option.disabled}
-          >
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {(error || helperText) && (
-        <p className={`mt-1 text-sm ${error ? 'text-error-600' : 'text-neutral-600'}`}>
-          {error || helperText}
-        </p>
-      )}
-    </div>
-  );
-});
+      // Custom dropdown arrow
+      const chevronDown = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2300D9FF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`;
+
+      return (
+        <div className={fullWidth ? 'w-full' : ''}>
+          {label && (
+            <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+              {label}
+            </label>
+          )}
+          <div className="relative">
+            <select
+              ref={ref}
+              className={`${baseStyles} ${stateStyles} ${textStyles} ${sizeStyles[size]} pr-10 ${className}`}
+              style={{
+                backgroundImage: chevronDown,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.25em 1.25em',
+              }}
+              disabled={disabled}
+              {...props}
+            >
+              {options.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                  className="bg-white dark:bg-dark-200 text-neutral-900 dark:text-white"
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {(error || helperText) && (
+            <p
+              className={`mt-2 text-xs ${
+                error
+                  ? 'text-error-600 dark:text-error-400'
+                  : 'text-neutral-600 dark:text-neutral-400'
+              } animate-fade-in`}
+            >
+              {error || helperText}
+            </p>
+          )}
+        </div>
+      );
+    }
+  )
+);
 
 Select.displayName = 'Select';

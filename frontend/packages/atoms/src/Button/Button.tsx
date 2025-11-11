@@ -1,9 +1,10 @@
 /**
- * Button Atom - Core UI Component
+ * Button Atom - Premium UI Component
  *
- * Performance-optimized with React.memo (similar to backend LRUCache pattern)
- * - Only re-renders when props change
- * - Configurable variants (like backend configurable algorithms)
+ * Professional button with refined states, animations, and accessibility
+ * - Smooth transitions and micro-interactions
+ * - Enhanced focus states
+ * - Professional elevation and shadows
  * - < 1ms render time target
  */
 
@@ -13,18 +14,16 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /**
    * Button variant
-   * Similar to backend service types
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'gradient' | 'success';
 
   /**
    * Button size
    */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 
   /**
    * Loading state
-   * Shows spinner (non-blocking UI, like backend async patterns)
    */
   loading?: boolean;
 
@@ -50,23 +49,26 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800',
-  secondary: 'bg-neutral-600 text-white hover:bg-neutral-700 active:bg-neutral-800',
-  outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 active:bg-primary-100',
-  ghost: 'text-primary-600 hover:bg-primary-50 active:bg-primary-100',
-  danger: 'bg-error-500 text-white hover:bg-error-600 active:bg-error-700',
+  primary: 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm hover:shadow-md active:shadow-sm',
+  secondary: 'bg-neutral-600 text-white hover:bg-neutral-700 active:bg-neutral-800 shadow-sm hover:shadow-md active:shadow-sm',
+  outline: 'border-2 border-primary-600 text-primary-600 dark:border-primary-400 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-dark-100 active:bg-primary-100 dark:active:bg-dark-50',
+  ghost: 'text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-dark-100 active:bg-primary-100 dark:active:bg-dark-50',
+  danger: 'bg-error-500 text-white hover:bg-error-600 active:bg-error-700 shadow-sm hover:shadow-md active:shadow-sm',
+  gradient: 'btn-gradient text-white font-semibold shadow-lg relative',
+  success: 'bg-success-500 text-white hover:bg-success-600 active:bg-success-700 shadow-sm hover:shadow-md active:shadow-sm',
 } as const;
 
 const sizeStyles = {
   sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
+  md: 'px-4 py-2.5 text-base',
   lg: 'px-6 py-3 text-lg',
+  xl: 'px-8 py-4 text-xl',
 } as const;
 
 /**
- * Button component with performance optimization
+ * Button component with professional polish
  *
- * Memoized to prevent unnecessary re-renders (similar to backend caching)
+ * Memoized for performance with enhanced visual feedback
  */
 export const Button = memo(
   forwardRef<HTMLButtonElement, ButtonProps>(
@@ -86,7 +88,7 @@ export const Button = memo(
       ref
     ) => {
       const baseStyles =
-        'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+        'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-normal focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-dark-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none hover:transform hover:-translate-y-0.5 active:translate-y-0';
 
       const widthStyles = fullWidth ? 'w-full' : '';
 
@@ -121,9 +123,9 @@ export const Button = memo(
               />
             </svg>
           )}
-          {!loading && leftIcon && <span>{leftIcon}</span>}
+          {!loading && leftIcon && <span className="flex items-center">{leftIcon}</span>}
           {children}
-          {!loading && rightIcon && <span>{rightIcon}</span>}
+          {!loading && rightIcon && <span className="flex items-center">{rightIcon}</span>}
         </button>
       );
     }

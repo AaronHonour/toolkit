@@ -6,22 +6,52 @@
  */
 
 export const colors = {
-  // Primary palette (brand colors)
+  // Primary palette - Cyan (from "Uni" in logo)
   primary: {
-    50: '#f0f9ff',
-    100: '#e0f2fe',
-    200: '#bae6fd',
-    300: '#7dd3fc',
-    400: '#38bdf8',
-    500: '#0ea5e9',
-    600: '#0284c7',
-    700: '#0369a1',
-    800: '#075985',
-    900: '#0c4a6e',
-    950: '#082f49',
+    50: '#E6FEFF',
+    100: '#B3FDFF',
+    200: '#80FBFF',
+    300: '#4DF9FF',
+    400: '#1AF7FF',
+    500: '#00D9FF',
+    600: '#00B8DB',
+    700: '#0097B7',
+    800: '#007693',
+    900: '#00556F',
+    950: '#003A4D',
   },
 
-  // Neutral palette
+  // Secondary palette - Purple/Magenta (from "stax" in logo)
+  secondary: {
+    50: '#F3E8FF',
+    100: '#E1C4FF',
+    200: '#CFA0FF',
+    300: '#BD7CFF',
+    400: '#AB58FF',
+    500: '#9D4EDD',
+    600: '#7B2CBF',
+    700: '#5A189A',
+    800: '#3C096C',
+    900: '#240046',
+    950: '#10002B',
+  },
+
+  // Accent - Electric Blue (from isometric cubes)
+  accent: {
+    50: '#EEF2FF',
+    100: '#E0E7FF',
+    200: '#C7D2FE',
+    300: '#A5B4FC',
+    400: '#818CF8',
+    500: '#5A67D8',
+    600: '#4C51BF',
+    700: '#434190',
+    800: '#3730A3',
+    900: '#312E81',
+    950: '#1E1B4B',
+  },
+
+  // Neutral palette - Updated for better dark/light mode
   neutral: {
     50: '#fafafa',
     100: '#f5f5f5',
@@ -34,6 +64,20 @@ export const colors = {
     800: '#262626',
     900: '#171717',
     950: '#0a0a0a',
+  },
+
+  // Dark mode backgrounds (deep navy like the logo images)
+  dark: {
+    50: '#1E293B',
+    100: '#151E2E',
+    200: '#0F172A',
+    300: '#0A0E27',
+    400: '#070B1F',
+    500: '#050818',
+    600: '#030510',
+    700: '#020308',
+    800: '#010204',
+    900: '#000000',
   },
 
   // Semantic colors

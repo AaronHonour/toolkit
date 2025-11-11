@@ -1,109 +1,56 @@
 /**
- * DataCard Component
- * Reusable card component for displaying data items
+ * DataCard Component - Professional Card Container
+ *
+ * Sophisticated card with proper elevation and visual hierarchy
  */
 
 import React from 'react';
-import { Badge, type BadgeProps } from '@frontend-toolkit/atoms';
 
 export interface DataCardProps {
-  /** Card title */
-  title: string;
-  /** Subtitle or secondary text */
-  subtitle?: string;
-  /** Badge to display */
-  badge?: {
-    label: string;
-    variant?: BadgeProps['variant'];
-  };
-  /** Additional metadata */
-  metadata?: Array<{
-    label: string;
-    value: string | number;
-  }>;
-  /** Tags or labels */
-  tags?: string[];
-  /** Card action on click */
-  onClick?: () => void;
-  /** Additional actions (buttons, menu) */
-  actions?: React.ReactNode;
-  /** Children content */
-  children?: React.ReactNode;
-  /** Custom className */
+  title?: string;
+  children: React.ReactNode;
   className?: string;
+  headerActions?: React.ReactNode;
+  footer?: React.ReactNode;
+  variant?: 'default' | 'elevated' | 'bordered';
 }
 
 export const DataCard = React.memo<DataCardProps>(({
   title,
-  subtitle,
-  badge,
-  metadata,
-  tags,
-  onClick,
-  actions,
   children,
   className = '',
+  headerActions,
+  footer,
+  variant = 'elevated',
 }) => {
-  const isClickable = Boolean(onClick);
+  const variantStyles = {
+    default: 'bg-white dark:bg-dark-200 border border-neutral-200 dark:border-dark-100',
+    elevated: 'bg-white dark:bg-dark-200 shadow-lg border border-neutral-200 dark:border-dark-100 hover:shadow-xl transition-shadow',
+    bordered: 'bg-white dark:bg-dark-200 border-2 border-neutral-300 dark:border-dark-100',
+  };
 
   return (
-    <div
-      className={`
-        bg-white rounded-lg border border-neutral-200 p-4
-        ${isClickable ? 'hover:shadow-md cursor-pointer' : 'shadow-sm'}
-        transition-shadow
-        ${className}
-      `}
-      onClick={onClick}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-neutral-900 truncate">{title}</h3>
-          {subtitle && (
-            <p className="text-xs text-neutral-500 font-mono mt-0.5">{subtitle}</p>
-          )}
+    <div className={`rounded-2xl overflow-hidden ${variantStyles[variant]} ${className}`}>
+      {title && (
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-dark-100 bg-neutral-50 dark:bg-dark-100">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">
+              {title}
+            </h2>
+            {headerActions && (
+              <div className="flex items-center gap-2">
+                {headerActions}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="ml-2 flex items-center gap-2">
-          {badge && (
-            <Badge variant={badge.variant || 'secondary'} size="sm">
-              {badge.label}
-            </Badge>
-          )}
-          {actions}
-        </div>
+      )}
+      <div className="p-6">
+        {children}
       </div>
-
-      {/* Content */}
-      {children && (
-        <div className="text-sm text-neutral-600 mb-3">
-          {children}
-        </div>
-      )}
-
-      {/* Metadata */}
-      {metadata && metadata.length > 0 && (
-        <div className="flex flex-wrap gap-4 mb-3">
-          {metadata.map((item, index) => (
-            <div key={index}>
-              <span className="text-xs text-neutral-500">{item.label}: </span>
-              <span className="text-sm font-medium text-neutral-900">{item.value}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Tags */}
-      {tags && tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {tags.map((tag, index) => (
-            <span
-              key={index}
-              className="px-2 py-0.5 text-xs bg-neutral-100 text-neutral-700 rounded"
-            >
-              {tag}
-            </span>
-          ))}
+      {footer && (
+        <div className="px-6 py-4 border-t border-neutral-200 dark:border-dark-100 bg-neutral-50 dark:bg-dark-100">
+          {footer}
         </div>
       )}
     </div>

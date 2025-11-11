@@ -1,62 +1,61 @@
 {
-  "name": "@unistax/frontend",
-  "version": "0.1.0",
-  "description": "Composable frontend components for building unified full-stack applications",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "name": "@unistax/examples-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "build": "rollup -c",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.{js,ts,tsx}",
-    "lint:fix": "eslint src/**/*.{js,ts,tsx} --fix",
-    "typecheck": "tsc --noEmit",
-    "format": "prettier --write \"src/**/*.{js,ts,tsx,json,css,md}\"",
-    "prepublishOnly": "npm run build && npm test"
+    "postinstall": "node scripts/link-deps.js",
+    "dev": "turbo run dev --parallel --concurrency=22",
+    "build": "npm run build:css && turbo run build",
+    "build:css": "tailwindcss -c tailwind.components.config.js -i packages/unistax/src/styles.css -o packages/unistax/dist/styles.css --minify",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
-  "keywords": [
-    "unistax",
-    "composable",
-    "full-stack",
-    "frontend",
-    "components"
+  "workspaces": [
+    "packages/*",
+    "../examples/frontends/*"
   ],
-  "author": "Aaron Honour <aaron@example.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/AaronHonour/unistax.git",
-    "directory": "frontend"
-  },
-  "bugs": {
-    "url": "https://github.com/AaronHonour/unistax/issues"
-  },
-  "homepage": "https://github.com/AaronHonour/unistax#readme",
   "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^8.50.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "jest": "^29.7.0",
-    "postcss": "^8.5.6",
-    "prettier": "^3.0.0",
-    "rollup": "^4.0.0",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "tailwindcss": "^4.1.17",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.2.0"
+    "@playwright/test": "^1.40.1",
+    "@storybook/addon-essentials": "^7.6.0",
+    "@storybook/addon-interactions": "^7.6.0",
+    "@storybook/addon-links": "^7.6.0",
+    "@storybook/blocks": "^7.6.0",
+    "@storybook/react": "^7.6.0",
+    "@storybook/react-vite": "^7.6.0",
+    "@storybook/testing-library": "^0.2.2",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^1.0.4",
+    "@vitest/ui": "^1.0.4",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "jsdom": "^23.0.1",
+    "postcss": "^8.4.32",
+    "prettier": "^3.1.1",
+    "storybook": "^7.6.0",
+    "tailwindcss": "^3.4.0",
+    "turbo": "^1.11.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "packageManager": "npm@10.2.4"
 }
