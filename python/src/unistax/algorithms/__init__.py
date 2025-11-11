@@ -46,6 +46,19 @@ from unistax.algorithms.pooling import (
     ObjectPoolManager,
     PoolConfig,
 )
+from unistax.algorithms.graph import (
+    detect_circular_dependencies,
+    calculate_blast_radius,
+    compute_pagerank,
+    calculate_service_criticality,
+    compute_betweenness_centrality,
+    topological_sort,
+    find_critical_path,
+    CircularDependency,
+    BlastRadiusResult,
+    CriticalityScore,
+    tarjan_scc,
+)
 
 __all__ = [
     # Data structures
@@ -85,4 +98,16 @@ __all__ = [
     "BufferPool",
     "ObjectPoolManager",
     "PoolConfig",
+    # Graph algorithms
+    "detect_circular_dependencies",
+    "calculate_blast_radius",
+    "compute_pagerank",
+    "calculate_service_criticality",
+    "compute_betweenness_centrality",
+    "topological_sort",
+    "find_critical_path",
+    "CircularDependency",
+    "BlastRadiusResult",
+    "CriticalityScore",
+    "tarjan_scc",
 ]
