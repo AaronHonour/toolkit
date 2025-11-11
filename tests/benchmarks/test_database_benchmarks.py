@@ -9,7 +9,7 @@ from unittest.mock import Mock, MagicMock
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from toolkit.database.optimizations import (
+from unistax.database.optimizations import (
     QueryCache,
     QueryCacheConfig,
     PreparedStatementCache,

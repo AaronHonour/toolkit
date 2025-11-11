@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from toolkit.env import EnvManager, Environment
+from unistax.env import EnvManager, Environment
 
 
 class TestEnvManager:

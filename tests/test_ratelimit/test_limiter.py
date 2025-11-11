@@ -15,7 +15,7 @@ Testing Strategy:
 import pytest
 import time
 from unittest.mock import Mock, patch
-from toolkit.ratelimit.limiter import RateLimiter
+from unistax.ratelimit.limiter import RateLimiter
 
 # Try to import freezegun, skip tests if not available
 try:

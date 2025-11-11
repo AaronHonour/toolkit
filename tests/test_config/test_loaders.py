@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from toolkit.config.loaders import YAMLLoader, EnvInterpolator
+from unistax.config.loaders import YAMLLoader, EnvInterpolator
 
 
 class TestYAMLLoader:

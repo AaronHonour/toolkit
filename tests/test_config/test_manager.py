@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from toolkit.config import ConfigManager
+from unistax.config import ConfigManager
 
 
 class TestConfigManager:

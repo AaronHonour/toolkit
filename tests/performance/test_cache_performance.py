@@ -10,7 +10,7 @@ Performance Targets:
 
 import pytest
 import time
-from toolkit.cache.manager import CacheManager
+from unistax.cache.manager import CacheManager
 
 
 class TestCachePerformanceRegression:

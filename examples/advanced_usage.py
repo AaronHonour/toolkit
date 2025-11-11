@@ -7,9 +7,9 @@ Demonstrates advanced patterns and integrations.
 from contextlib import contextmanager
 from typing import Any, Dict
 
-from toolkit.config import ConfigManager, ConfigSchema
-from toolkit.errors import ApplicationError, ErrorCode
-from toolkit.logging import get_logger
+from unistax.config import ConfigManager, ConfigSchema
+from unistax.errors import ApplicationError, ErrorCode
+from unistax.logging import get_logger
 
 # Advanced Configuration with Schema Validation
 print("=" * 60)
@@ -179,7 +179,7 @@ print("=" * 60)
 print("Error Registry and Monitoring")
 print("=" * 60)
 
-from toolkit.errors import ErrorRegistry
+from unistax.errors import ErrorRegistry
 
 registry = ErrorRegistry()
 

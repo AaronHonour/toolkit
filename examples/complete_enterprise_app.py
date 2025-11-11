@@ -8,25 +8,25 @@ import asyncio
 from dataclasses import dataclass
 
 # Core modules
-from toolkit.config import ConfigManager
-from toolkit.logging import LoggerFactory
-from toolkit.errors import ApplicationError
-from toolkit.env import EnvManager
+from unistax.config import ConfigManager
+from unistax.logging import LoggerFactory
+from unistax.errors import ApplicationError
+from unistax.env import EnvManager
 
 # Extended modules
-from toolkit.metrics import MetricsManager
-from toolkit.cache import CacheManager
-from toolkit.validation import Validator, ValidationRules
-from toolkit.ratelimit import RateLimiter
-from toolkit.resilience import CircuitBreaker
+from unistax.metrics import MetricsManager
+from unistax.cache import CacheManager
+from unistax.validation import Validator, ValidationRules
+from unistax.ratelimit import RateLimiter
+from unistax.resilience import CircuitBreaker
 
 # New architectural modules
-from toolkit.di import Container, Lifetime, singleton
-from toolkit.lifecycle import Application
-from toolkit.middleware import MiddlewarePipeline, LoggingMiddleware, MetricsMiddleware
-from toolkit.events import EventBus, Event
-from toolkit.repository import Repository
-from toolkit.security import JWT, PasswordHasher, RBAC
+from unistax.di import Container, Lifetime, singleton
+from unistax.lifecycle import Application
+from unistax.middleware import MiddlewarePipeline, LoggingMiddleware, MetricsMiddleware
+from unistax.events import EventBus, Event
+from unistax.repository import Repository
+from unistax.security import JWT, PasswordHasher, RBAC
 
 
 # Domain models

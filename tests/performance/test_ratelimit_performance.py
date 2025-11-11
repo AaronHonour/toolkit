@@ -10,7 +10,7 @@ Performance Targets:
 
 import pytest
 import time
-from toolkit.ratelimit.limiter import RateLimiter
+from unistax.ratelimit.limiter import RateLimiter
 
 
 class TestRateLimiterPerformanceRegression:

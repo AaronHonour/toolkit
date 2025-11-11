@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-toolkit/design-tokens",
+  "name": "@unistax/design-tokens",
   "version": "1.0.0",
   "type": "module",
   "main": "./src/tokens.ts",
