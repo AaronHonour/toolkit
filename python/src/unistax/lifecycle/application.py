@@ -215,4 +215,5 @@ class Application:
         return self._health_registry.check_liveness()
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"Application(name={self.name}, running={self._is_running})"

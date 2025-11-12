@@ -239,4 +239,5 @@ class ConfigManager:
                 base[key] = value
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"ConfigManager(keys={list(self._data.keys())})"

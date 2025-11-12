@@ -15,6 +15,13 @@ class JWT:
     """
 
     def __init__(self, secret: str, algorithm: str = "HS256", expiration: int = 3600):
+        """Initialize JWT.
+
+        Args:
+            secret: Secret key for signing tokens
+            algorithm: Signing algorithm (default: HS256)
+            expiration: Default expiration time in seconds
+        """
         self.secret = secret
         self.algorithm = algorithm
         self.expiration = expiration

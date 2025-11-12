@@ -12,6 +12,7 @@ class Permission:
     action: str
 
     def __str__(self) -> str:
+        """Return string representation."""
         return f"{self.resource}:{self.action}"
 
 
@@ -41,6 +42,7 @@ class RBAC:
     """
 
     def __init__(self):
+        """Initialize RBAC."""
         self._roles: dict[str, Role] = {}
 
     def define_role(self, role_name: str, permissions: list[str]) -> None:

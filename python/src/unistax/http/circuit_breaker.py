@@ -18,6 +18,12 @@ class CircuitBreaker:
     """
 
     def __init__(self, failure_threshold: int = 5, timeout: float = 60.0):
+        """Initialize CircuitBreaker.
+
+        Args:
+            failure_threshold: Number of failures before opening circuit
+            timeout: Time in seconds before attempting to close circuit
+        """
         self.failure_threshold = failure_threshold
         self.timeout = timeout
         self.failures = 0

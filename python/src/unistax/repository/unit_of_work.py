@@ -14,6 +14,11 @@ class UnitOfWork:
     """
 
     def __init__(self, session: Any | None = None):
+        """Initialize UnitOfWork.
+
+        Args:
+            session: Database session (optional)
+        """
         self._session = session
         self._changes = []
         self._is_committed = False

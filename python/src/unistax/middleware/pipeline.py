@@ -62,6 +62,7 @@ class MiddlewarePipeline:
     """
 
     def __init__(self):
+        """Initialize MiddlewarePipeline."""
         self._middleware: list[Middleware] = []
 
     def use(self, middleware: Middleware) -> "MiddlewarePipeline":
@@ -111,4 +112,5 @@ class MiddlewarePipeline:
         return await build_chain(0)
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"MiddlewarePipeline(middleware={len(self._middleware)})"

@@ -16,6 +16,12 @@ class Fallback:
     """
 
     def __init__(self, default_value: Any = None, fallback_func: Callable = None):
+        """Initialize Fallback.
+
+        Args:
+            default_value: Default value to return on failure
+            fallback_func: Fallback function to call on failure
+        """
         self.default_value = default_value
         self.fallback_func = fallback_func
 

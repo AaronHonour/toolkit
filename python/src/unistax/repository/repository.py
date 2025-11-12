@@ -47,6 +47,11 @@ class Repository(IRepository[T]):
     """
 
     def __init__(self, session: Any | None = None):
+        """Initialize Repository.
+
+        Args:
+            session: Database session (optional)
+        """
         self._session = session
         self._entities: dict[Any, T] = {}  # In-memory store for example
 

@@ -47,6 +47,7 @@ class Validator:
     """
 
     def __init__(self):
+        """Initialize Validator."""
         self.rules: dict[str, list[Callable]] = {}
         self.errors: dict[str, list[str]] = {}
 

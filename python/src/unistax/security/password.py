@@ -15,6 +15,12 @@ class PasswordHasher:
     """
 
     def __init__(self, algorithm: str = "sha256", salt_length: int = 32):
+        """Initialize PasswordHasher.
+
+        Args:
+            algorithm: Hashing algorithm (default: sha256)
+            salt_length: Length of salt in bytes
+        """
         self.algorithm = algorithm
         self.salt_length = salt_length
 

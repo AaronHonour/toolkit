@@ -12,6 +12,7 @@ class EventDispatcher:
     """
 
     def __init__(self):
+        """Initialize EventDispatcher."""
         self._handlers: dict[type[Event], list[tuple[int, Callable]]] = {}
 
     def register(

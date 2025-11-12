@@ -1,5 +1,4 @@
-"""HTTP client implementation with enterprise features.
-"""
+"""HTTP client implementation with enterprise features."""
 
 import time
 from dataclasses import dataclass
@@ -194,7 +193,9 @@ class HTTPClient:
         self._session.close()
 
     def __enter__(self) -> "HTTPClient":
+        """Enter context manager."""
         return self
 
     def __exit__(self, *args: Any) -> None:
+        """Exit context manager."""
         self.close()

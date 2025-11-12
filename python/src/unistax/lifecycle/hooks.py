@@ -13,6 +13,12 @@ class LifecycleHook:
     """
 
     def __init__(self, event: str, func: Callable):
+        """Initialize LifecycleHook.
+
+        Args:
+            event: Lifecycle event name
+            func: Hook function to execute
+        """
         self.event = event
         self.func = func
         self.is_async = inspect.iscoroutinefunction(func)
@@ -31,4 +37,5 @@ class LifecycleHook:
             return await loop.run_in_executor(None, self.func)
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"LifecycleHook(event={self.event}, func={self.func.__name__})"

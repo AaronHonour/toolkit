@@ -9,6 +9,13 @@ class Command:
     """CLI command definition."""
 
     def __init__(self, name: str, func: Callable, description: str = ""):
+        """Initialize Command.
+
+        Args:
+            name: Command name
+            func: Command function
+            description: Command description
+        """
         self.name = name
         self.func = func
         self.description = description
@@ -31,6 +38,11 @@ class CLI:
     """
 
     def __init__(self, name: str = "cli"):
+        """Initialize CLI.
+
+        Args:
+            name: CLI application name
+        """
         self.name = name
         self._commands: dict[str, Command] = {}
 

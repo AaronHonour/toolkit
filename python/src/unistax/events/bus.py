@@ -19,6 +19,7 @@ class Event:
     timestamp: datetime = None
 
     def __post_init__(self):
+        """Initialize defaults."""
         if self.event_id is None:
             self.event_id = str(uuid4())
         if self.timestamp is None:
@@ -39,6 +40,7 @@ class EventBus:
     """
 
     def __init__(self):
+        """Initialize EventBus."""
         self._handlers: dict[type[Event], list[Callable]] = {}
 
     def subscribe(self, event_type: type[T]) -> Callable:

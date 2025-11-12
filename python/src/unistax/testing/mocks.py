@@ -16,9 +16,11 @@ class MockService:
     """
 
     def __init__(self):
+        """Initialize MockService."""
         self._mock = Mock()
 
     def __getattr__(self, name: str) -> Any:
+        """Get attribute."""
         return getattr(self._mock, name)
 
 

@@ -13,9 +13,23 @@ class LoggingMiddleware(Middleware):
     """
 
     def __init__(self, logger: Any | None = None):
+        """Initialize LoggingMiddleware.
+
+        Args:
+            logger: Logger instance to use (optional)
+        """
         self.logger = logger
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        """Process request with logging.
+
+        Args:
+            request: Request to process
+            next_handler: Next handler in chain
+
+        Returns:
+            Response from handler
+        """
         start_time = time.time()
 
         # Log request
@@ -59,9 +73,23 @@ class MetricsMiddleware(Middleware):
     """
 
     def __init__(self, metrics: Any | None = None):
+        """Initialize MetricsMiddleware.
+
+        Args:
+            metrics: Metrics collector instance (optional)
+        """
         self.metrics = metrics
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        """Process request with metrics collection.
+
+        Args:
+            request: Request to process
+            next_handler: Next handler in chain
+
+        Returns:
+            Response from handler
+        """
         start_time = time.time()
 
         # Track request
@@ -113,6 +141,15 @@ class ErrorHandlerMiddleware(Middleware):
     """
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        """Process request with error handling.
+
+        Args:
+            request: Request to process
+            next_handler: Next handler in chain
+
+        Returns:
+            Response from handler or error response
+        """
         try:
             return await next_handler(request)
 
@@ -138,12 +175,29 @@ class CORSMiddleware(Middleware):
         allow_headers: list[str] = None,
         max_age: int = 3600,
     ):
+        """Initialize CORSMiddleware.
+
+        Args:
+            allow_origins: Allowed origins (defaults to ["*"])
+            allow_methods: Allowed HTTP methods
+            allow_headers: Allowed headers
+            max_age: Max age for preflight cache in seconds
+        """
         self.allow_origins = allow_origins or ["*"]
         self.allow_methods = allow_methods or ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         self.allow_headers = allow_headers or ["*"]
         self.max_age = max_age
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        """Process request with CORS headers.
+
+        Args:
+            request: Request to process
+            next_handler: Next handler in chain
+
+        Returns:
+            Response with CORS headers
+        """
         # Handle preflight request
         if request.method == "OPTIONS":
             return Response(
@@ -182,9 +236,23 @@ class CompressionMiddleware(Middleware):
     """
 
     def __init__(self, min_size: int = 1024):
+        """Initialize CompressionMiddleware.
+
+        Args:
+            min_size: Minimum response size in bytes for compression
+        """
         self.min_size = min_size
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        """Process request with response compression.
+
+        Args:
+            request: Request to process
+            next_handler: Next handler in chain
+
+        Returns:
+            Compressed or uncompressed response
+        """
         response = await next_handler(request)
 
         # Check if client accepts gzip

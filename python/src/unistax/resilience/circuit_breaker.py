@@ -23,6 +23,13 @@ class CircuitBreaker:
     """
 
     def __init__(self, failure_threshold: int = 5, timeout: float = 60.0, half_open_max_calls: int = 1):  # noqa: E501
+        """Initialize CircuitBreaker.
+
+        Args:
+            failure_threshold: Number of failures before opening circuit
+            timeout: Time in seconds before attempting to close circuit
+            half_open_max_calls: Maximum calls allowed in half-open state
+        """
         self.failure_threshold = failure_threshold
         self.timeout = timeout
         self.half_open_max_calls = half_open_max_calls

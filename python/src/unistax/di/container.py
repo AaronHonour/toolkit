@@ -37,6 +37,15 @@ class ServiceDescriptor:
         instance: Any | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ):
+        """Initialize ServiceDescriptor.
+
+        Args:
+            service_type: Service type
+            implementation_type: Implementation type (defaults to service_type)
+            factory: Factory function for creating instances
+            instance: Pre-created instance for singleton
+            lifetime: Service lifetime
+        """
         self.service_type = service_type
         self.implementation_type = implementation_type or service_type
         self.factory = factory
@@ -62,6 +71,7 @@ class Container:
     """
 
     def __init__(self):
+        """Initialize Container."""
         self._services: dict[type, ServiceDescriptor] = {}
         self._lock = threading.RLock()
         self._resolving: set = set()  # For circular dependency detection
@@ -281,6 +291,7 @@ class Container:
         _scoped_context.set({})
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"Container(services={len(self._services)})"
 
 

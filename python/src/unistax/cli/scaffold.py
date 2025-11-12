@@ -13,6 +13,11 @@ class Scaffolder:
     """
 
     def __init__(self, base_path: Path | None = None):
+        """Initialize Scaffolder.
+
+        Args:
+            base_path: Base path for scaffolding (defaults to current directory)
+        """
         self.base_path = base_path or Path.cwd()
 
     def create_service(self, name: str) -> None:
