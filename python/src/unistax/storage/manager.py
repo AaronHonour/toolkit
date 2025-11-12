@@ -1,7 +1,7 @@
 """Storage manager."""
 
-from typing import Optional
 from dataclasses import dataclass
+
 from unistax.storage.backends import StorageBackend
 
 
@@ -11,10 +11,10 @@ class StorageConfig:
 
     backend: str  # local, s3, azure, gcs
     base_path: str = "/"
-    bucket: Optional[str] = None
-    region: Optional[str] = None
-    access_key: Optional[str] = None
-    secret_key: Optional[str] = None
+    bucket: str | None = None
+    region: str | None = None
+    access_key: str | None = None
+    secret_key: str | None = None
 
 
 class StorageManager:

@@ -1,21 +1,23 @@
 """Queue backends."""
 
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List
-from unistax.queue.manager import Message
 import uuid
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+from typing import Any
+
+from unistax.queue.manager import Message
 
 
 class QueueBackend(ABC):
     """Base queue backend."""
 
     @abstractmethod
-    def send(self, queue_name: str, message: Any, attributes: Dict[str, Any]) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any]) -> str:
         """Send message."""
         pass
 
     @abstractmethod
-    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> List[Message]:
+    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> list[Message]:
         """Receive messages."""
         pass
 
@@ -37,13 +39,13 @@ class RedisQueue(QueueBackend):
         """Initialize Redis queue."""
         self.redis = redis_client
 
-    def send(self, queue_name: str, message: Any, attributes: Dict[str, Any]) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any]) -> str:
         """Send to Redis queue."""
         message_id = str(uuid.uuid4())
         # Implementation requires redis client
         return message_id
 
-    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> List[Message]:
+    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> list[Message]:
         """Receive from Redis queue."""
         return []
 
@@ -63,13 +65,13 @@ class RabbitMQQueue(QueueBackend):
         """Initialize RabbitMQ queue."""
         self.connection_string = connection_string
 
-    def send(self, queue_name: str, message: Any, attributes: Dict[str, Any]) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any]) -> str:
         """Send to RabbitMQ."""
         message_id = str(uuid.uuid4())
         # Implementation requires pika
         return message_id
 
-    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> List[Message]:
+    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> list[Message]:
         """Receive from RabbitMQ."""
         return []
 

@@ -8,7 +8,7 @@ and processing them (e.g., environment variable interpolation).
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
 import yaml
 
@@ -20,7 +20,7 @@ class YAMLLoader:
     Supports safe loading and provides detailed error messages.
     """
 
-    def load(self, path: Union[str, Path]) -> Dict[str, Any]:
+    def load(self, path: str | Path) -> dict[str, Any]:
         """
         Load YAML file.
 
@@ -40,13 +40,13 @@ class YAMLLoader:
             raise FileNotFoundError(f"Configuration file not found: {path}")
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data if data is not None else {}
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in {path}: {e}") from e
 
-    def dump(self, data: Dict[str, Any], path: Union[str, Path]) -> None:
+    def dump(self, data: dict[str, Any], path: str | Path) -> None:
         """
         Dump data to YAML file.
 

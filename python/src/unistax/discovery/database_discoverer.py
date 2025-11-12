@@ -1,8 +1,9 @@
 """Database connection discovery for detecting service-to-database dependencies."""
 
 import re
-from typing import List, Optional, Dict, Any
+from typing import Any
 from urllib.parse import urlparse
+
 from unistax.discovery.base import (
     DependencyDiscoverer,
     DiscoveryResult,
@@ -16,8 +17,8 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
     def __init__(
         self,
         service_name: str,
-        connection_strings: Optional[List[str]] = None,
-        config_data: Optional[Dict[str, Any]] = None,
+        connection_strings: list[str] | None = None,
+        config_data: dict[str, Any] | None = None,
     ) -> None:
         """Initialize database connection discoverer.
 
@@ -30,13 +31,13 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
         self.connection_strings = connection_strings or []
         self.config_data = config_data or {}
 
-    async def discover(self) -> List[DiscoveryResult]:
+    async def discover(self) -> list[DiscoveryResult]:
         """Discover database dependencies.
 
         Returns:
             List of discovered database dependencies
         """
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Discover from connection strings
         results.extend(self._discover_from_connection_strings())
@@ -49,9 +50,9 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_connection_strings(self) -> List[DiscoveryResult]:
+    def _discover_from_connection_strings(self) -> list[DiscoveryResult]:
         """Extract database dependencies from connection strings."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         for conn_str in self.connection_strings:
             db_info = self._parse_connection_string(conn_str)
@@ -72,9 +73,9 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_config(self) -> List[DiscoveryResult]:
+    def _discover_from_config(self) -> list[DiscoveryResult]:
         """Extract database dependencies from configuration."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Common database config keys
         db_keys = [
@@ -113,7 +114,7 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _parse_connection_string(self, conn_str: str) -> Optional[Dict[str, Any]]:
+    def _parse_connection_string(self, conn_str: str) -> dict[str, Any] | None:
         """Parse a database connection string.
 
         Supports common formats:

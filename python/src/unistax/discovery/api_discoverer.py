@@ -1,7 +1,8 @@
 """API call discovery for detecting service-to-service HTTP dependencies."""
 
 import re
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from unistax.discovery.base import (
     DependencyDiscoverer,
     DiscoveryResult,
@@ -15,8 +16,8 @@ class APICallDiscoverer(DependencyDiscoverer):
     def __init__(
         self,
         service_name: str,
-        trace_data: Optional[List[Dict[str, Any]]] = None,
-        log_data: Optional[List[str]] = None,
+        trace_data: list[dict[str, Any]] | None = None,
+        log_data: list[str] | None = None,
     ) -> None:
         """Initialize API call discoverer.
 
@@ -29,13 +30,13 @@ class APICallDiscoverer(DependencyDiscoverer):
         self.trace_data = trace_data or []
         self.log_data = log_data or []
 
-    async def discover(self) -> List[DiscoveryResult]:
+    async def discover(self) -> list[DiscoveryResult]:
         """Discover API call dependencies.
 
         Returns:
             List of discovered API dependencies
         """
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Discover from traces
         results.extend(self._discover_from_traces())
@@ -48,9 +49,9 @@ class APICallDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_traces(self) -> List[DiscoveryResult]:
+    def _discover_from_traces(self) -> list[DiscoveryResult]:
         """Extract dependencies from distributed trace data."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         for trace in self.trace_data:
             # Extract service name from trace metadata
@@ -73,9 +74,9 @@ class APICallDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_logs(self) -> List[DiscoveryResult]:
+    def _discover_from_logs(self) -> list[DiscoveryResult]:
         """Extract dependencies from log analysis."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Patterns to match HTTP calls in logs
         patterns = [
@@ -106,7 +107,7 @@ class APICallDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _extract_service_from_trace(self, trace: Dict[str, Any]) -> Optional[str]:
+    def _extract_service_from_trace(self, trace: dict[str, Any]) -> str | None:
         """Extract service name from trace metadata."""
         # Try various common fields
         service_fields = [

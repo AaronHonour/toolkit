@@ -8,7 +8,7 @@ enterprise features.
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from .context import log_context
 from .filters import ContextFilter, SensitiveDataFilter
@@ -50,7 +50,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log debug message."""
@@ -60,7 +60,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log info message."""
@@ -70,7 +70,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log warning message."""
@@ -80,7 +80,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         exc_info: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -91,7 +91,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         exc_info: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -102,7 +102,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log exception with traceback."""
@@ -113,7 +113,7 @@ class Logger:
         level: int,
         message: str,
         args: tuple,
-        extra: Optional[Dict[str, Any]],
+        extra: dict[str, Any] | None,
         **kwargs: Any,
     ) -> None:
         """
@@ -134,7 +134,7 @@ class Logger:
 
         self._logger.log(level, message, *args, extra=merged_extra, **kwargs)
 
-    def set_level(self, level: Union[int, str]) -> None:
+    def set_level(self, level: int | str) -> None:
         """
         Set logger level.
 
@@ -181,8 +181,8 @@ class LoggerFactory:
     def create(
         name: str,
         level: str = "INFO",
-        handlers: Optional[list] = None,
-        filters: Optional[list] = None,
+        handlers: list | None = None,
+        filters: list | None = None,
     ) -> Logger:
         """
         Create configured logger.
@@ -218,7 +218,7 @@ class LoggerFactory:
         return Logger(logger)
 
     @staticmethod
-    def from_yaml(path: Union[str, Path]) -> Logger:
+    def from_yaml(path: str | Path) -> Logger:
         """
         Create logger from YAML configuration.
 
@@ -264,14 +264,14 @@ class LoggerFactory:
         return LoggerFactory.create(name, level, handlers, filters)
 
     @staticmethod
-    def _create_handler(config: Dict[str, Any]) -> Optional[logging.Handler]:
+    def _create_handler(config: dict[str, Any]) -> logging.Handler | None:
         """Create handler from configuration."""
         handler_type = config.get("type", "console")
         level = config.get("level", "INFO")
         formatter_type = config.get("formatter", "structured")
 
         # Create handler
-        handler: Optional[logging.Handler] = None
+        handler: logging.Handler | None = None
 
         if handler_type == "console":
             stream = sys.stdout if config.get("stream") == "stdout" else sys.stderr
@@ -311,7 +311,7 @@ class LoggerFactory:
         return handler
 
     @staticmethod
-    def _create_filter(config: Dict[str, Any]) -> Optional[logging.Filter]:
+    def _create_filter(config: dict[str, Any]) -> logging.Filter | None:
         """Create filter from configuration."""
         filter_type = config.get("type")
 

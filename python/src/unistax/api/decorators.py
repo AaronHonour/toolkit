@@ -1,9 +1,8 @@
 """API route decorators."""
 
-from typing import Any, Callable, List, Optional
+from collections.abc import Callable
 
 # Re-export FastAPI route decorators for convenience
-from fastapi import HTTPException, status
 
 
 def get(path: str, **kwargs) -> Callable:

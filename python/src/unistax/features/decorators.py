@@ -1,10 +1,11 @@
 """Feature flag decorators."""
 
-from typing import Callable, Optional
+from collections.abc import Callable
 from functools import wraps
+
 from unistax.features.manager import FeatureManager
 
-_feature_manager: Optional[FeatureManager] = None
+_feature_manager: FeatureManager | None = None
 
 
 def set_feature_manager(manager: FeatureManager):
@@ -13,14 +14,14 @@ def set_feature_manager(manager: FeatureManager):
     _feature_manager = manager
 
 
-def is_enabled(feature_name: str, user_id: Optional[str] = None) -> bool:
+def is_enabled(feature_name: str, user_id: str | None = None) -> bool:
     """Check if feature is enabled."""
     if not _feature_manager:
         return False
     return _feature_manager.is_enabled(feature_name, user_id=user_id)
 
 
-def feature_flag(feature_name: str, fallback: Optional[Callable] = None):
+def feature_flag(feature_name: str, fallback: Callable | None = None):
     """Decorator to check feature flag before executing function."""
 
     def decorator(func: Callable) -> Callable:

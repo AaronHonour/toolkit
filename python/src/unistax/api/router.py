@@ -1,6 +1,8 @@
 """API router wrapper."""
 
-from typing import Any, Callable, List, Optional
+from collections.abc import Callable
+from typing import Any
+
 from fastapi import APIRouter as FastAPIRouter
 
 
@@ -10,8 +12,8 @@ class APIRouter:
     def __init__(
         self,
         prefix: str = "",
-        tags: Optional[List[str]] = None,
-        dependencies: Optional[List[Any]] = None,
+        tags: list[str] | None = None,
+        dependencies: list[Any] | None = None,
     ):
         """Initialize API router.
 
@@ -90,7 +92,7 @@ class APIRouter:
         self,
         path: str,
         endpoint: Callable,
-        methods: Optional[List[str]] = None,
+        methods: list[str] | None = None,
         **kwargs,
     ):
         """Add API route.

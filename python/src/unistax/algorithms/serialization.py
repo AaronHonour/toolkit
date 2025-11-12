@@ -5,8 +5,8 @@ Target: 2-3x faster than standard json, sub-millisecond for MB-sized data.
 """
 
 import json
-from typing import Any, Optional, Union
 from enum import Enum
+from typing import Any
 
 try:
     import orjson

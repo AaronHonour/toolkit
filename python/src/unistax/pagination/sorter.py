@@ -1,8 +1,7 @@
 """Sorting utilities."""
 
-from enum import Enum
-from typing import List, Optional
 from dataclasses import dataclass
+from enum import Enum
 
 
 class SortOrder(str, Enum):
@@ -39,7 +38,7 @@ class SortField:
 class Sorter:
     """Sorting utility."""
 
-    def __init__(self, sort_fields: Optional[List[SortField]] = None):
+    def __init__(self, sort_fields: list[SortField] | None = None):
         """Initialize sorter.
 
         Args:

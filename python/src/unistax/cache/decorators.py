@@ -4,16 +4,17 @@ Decorators for caching function results.
 Provides convenient decorators for memoization.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any
 
 from .manager import get_cache
 
 
 def memoize(
-    ttl: Optional[int] = None,
+    ttl: int | None = None,
     key_prefix: str = "",
-    key_func: Optional[Callable] = None,
+    key_func: Callable | None = None,
 ) -> Callable:
     """
     Decorator for memoizing function results.
@@ -32,7 +33,7 @@ def memoize(
     return cache.memoize(ttl=ttl, key_prefix=key_prefix, key_func=key_func)
 
 
-def cache_result(ttl: Optional[int] = None, key: Optional[str] = None) -> Callable:
+def cache_result(ttl: int | None = None, key: str | None = None) -> Callable:
     """
     Decorator to cache function result with fixed key.
 

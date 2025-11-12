@@ -1,11 +1,11 @@
 """Worker management for background tasks."""
 
-from typing import Optional
 from dataclasses import dataclass
+
 from celery import Celery
 
 # Global Celery app instance
-_celery_app: Optional[Celery] = None
+_celery_app: Celery | None = None
 
 
 @dataclass
@@ -25,7 +25,7 @@ class WorkerConfig:
 class Worker:
     """Celery worker manager."""
 
-    def __init__(self, app: Celery, config: Optional[WorkerConfig] = None):
+    def __init__(self, app: Celery, config: WorkerConfig | None = None):
         """Initialize worker.
 
         Args:
@@ -50,8 +50,8 @@ class Worker:
     def start(
         self,
         loglevel: str = "info",
-        logfile: Optional[str] = None,
-        pidfile: Optional[str] = None,
+        logfile: str | None = None,
+        pidfile: str | None = None,
     ):
         """Start the worker.
 

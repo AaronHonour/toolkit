@@ -1,8 +1,9 @@
 """Notification channel backends."""
 
-from abc import ABC, abstractmethod
-from unistax.notifications.manager import Notification
 import uuid
+from abc import ABC, abstractmethod
+
+from unistax.notifications.manager import Notification
 
 
 class ChannelBackend(ABC):

@@ -1,7 +1,6 @@
 """Code scaffolding utilities."""
 
 from pathlib import Path
-from typing import Optional
 
 
 class Scaffolder:
@@ -14,7 +13,7 @@ class Scaffolder:
         >>> scaffolder.create_repository("UserRepository")
     """
 
-    def __init__(self, base_path: Optional[Path] = None):
+    def __init__(self, base_path: Path | None = None):
         self.base_path = base_path or Path.cwd()
 
     def create_service(self, name: str) -> None:

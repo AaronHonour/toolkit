@@ -1,6 +1,6 @@
 """Factory pattern for test data generation."""
 
-from typing import Any, Callable, Dict, Type, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -25,11 +25,11 @@ class Factory:
         >>> users = UserFactory.create_batch(10)
     """
 
-    model: Type = None
+    model: type = None
     _sequence = 0
 
     @classmethod
-    def defaults(cls) -> Dict[str, Any]:
+    def defaults(cls) -> dict[str, Any]:
         """
         Default attributes for factory.
 

@@ -7,8 +7,8 @@ Provides testing utilities:
 - Factory pattern for test data
 """
 
-from .fixtures import TestCase, fixture, use_test_db
-from .mocks import mock_service, MockService
 from .factories import Factory
+from .fixtures import TestCase, fixture, use_test_db
+from .mocks import MockService, mock_service
 
 __all__ = ["TestCase", "fixture", "use_test_db", "mock_service", "MockService", "Factory"]

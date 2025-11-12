@@ -1,6 +1,7 @@
 """API response models."""
 
-from typing import Any, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Generic, TypeVar
+
 from pydantic import BaseModel
 
 T = TypeVar("T")
@@ -10,9 +11,9 @@ class APIResponse(BaseModel, Generic[T]):
     """Standard API response."""
 
     success: bool = True
-    data: Optional[T] = None
-    message: Optional[str] = None
-    meta: Optional[Dict[str, Any]] = None
+    data: T | None = None
+    message: str | None = None
+    meta: dict[str, Any] | None = None
 
 
 class ErrorResponse(BaseModel):
@@ -21,15 +22,15 @@ class ErrorResponse(BaseModel):
     success: bool = False
     error: str
     message: str
-    details: Optional[Dict[str, Any]] = None
-    code: Optional[str] = None
+    details: dict[str, Any] | None = None
+    code: str | None = None
 
 
 class PaginatedResponse(BaseModel, Generic[T]):
     """Paginated response."""
 
     success: bool = True
-    data: List[T]
+    data: list[T]
     page: int
     page_size: int
     total: int

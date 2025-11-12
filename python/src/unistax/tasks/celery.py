@@ -1,8 +1,11 @@
 """Celery integration for distributed task processing."""
 
-from typing import Any, Callable, Dict, Optional
-from celery import Celery, Task
+from collections.abc import Callable
+from typing import Any
+
+from celery import Celery
 from celery.schedules import crontab
+
 from unistax.config import ConfigManager
 
 
@@ -12,10 +15,10 @@ class CeleryManager:
     def __init__(
         self,
         broker_url: str,
-        result_backend: Optional[str] = None,
+        result_backend: str | None = None,
         task_serializer: str = "json",
         result_serializer: str = "json",
-        accept_content: Optional[list[str]] = None,
+        accept_content: list[str] | None = None,
         timezone: str = "UTC",
         enable_utc: bool = True,
         **kwargs,
@@ -46,7 +49,7 @@ class CeleryManager:
             **kwargs,
         )
 
-        self._scheduled_tasks: Dict[str, Dict[str, Any]] = {}
+        self._scheduled_tasks: dict[str, dict[str, Any]] = {}
 
     @classmethod
     def from_yaml(cls, path: str, prefix: str = "tasks") -> "CeleryManager":
@@ -75,7 +78,7 @@ class CeleryManager:
 
     def task(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         bind: bool = False,
         max_retries: int = 3,
         default_retry_delay: int = 60,
@@ -112,8 +115,8 @@ class CeleryManager:
         schedule: Any,
         task: str,
         args: tuple = (),
-        kwargs: Optional[dict] = None,
-        name: Optional[str] = None,
+        kwargs: dict | None = None,
+        name: str | None = None,
         **options,
     ):
         """Add a periodic task.
@@ -153,8 +156,8 @@ class CeleryManager:
         day_of_month: str = "*",
         month_of_year: str = "*",
         args: tuple = (),
-        kwargs: Optional[dict] = None,
-        name: Optional[str] = None,
+        kwargs: dict | None = None,
+        name: str | None = None,
     ):
         """Schedule task with cron expression.
 
@@ -197,9 +200,9 @@ class CeleryManager:
         self,
         name: str,
         args: tuple = (),
-        kwargs: Optional[dict] = None,
-        countdown: Optional[int] = None,
-        eta: Optional[Any] = None,
+        kwargs: dict | None = None,
+        countdown: int | None = None,
+        eta: Any | None = None,
         **options,
     ) -> Any:
         """Send a task for execution.
@@ -224,7 +227,7 @@ class CeleryManager:
             **options,
         )
 
-    def get_scheduled_tasks(self) -> Dict[str, Dict[str, Any]]:
+    def get_scheduled_tasks(self) -> dict[str, dict[str, Any]]:
         """Get all scheduled tasks.
 
         Returns:

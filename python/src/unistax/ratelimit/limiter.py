@@ -1,8 +1,7 @@
 """Rate limiter implementation."""
 
-import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Dict, Optional
 
 from .algorithms import TokenBucket
 
@@ -27,7 +26,7 @@ class RateLimiter:
         """
         self.rate = rate
         self.period = period
-        self._buckets: Dict[str, TokenBucket] = {}
+        self._buckets: dict[str, TokenBucket] = {}
 
     def _get_bucket(self, key: str) -> TokenBucket:
         """Get or create token bucket for key."""
@@ -48,7 +47,7 @@ class RateLimiter:
         bucket = self._get_bucket(key)
         return bucket.consume()
 
-    def limit(self, key_func: Optional[Callable] = None):
+    def limit(self, key_func: Callable | None = None):
         """
         Decorator for rate limiting functions.
 

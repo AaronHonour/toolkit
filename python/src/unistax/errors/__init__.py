@@ -10,19 +10,19 @@ Provides a comprehensive error handling system with:
 
 from .base import (
     ApplicationError,
-    ErrorCode,
-    ErrorCategory,
-    ConfigurationError,
-    ValidationError,
-    DatabaseError,
-    NetworkError,
     AuthenticationError,
     AuthorizationError,
-    NotFoundError,
+    ConfigurationError,
     ConflictError,
+    DatabaseError,
+    ErrorCategory,
+    ErrorCode,
+    NetworkError,
+    NotFoundError,
     RateLimitError,
+    ValidationError,
 )
-from .handlers import ErrorHandler, LoggingErrorHandler, ErrorHandlerChain
+from .handlers import ErrorHandler, ErrorHandlerChain, LoggingErrorHandler
 from .registry import ErrorRegistry
 
 __all__ = [

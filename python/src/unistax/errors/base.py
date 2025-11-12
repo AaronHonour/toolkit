@@ -6,7 +6,7 @@ and context preservation.
 """
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ErrorCategory(str, Enum):
@@ -95,10 +95,10 @@ class ApplicationError(Exception):
     def __init__(
         self,
         message: str,
-        code: Optional[ErrorCode] = None,
-        category: Optional[ErrorCategory] = None,
-        details: Optional[Dict[str, Any]] = None,
-        cause: Optional[Exception] = None,
+        code: ErrorCode | None = None,
+        category: ErrorCategory | None = None,
+        details: dict[str, Any] | None = None,
+        cause: Exception | None = None,
     ) -> None:
         """
         Initialize application error.
@@ -117,14 +117,14 @@ class ApplicationError(Exception):
         self.details = details or {}
         self.cause = cause
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert error to dictionary for serialization.
 
         Returns:
             Dictionary representation of error
         """
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "error": self.__class__.__name__,
             "code": self.code.value,
             "category": self.category.value,

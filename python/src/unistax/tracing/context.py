@@ -1,6 +1,6 @@
 """Trace context management."""
 
-from typing import Optional
+
 from opentelemetry import trace
 from opentelemetry.trace import SpanContext
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
@@ -42,7 +42,7 @@ class TraceContext:
         return trace.get_current_span(ctx).get_span_context()
 
     @staticmethod
-    def get_current_trace_id() -> Optional[str]:
+    def get_current_trace_id() -> str | None:
         """Get current trace ID.
 
         Returns:
@@ -54,7 +54,7 @@ class TraceContext:
         return None
 
     @staticmethod
-    def get_current_span_id() -> Optional[str]:
+    def get_current_span_id() -> str | None:
         """Get current span ID.
 
         Returns:
@@ -70,7 +70,7 @@ class TraceContext:
 _trace_context = TraceContext()
 
 
-def get_trace_id() -> Optional[str]:
+def get_trace_id() -> str | None:
     """Get current trace ID.
 
     Returns:
@@ -79,7 +79,7 @@ def get_trace_id() -> Optional[str]:
     return TraceContext.get_current_trace_id()
 
 
-def get_span_id() -> Optional[str]:
+def get_span_id() -> str | None:
     """Get current span ID.
 
     Returns:

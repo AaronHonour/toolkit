@@ -1,7 +1,7 @@
 """Notification module for multi-channel messaging."""
 
-from unistax.notifications.manager import NotificationManager, Notification, NotificationChannel
-from unistax.notifications.channels import EmailChannel, SMSChannel, PushChannel
+from unistax.notifications.channels import EmailChannel, PushChannel, SMSChannel
+from unistax.notifications.manager import Notification, NotificationChannel, NotificationManager
 
 __all__ = [
     "NotificationManager",

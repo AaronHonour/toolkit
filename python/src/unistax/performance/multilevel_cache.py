@@ -1,11 +1,11 @@
 """Multi-level caching for optimal performance."""
 
-from typing import Any, Optional, List
-from enum import Enum
-from dataclasses import dataclass
 import threading
-from collections import OrderedDict
 import time
+from collections import OrderedDict
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class CacheLevel(Enum):
@@ -39,7 +39,7 @@ class LRUCache:
         self.cache: OrderedDict = OrderedDict()
         self.lock = threading.RLock()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache.
 
         Args:
@@ -131,7 +131,7 @@ class MultiLevelCache:
     def __init__(
         self,
         l1_max_size: int = 1000,
-        l2_client: Optional[Any] = None,
+        l2_client: Any | None = None,
         enable_stats: bool = True
     ):
         """Initialize multi-level cache.
@@ -155,7 +155,7 @@ class MultiLevelCache:
             }
             self.stats_lock = threading.Lock()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache (L1 then L2).
 
         Args:
@@ -278,7 +278,7 @@ class MultiLevelCache:
             },
         }
 
-    def warm_cache(self, key_value_pairs: List[tuple[str, Any]], ttl: int = 300):
+    def warm_cache(self, key_value_pairs: list[tuple[str, Any]], ttl: int = 300):
         """Warm cache with initial data.
 
         Args:

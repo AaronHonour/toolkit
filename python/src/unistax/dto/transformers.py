@@ -1,7 +1,8 @@
 """DTO transformers and field mapping."""
 
-from typing import Any, Callable, Dict, Optional, Type, TypeVar
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -13,7 +14,7 @@ class FieldMapper:
 
     source_field: str
     target_field: str
-    transform: Optional[Callable[[Any], Any]] = None
+    transform: Callable[[Any], Any] | None = None
 
 
 class DTOTransformer:
@@ -21,12 +22,12 @@ class DTOTransformer:
 
     def __init__(self):
         """Initialize transformer."""
-        self.mappings: Dict[tuple, list[FieldMapper]] = {}
+        self.mappings: dict[tuple, list[FieldMapper]] = {}
 
     def add_mapping(
         self,
-        source_type: Type,
-        target_type: Type,
+        source_type: type,
+        target_type: type,
         field_mapper: FieldMapper,
     ):
         """Add field mapping.
@@ -44,7 +45,7 @@ class DTOTransformer:
     def transform(
         self,
         source: Any,
-        target_type: Type[T],
+        target_type: type[T],
     ) -> T:
         """Transform source to target type.
 

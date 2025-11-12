@@ -1,8 +1,9 @@
 """Async operation helpers for better performance."""
 
 import asyncio
-from typing import Any, Callable, Coroutine, List, TypeVar, Optional
+from collections.abc import Callable, Coroutine
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -34,8 +35,8 @@ class AsyncPool:
     async def map(
         self,
         func: Callable[[Any], Coroutine[Any, Any, T]],
-        items: List[Any]
-    ) -> List[T]:
+        items: list[Any]
+    ) -> list[T]:
         """Map async function over items concurrently.
 
         Args:
@@ -50,9 +51,9 @@ class AsyncPool:
 
 
 async def async_batch(
-    items: List[T],
+    items: list[T],
     batch_size: int,
-    processor: Callable[[List[T]], Coroutine[Any, Any, Any]]
+    processor: Callable[[list[T]], Coroutine[Any, Any, Any]]
 ):
     """Process items in async batches.
 
@@ -78,7 +79,7 @@ async def async_batch(
 def run_in_executor(
     func: Callable,
     *args,
-    executor: Optional[ThreadPoolExecutor] = None,
+    executor: ThreadPoolExecutor | None = None,
     **kwargs
 ):
     """Run blocking function in executor.

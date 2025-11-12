@@ -2,7 +2,7 @@
 
 import json
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class JWT:
@@ -20,7 +20,7 @@ class JWT:
         self.algorithm = algorithm
         self.expiration = expiration
 
-    def encode(self, payload: Dict[str, Any], exp: Optional[int] = None) -> str:
+    def encode(self, payload: dict[str, Any], exp: int | None = None) -> str:
         """
         Encode payload to JWT token.
 
@@ -59,7 +59,7 @@ class JWT:
 
         return f"{message}.{signature_b64}"
 
-    def decode(self, token: str, verify: bool = True) -> Dict[str, Any]:
+    def decode(self, token: str, verify: bool = True) -> dict[str, Any]:
         """
         Decode JWT token.
 

@@ -1,8 +1,9 @@
 """Configuration-based discovery for detecting dependencies from config files."""
 
 import re
-from typing import List, Dict, Any, Optional
 from pathlib import Path
+from typing import Any
+
 from unistax.discovery.base import (
     DependencyDiscoverer,
     DiscoveryResult,
@@ -16,9 +17,9 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
     def __init__(
         self,
         service_name: str,
-        config_data: Optional[Dict[str, Any]] = None,
-        env_vars: Optional[Dict[str, str]] = None,
-        config_files: Optional[List[Path]] = None,
+        config_data: dict[str, Any] | None = None,
+        env_vars: dict[str, str] | None = None,
+        config_files: list[Path] | None = None,
     ) -> None:
         """Initialize configuration discoverer.
 
@@ -33,13 +34,13 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
         self.env_vars = env_vars or {}
         self.config_files = config_files or []
 
-    async def discover(self) -> List[DiscoveryResult]:
+    async def discover(self) -> list[DiscoveryResult]:
         """Discover dependencies from configuration.
 
         Returns:
             List of discovered dependencies
         """
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Discover from structured config data
         results.extend(self._discover_from_config_data())
@@ -52,9 +53,9 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_config_data(self) -> List[DiscoveryResult]:
+    def _discover_from_config_data(self) -> list[DiscoveryResult]:
         """Extract dependencies from configuration data."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Common service configuration patterns
         service_keys = [
@@ -101,9 +102,9 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_env_vars(self) -> List[DiscoveryResult]:
+    def _discover_from_env_vars(self) -> list[DiscoveryResult]:
         """Extract dependencies from environment variables."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Patterns for service URLs in env vars
         url_pattern = re.compile(
@@ -153,14 +154,14 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
         self,
         target_service: str,
         config: Any,
-    ) -> Optional[DiscoveryResult]:
+    ) -> DiscoveryResult | None:
         """Create a dependency result from service configuration."""
         if not target_service:
             return None
 
         # Determine dependency type from config
         dep_type = "api_call"  # Default
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
 
         if isinstance(config, dict):
             # Check for explicit type

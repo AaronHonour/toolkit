@@ -1,8 +1,9 @@
 """API dependency injection helpers."""
 
-from typing import Any, Callable
-from fastapi import Depends as FastAPIDepends
+from collections.abc import Callable
+from typing import Any
 
+from fastapi import Depends as FastAPIDepends
 
 # Re-export FastAPI Depends
 Depends = FastAPIDepends

@@ -1,11 +1,12 @@
 """Batch processing for improved performance."""
 
 import asyncio
-from typing import Any, Callable, List, Optional, TypeVar
-from dataclasses import dataclass
 import threading
 import time
-from queue import Queue, Empty
+from collections.abc import Callable
+from dataclasses import dataclass
+from queue import Empty, Queue
+from typing import TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -25,8 +26,8 @@ class BatchProcessor:
 
     def __init__(
         self,
-        processor_func: Callable[[List[T]], List[R]],
-        config: Optional[BatchConfig] = None
+        processor_func: Callable[[list[T]], list[R]],
+        config: BatchConfig | None = None
     ):
         """Initialize batch processor.
 
@@ -47,7 +48,7 @@ class BatchProcessor:
         self.queue: Queue = Queue()
         self.results: dict = {}
         self.lock = threading.Lock()
-        self.worker_thread: Optional[threading.Thread] = None
+        self.worker_thread: threading.Thread | None = None
         self.running = False
 
     def start(self):
@@ -112,7 +113,7 @@ class BatchProcessor:
 
             self._process_batch(batch)
 
-    def _collect_batch(self) -> List[tuple]:
+    def _collect_batch(self) -> list[tuple]:
         """Collect items for batch.
 
         Returns:
@@ -132,7 +133,7 @@ class BatchProcessor:
 
         return batch
 
-    def _process_batch(self, batch: List[tuple]):
+    def _process_batch(self, batch: list[tuple]):
         """Process batch of items.
 
         Args:
@@ -148,7 +149,7 @@ class BatchProcessor:
 
             # Store results
             with self.lock:
-                for item_id, result in zip(item_ids, results):
+                for item_id, result in zip(item_ids, results, strict=False):
                     self.results[item_id] = result
 
         except Exception as e:
@@ -168,8 +169,8 @@ class AsyncBatchProcessor:
 
     def __init__(
         self,
-        processor_func: Callable[[List[T]], asyncio.Future[List[R]]],
-        config: Optional[BatchConfig] = None
+        processor_func: Callable[[list[T]], asyncio.Future[list[R]]],
+        config: BatchConfig | None = None
     ):
         """Initialize async batch processor.
 
@@ -183,7 +184,7 @@ class AsyncBatchProcessor:
         self.queue: asyncio.Queue = asyncio.Queue()
         self.results: dict = {}
         self.lock = asyncio.Lock()
-        self.worker_task: Optional[asyncio.Task] = None
+        self.worker_task: asyncio.Task | None = None
         self.running = False
 
     async def start(self):
@@ -240,7 +241,7 @@ class AsyncBatchProcessor:
 
             await self._process_batch(batch)
 
-    async def _collect_batch(self) -> List[tuple]:
+    async def _collect_batch(self) -> list[tuple]:
         """Collect items for batch.
 
         Returns:
@@ -263,13 +264,13 @@ class AsyncBatchProcessor:
 
         return batch
 
-    async def _process_batch(self, batch: List[tuple]):
+    async def _process_batch(self, batch: list[tuple]):
         """Process batch of items.
 
         Args:
             batch: List of (item_id, item, result_future) tuples
         """
-        item_ids = [item_id for item_id, _, _ in batch]
+        [item_id for item_id, _, _ in batch]
         items = [item for _, item, _ in batch]
         futures = [future for _, _, future in batch]
 
@@ -278,7 +279,7 @@ class AsyncBatchProcessor:
             results = await self.processor_func(items)
 
             # Set results
-            for future, result in zip(futures, results):
+            for future, result in zip(futures, results, strict=False):
                 if not future.done():
                     future.set_result(result)
 

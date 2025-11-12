@@ -1,6 +1,7 @@
 """Service mocking utilities."""
 
-from typing import Any, Callable, Type
+from collections.abc import Callable
+from typing import Any
 from unittest.mock import Mock
 
 
@@ -22,7 +23,7 @@ class MockService:
         return getattr(self._mock, name)
 
 
-def mock_service(service_type: Type) -> Callable:
+def mock_service(service_type: type) -> Callable:
     """
     Decorator to mock a service in tests.
 

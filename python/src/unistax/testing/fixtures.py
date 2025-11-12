@@ -1,7 +1,6 @@
 """Testing fixtures and utilities."""
 
-import asyncio
-from typing import Any, Callable
+from collections.abc import Callable
 
 
 class TestCase:

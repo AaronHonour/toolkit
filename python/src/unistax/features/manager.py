@@ -1,9 +1,9 @@
 """Feature flag manager."""
 
-from enum import Enum
-from typing import Any, Dict, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class FeatureStatus(str, Enum):
@@ -20,9 +20,9 @@ class Feature:
 
     name: str
     status: FeatureStatus = FeatureStatus.DISABLED
-    description: Optional[str] = None
+    description: str | None = None
     rollout_percentage: int = 0
-    targeting_rules: Dict[str, Any] = field(default_factory=dict)
+    targeting_rules: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -41,8 +41,8 @@ class FeatureManager:
     def is_enabled(
         self,
         feature_name: str,
-        user_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        user_id: str | None = None,
+        context: dict[str, Any] | None = None,
     ) -> bool:
         """Check if feature is enabled.
 
@@ -108,8 +108,8 @@ class FeatureManager:
     def _check_rollout(
         self,
         feature: Feature,
-        user_id: Optional[str],
-        context: Optional[Dict[str, Any]],
+        user_id: str | None,
+        context: dict[str, Any] | None,
     ) -> bool:
         """Check if user is in rollout.
 

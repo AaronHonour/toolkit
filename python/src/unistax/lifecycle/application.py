@@ -3,8 +3,9 @@
 import asyncio
 import signal
 import sys
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from .health import HealthCheck, HealthCheckRegistry
 from .hooks import LifecycleHook
@@ -52,8 +53,8 @@ class Application:
         """
         self.name = name
         self.shutdown_timeout = shutdown_timeout
-        self._startup_hooks: List[LifecycleHook] = []
-        self._shutdown_hooks: List[LifecycleHook] = []
+        self._startup_hooks: list[LifecycleHook] = []
+        self._shutdown_hooks: list[LifecycleHook] = []
         self._health_registry = HealthCheckRegistry()
         self._is_running = False
         self._signal_handlers_installed = False
@@ -87,7 +88,7 @@ class Application:
         return func
 
     def health_check(
-        self, name: Optional[str] = None, check_type: str = "readiness"
+        self, name: str | None = None, check_type: str = "readiness"
     ) -> Callable:
         """
         Register health check.
@@ -181,7 +182,7 @@ class Application:
 
         self._signal_handlers_installed = True
 
-    def get_health_status(self) -> Dict[str, Any]:
+    def get_health_status(self) -> dict[str, Any]:
         """
         Get application health status.
 

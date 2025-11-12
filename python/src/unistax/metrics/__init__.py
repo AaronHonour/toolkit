@@ -8,9 +8,9 @@ Provides application metrics collection and reporting with:
 - Automatic integration with other modules
 """
 
-from .manager import MetricsManager, Metrics
-from .backends import PrometheusBackend, StatsDBackend, InMemoryBackend
-from .decorators import timer, counter, gauge
+from .backends import InMemoryBackend, PrometheusBackend, StatsDBackend
+from .decorators import counter, gauge, timer
+from .manager import Metrics, MetricsManager
 
 __all__ = [
     "MetricsManager",

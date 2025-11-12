@@ -2,7 +2,8 @@
 
 import asyncio
 import inspect
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class LifecycleHook:

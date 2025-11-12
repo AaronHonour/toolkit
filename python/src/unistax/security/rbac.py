@@ -1,7 +1,6 @@
 """Role-Based Access Control."""
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set
 
 
 @dataclass
@@ -21,7 +20,7 @@ class Role:
     """Role with permissions."""
 
     name: str
-    permissions: Set[str] = field(default_factory=set)
+    permissions: set[str] = field(default_factory=set)
 
     def has_permission(self, permission: str) -> bool:
         """Check if role has permission."""
@@ -43,9 +42,9 @@ class RBAC:
     """
 
     def __init__(self):
-        self._roles: Dict[str, Role] = {}
+        self._roles: dict[str, Role] = {}
 
-    def define_role(self, role_name: str, permissions: List[str]) -> None:
+    def define_role(self, role_name: str, permissions: list[str]) -> None:
         """
         Define a role with permissions.
 

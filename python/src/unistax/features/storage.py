@@ -1,7 +1,7 @@
 """Feature storage backends."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+
 from unistax.features.manager import Feature
 
 
@@ -9,7 +9,7 @@ class FeatureStorage(ABC):
     """Base feature storage interface."""
 
     @abstractmethod
-    def get(self, name: str) -> Optional[Feature]:
+    def get(self, name: str) -> Feature | None:
         """Get feature by name."""
         pass
 
@@ -24,7 +24,7 @@ class FeatureStorage(ABC):
         pass
 
     @abstractmethod
-    def list_all(self) -> Dict[str, Feature]:
+    def list_all(self) -> dict[str, Feature]:
         """List all features."""
         pass
 
@@ -34,9 +34,9 @@ class InMemoryFeatureStorage(FeatureStorage):
 
     def __init__(self):
         """Initialize storage."""
-        self.features: Dict[str, Feature] = {}
+        self.features: dict[str, Feature] = {}
 
-    def get(self, name: str) -> Optional[Feature]:
+    def get(self, name: str) -> Feature | None:
         """Get feature from memory."""
         return self.features.get(name)
 
@@ -49,6 +49,6 @@ class InMemoryFeatureStorage(FeatureStorage):
         if name in self.features:
             del self.features[name]
 
-    def list_all(self) -> Dict[str, Feature]:
+    def list_all(self) -> dict[str, Feature]:
         """List all features."""
         return self.features.copy()

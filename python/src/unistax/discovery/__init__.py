@@ -8,15 +8,15 @@ Provides tools to automatically discover service dependencies from:
 - Code analysis
 """
 
+from unistax.discovery.api_discoverer import APICallDiscoverer
 from unistax.discovery.base import (
     DependencyDiscoverer,
     DiscoveryResult,
     DiscoverySource,
 )
-from unistax.discovery.api_discoverer import APICallDiscoverer
+from unistax.discovery.config_discoverer import ConfigurationDiscoverer
 from unistax.discovery.database_discoverer import DatabaseConnectionDiscoverer
 from unistax.discovery.queue_discoverer import MessageQueueDiscoverer
-from unistax.discovery.config_discoverer import ConfigurationDiscoverer
 
 __all__ = [
     # Base

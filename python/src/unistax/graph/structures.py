@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Optional, Any
 from datetime import datetime
-from uuid import UUID, uuid4
 from enum import Enum
+from typing import Any
+from uuid import UUID, uuid4
 
 
 class DependencyType(str, Enum):
@@ -45,8 +45,8 @@ class ServiceNode:
     id: UUID
     name: str
     service_type: ServiceType
-    endpoints: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    endpoints: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
     health_score: float = 1.0
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
@@ -56,8 +56,8 @@ class ServiceNode:
         cls,
         name: str,
         service_type: ServiceType,
-        endpoints: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        endpoints: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> ServiceNode:
         """Create a new service node."""
         return cls(
@@ -106,10 +106,10 @@ class DependencyEdge:
     target: str  # Service name
     dependency_type: DependencyType
     weight: float = 1.0  # Normalized importance/frequency
-    latency_p99: Optional[float] = None  # Milliseconds
+    latency_p99: float | None = None  # Milliseconds
     error_rate: float = 0.0  # 0.0 to 1.0
     request_rate: float = 0.0  # Requests per second
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -120,7 +120,7 @@ class DependencyEdge:
         target: str,
         dependency_type: DependencyType,
         weight: float = 1.0,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> DependencyEdge:
         """Create a new dependency edge."""
         return cls(
@@ -134,9 +134,9 @@ class DependencyEdge:
 
     def update_metrics(
         self,
-        latency_p99: Optional[float] = None,
-        error_rate: Optional[float] = None,
-        request_rate: Optional[float] = None,
+        latency_p99: float | None = None,
+        error_rate: float | None = None,
+        request_rate: float | None = None,
     ) -> None:
         """Update edge metrics."""
         if latency_p99 is not None:
@@ -157,10 +157,10 @@ class DirectedGraph:
 
     def __init__(self) -> None:
         """Initialize an empty directed graph."""
-        self._adj_list: Dict[str, Set[str]] = {}
-        self._reverse_adj_list: Dict[str, Set[str]] = {}
-        self._nodes: Set[str] = set()
-        self._edges: Set[WeightedEdge] = set()
+        self._adj_list: dict[str, set[str]] = {}
+        self._reverse_adj_list: dict[str, set[str]] = {}
+        self._nodes: set[str] = set()
+        self._edges: set[WeightedEdge] = set()
 
     def add_node(self, node: str) -> None:
         """Add a node to the graph."""
@@ -192,19 +192,19 @@ class DirectedGraph:
         """Check if an edge exists."""
         return source in self._adj_list and target in self._adj_list[source]
 
-    def get_successors(self, node: str) -> Set[str]:
+    def get_successors(self, node: str) -> set[str]:
         """Get all nodes that this node points to (outgoing edges)."""
         return self._adj_list.get(node, set()).copy()
 
-    def get_predecessors(self, node: str) -> Set[str]:
+    def get_predecessors(self, node: str) -> set[str]:
         """Get all nodes that point to this node (incoming edges)."""
         return self._reverse_adj_list.get(node, set()).copy()
 
-    def get_nodes(self) -> Set[str]:
+    def get_nodes(self) -> set[str]:
         """Get all nodes in the graph."""
         return self._nodes.copy()
 
-    def get_edges(self) -> Set[WeightedEdge]:
+    def get_edges(self) -> set[WeightedEdge]:
         """Get all edges in the graph."""
         return self._edges.copy()
 
@@ -224,7 +224,7 @@ class DirectedGraph:
         """Get the out-degree of a node (number of outgoing edges)."""
         return len(self._adj_list.get(node, set()))
 
-    def subgraph(self, nodes: Set[str]) -> DirectedGraph:
+    def subgraph(self, nodes: set[str]) -> DirectedGraph:
         """Create a subgraph containing only the specified nodes."""
         sub = DirectedGraph()
         for node in nodes:
@@ -246,9 +246,9 @@ class ServiceDependencyGraph:
     def __init__(self) -> None:
         """Initialize an empty service dependency graph."""
         self._graph = DirectedGraph()
-        self._services: Dict[str, ServiceNode] = {}
-        self._dependencies: Dict[tuple[str, str], DependencyEdge] = {}
-        self._metadata: Dict[str, Any] = {}
+        self._services: dict[str, ServiceNode] = {}
+        self._dependencies: dict[tuple[str, str], DependencyEdge] = {}
+        self._metadata: dict[str, Any] = {}
 
     def add_service(self, service: ServiceNode) -> None:
         """Add a service to the graph."""
@@ -278,27 +278,27 @@ class ServiceDependencyGraph:
             dependency.weight,
         )
 
-    def get_service(self, name: str) -> Optional[ServiceNode]:
+    def get_service(self, name: str) -> ServiceNode | None:
         """Get a service by name."""
         return self._services.get(name)
 
-    def get_dependency(self, source: str, target: str) -> Optional[DependencyEdge]:
+    def get_dependency(self, source: str, target: str) -> DependencyEdge | None:
         """Get a dependency edge."""
         return self._dependencies.get((source, target))
 
-    def get_all_services(self) -> List[ServiceNode]:
+    def get_all_services(self) -> list[ServiceNode]:
         """Get all services."""
         return list(self._services.values())
 
-    def get_all_dependencies(self) -> List[DependencyEdge]:
+    def get_all_dependencies(self) -> list[DependencyEdge]:
         """Get all dependencies."""
         return list(self._dependencies.values())
 
-    def get_downstream_services(self, service_name: str) -> Set[str]:
+    def get_downstream_services(self, service_name: str) -> set[str]:
         """Get all services that depend on this service (downstream)."""
         return self._graph.get_successors(service_name)
 
-    def get_upstream_services(self, service_name: str) -> Set[str]:
+    def get_upstream_services(self, service_name: str) -> set[str]:
         """Get all services this service depends on (upstream)."""
         return self._graph.get_predecessors(service_name)
 

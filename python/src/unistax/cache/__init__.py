@@ -9,9 +9,9 @@ Provides unified caching interface with:
 - Compression support
 """
 
-from .manager import CacheManager, Cache
-from .backends import RedisBackend, MemcachedBackend, InMemoryCache
-from .decorators import memoize, cache_result
+from .backends import InMemoryCache, MemcachedBackend, RedisBackend
+from .decorators import cache_result, memoize
+from .manager import Cache, CacheManager
 
 __all__ = [
     "CacheManager",

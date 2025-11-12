@@ -8,7 +8,7 @@ import json
 import logging
 import traceback
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 
 class StructuredFormatter(logging.Formatter):
@@ -53,7 +53,7 @@ class StructuredFormatter(logging.Formatter):
 
         return " | ".join(str(p) for p in parts)
 
-    def _get_extra_fields(self, record: logging.LogRecord) -> Dict[str, Any]:
+    def _get_extra_fields(self, record: logging.LogRecord) -> dict[str, Any]:
         """Extract extra fields from record."""
         # Standard fields to exclude
         standard_fields = {
@@ -106,7 +106,7 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON."""
-        log_data: Dict[str, Any] = {
+        log_data: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(record.created).isoformat(),
             "level": record.levelname,
             "logger": record.name,
@@ -131,7 +131,7 @@ class JSONFormatter(logging.Formatter):
 
         return json.dumps(log_data, default=str)
 
-    def _get_extra_fields(self, record: logging.LogRecord) -> Dict[str, Any]:
+    def _get_extra_fields(self, record: logging.LogRecord) -> dict[str, Any]:
         """Extract extra fields from record."""
         standard_fields = {
             "name",

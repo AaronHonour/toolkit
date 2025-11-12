@@ -1,14 +1,13 @@
 """Decorators for dependency injection."""
 
-from functools import wraps
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from .container import Lifetime
 
 T = TypeVar("T")
 
 
-def singleton(cls: Type[T]) -> Type[T]:
+def singleton(cls: type[T]) -> type[T]:
     """
     Mark a class as singleton.
 
@@ -21,7 +20,7 @@ def singleton(cls: Type[T]) -> Type[T]:
     return cls
 
 
-def transient(cls: Type[T]) -> Type[T]:
+def transient(cls: type[T]) -> type[T]:
     """
     Mark a class as transient (new instance each time).
 
@@ -34,7 +33,7 @@ def transient(cls: Type[T]) -> Type[T]:
     return cls
 
 
-def scoped(cls: Type[T]) -> Type[T]:
+def scoped(cls: type[T]) -> type[T]:
     """
     Mark a class as scoped (one instance per scope).
 

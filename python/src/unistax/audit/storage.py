@@ -1,9 +1,9 @@
 """Audit storage backends."""
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
 from datetime import datetime
-from unistax.audit.logger import AuditEntry, AuditAction
+
+from unistax.audit.logger import AuditAction, AuditEntry
 
 
 class AuditStorage(ABC):
@@ -17,13 +17,13 @@ class AuditStorage(ABC):
     @abstractmethod
     def query(
         self,
-        user_id: Optional[str] = None,
-        resource: Optional[str] = None,
-        action: Optional[AuditAction] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        user_id: str | None = None,
+        resource: str | None = None,
+        action: AuditAction | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
-    ) -> List[AuditEntry]:
+    ) -> list[AuditEntry]:
         """Query audit entries."""
         pass
 
@@ -33,7 +33,7 @@ class InMemoryAuditStorage(AuditStorage):
 
     def __init__(self):
         """Initialize storage."""
-        self.entries: List[AuditEntry] = []
+        self.entries: list[AuditEntry] = []
 
     def save(self, entry: AuditEntry):
         """Save entry to memory."""
@@ -41,13 +41,13 @@ class InMemoryAuditStorage(AuditStorage):
 
     def query(
         self,
-        user_id: Optional[str] = None,
-        resource: Optional[str] = None,
-        action: Optional[AuditAction] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        user_id: str | None = None,
+        resource: str | None = None,
+        action: AuditAction | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
-    ) -> List[AuditEntry]:
+    ) -> list[AuditEntry]:
         """Query entries from memory."""
         results = self.entries
 
@@ -79,13 +79,13 @@ class DBAuditStorage(AuditStorage):
 
     def query(
         self,
-        user_id: Optional[str] = None,
-        resource: Optional[str] = None,
-        action: Optional[AuditAction] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        user_id: str | None = None,
+        resource: str | None = None,
+        action: AuditAction | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
-    ) -> List[AuditEntry]:
+    ) -> list[AuditEntry]:
         """Query from database."""
         # Implementation depends on ORM model
         return []

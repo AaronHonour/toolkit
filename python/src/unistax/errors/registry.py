@@ -5,7 +5,6 @@ Provides utilities for error management and reporting.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Type
 
 from .base import ApplicationError, ErrorCategory, ErrorCode
 
@@ -19,10 +18,10 @@ class ErrorRegistry:
 
     def __init__(self) -> None:
         """Initialize error registry."""
-        self._errors: Dict[ErrorCode, Type[ApplicationError]] = {}
-        self._occurrences: Dict[ErrorCode, int] = defaultdict(int)
+        self._errors: dict[ErrorCode, type[ApplicationError]] = {}
+        self._occurrences: dict[ErrorCode, int] = defaultdict(int)
 
-    def register(self, error_class: Type[ApplicationError]) -> None:
+    def register(self, error_class: type[ApplicationError]) -> None:
         """
         Register error class.
 
@@ -40,7 +39,7 @@ class ErrorRegistry:
         """
         self._occurrences[error.code] += 1
 
-    def get_error_class(self, code: ErrorCode) -> Type[ApplicationError]:
+    def get_error_class(self, code: ErrorCode) -> type[ApplicationError]:
         """
         Get error class by code.
 
@@ -67,7 +66,7 @@ class ErrorRegistry:
         """
         return self._occurrences[code]
 
-    def get_errors_by_category(self, category: ErrorCategory) -> List[Type[ApplicationError]]:
+    def get_errors_by_category(self, category: ErrorCategory) -> list[type[ApplicationError]]:
         """
         Get all errors in a category.
 
@@ -83,7 +82,7 @@ class ErrorRegistry:
             if error_class.category == category
         ]
 
-    def get_statistics(self) -> Dict[str, int]:
+    def get_statistics(self) -> dict[str, int]:
         """
         Get error statistics.
 

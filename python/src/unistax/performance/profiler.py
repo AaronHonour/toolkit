@@ -1,11 +1,11 @@
 """Performance profiling tools."""
 
 import cProfile
-import pstats
-import io
-from typing import Callable, Optional
-import time
 import functools
+import io
+import pstats
+import time
+from collections.abc import Callable
 from contextlib import contextmanager
 
 

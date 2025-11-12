@@ -6,7 +6,6 @@ Provides filters to protect sensitive information and add context.
 
 import logging
 import re
-from typing import Dict, List, Optional, Pattern
 
 from .context import log_context
 
@@ -32,7 +31,7 @@ class SensitiveDataFilter(logging.Filter):
         (r"\b\d{3}-\d{2}-\d{4}\b", "***-**-****"),  # SSN
     ]
 
-    def __init__(self, patterns: Optional[List[str]] = None) -> None:
+    def __init__(self, patterns: list[str] | None = None) -> None:
         """
         Initialize sensitive data filter.
 
@@ -128,7 +127,7 @@ class RateLimitFilter(logging.Filter):
         super().__init__()
         self.rate = rate
         self.per_seconds = per_seconds
-        self._message_counts: Dict[str, List[float]] = {}
+        self._message_counts: dict[str, list[float]] = {}
 
     def filter(self, record: logging.LogRecord) -> bool:
         """

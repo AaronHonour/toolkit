@@ -1,18 +1,18 @@
 """Query builder for composable queries."""
 
-from typing import Any, List, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
 class Query:
     """Query representation."""
 
-    filters: List[dict] = field(default_factory=list)
-    sorts: List[dict] = field(default_factory=list)
-    limit: Optional[int] = None
-    offset: Optional[int] = None
-    select_fields: Optional[List[str]] = None
+    filters: list[dict] = field(default_factory=list)
+    sorts: list[dict] = field(default_factory=list)
+    limit: int | None = None
+    offset: int | None = None
+    select_fields: list[str] | None = None
 
 
 class QueryBuilder:

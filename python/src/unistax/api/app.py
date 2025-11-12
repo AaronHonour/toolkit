@@ -1,12 +1,15 @@
 """API application wrapper for FastAPI."""
 
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
 from dataclasses import dataclass
-from fastapi import FastAPI, Request, Response
+from typing import Any
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from unistax.lifecycle import Application
+
 from unistax.config import ConfigManager
+from unistax.lifecycle import Application
 from unistax.logging import get_logger
 from unistax.middleware import MiddlewarePipeline
 
@@ -16,12 +19,12 @@ class RouteConfig:
     """Route configuration."""
 
     path: str
-    methods: List[str]
+    methods: list[str]
     handler: Callable
-    tags: Optional[List[str]] = None
-    summary: Optional[str] = None
-    description: Optional[str] = None
-    response_model: Optional[Any] = None
+    tags: list[str] | None = None
+    summary: str | None = None
+    description: str | None = None
+    response_model: Any | None = None
 
 
 class APIApplication:
@@ -31,12 +34,12 @@ class APIApplication:
         self,
         title: str = "API",
         version: str = "1.0.0",
-        description: Optional[str] = None,
+        description: str | None = None,
         docs_url: str = "/docs",
         redoc_url: str = "/redoc",
         openapi_url: str = "/openapi.json",
         cors_enabled: bool = True,
-        cors_origins: Optional[List[str]] = None,
+        cors_origins: list[str] | None = None,
     ):
         """Initialize API application.
 
@@ -60,7 +63,7 @@ class APIApplication:
         )
 
         self.lifecycle = Application(name=title)
-        self.middleware_pipeline: Optional[MiddlewarePipeline] = None
+        self.middleware_pipeline: MiddlewarePipeline | None = None
         self.logger = get_logger(__name__)
 
         # Setup CORS
@@ -97,10 +100,10 @@ class APIApplication:
 
     def add_cors(
         self,
-        origins: Optional[List[str]] = None,
+        origins: list[str] | None = None,
         allow_credentials: bool = True,
-        allow_methods: Optional[List[str]] = None,
-        allow_headers: Optional[List[str]] = None,
+        allow_methods: list[str] | None = None,
+        allow_headers: list[str] | None = None,
     ):
         """Add CORS middleware.
 
@@ -152,7 +155,7 @@ class APIApplication:
                 },
             )
 
-    def include_router(self, router: "APIRouter", prefix: str = "", tags: Optional[List[str]] = None):
+    def include_router(self, router: "APIRouter", prefix: str = "", tags: list[str] | None = None):
         """Include router in application.
 
         Args:

@@ -9,12 +9,11 @@ Provides a thread-safe, cached configuration manager with support for:
 - Hot-reloading
 """
 
-import os
 import threading
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypeVar, Union, cast
+from typing import Any, TypeVar
 
-from .loaders import YAMLLoader, EnvInterpolator
+from .loaders import EnvInterpolator, YAMLLoader
 
 T = TypeVar("T")
 
@@ -30,22 +29,22 @@ class ConfigManager:
         >>> features = config.get_list("features", default=[])
     """
 
-    def __init__(self, data: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, data: dict[str, Any] | None = None) -> None:
         """
         Initialize configuration manager.
 
         Args:
             data: Initial configuration data
         """
-        self._data: Dict[str, Any] = data or {}
-        self._cache: Dict[str, Any] = {}
+        self._data: dict[str, Any] = data or {}
+        self._cache: dict[str, Any] = {}
         self._lock = threading.RLock()
         self._interpolator = EnvInterpolator()
 
     @classmethod
     def from_yaml(
         cls,
-        path: Union[str, Path],
+        path: str | Path,
         interpolate: bool = True,
         validate: bool = True,
     ) -> "ConfigManager":
@@ -74,11 +73,11 @@ class ConfigManager:
         return cls(data)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ConfigManager":
+    def from_dict(cls, data: dict[str, Any]) -> "ConfigManager":
         """Create configuration manager from dictionary."""
         return cls(data)
 
-    def get(self, key: str, default: Optional[T] = None) -> Any:
+    def get(self, key: str, default: T | None = None) -> Any:
         """
         Get configuration value using dot notation.
 
@@ -132,12 +131,12 @@ class ConfigManager:
             return value.lower() in ("true", "yes", "1", "on")
         return bool(value) if value is not None else default
 
-    def get_list(self, key: str, default: Optional[List[Any]] = None) -> List[Any]:
+    def get_list(self, key: str, default: list[Any] | None = None) -> list[Any]:
         """Get list value."""
         value = self.get(key, default or [])
         return list(value) if isinstance(value, (list, tuple)) else default or []
 
-    def get_dict(self, key: str, default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def get_dict(self, key: str, default: dict[str, Any] | None = None) -> dict[str, Any]:
         """Get dictionary value."""
         value = self.get(key, default or {})
         return dict(value) if isinstance(value, dict) else default or {}
@@ -173,7 +172,7 @@ class ConfigManager:
             # Invalidate cache for this key and parent keys
             self._invalidate_cache(key)
 
-    def update(self, data: Dict[str, Any]) -> None:
+    def update(self, data: dict[str, Any]) -> None:
         """
         Update configuration with new data.
 
@@ -184,7 +183,7 @@ class ConfigManager:
             self._deep_merge(self._data, data)
             self._cache.clear()
 
-    def reload(self, path: Union[str, Path]) -> None:
+    def reload(self, path: str | Path) -> None:
         """
         Reload configuration from file.
 
@@ -204,7 +203,7 @@ class ConfigManager:
         with self._lock:
             self._cache.clear()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export configuration as dictionary."""
         return dict(self._data)
 
@@ -241,7 +240,7 @@ class ConfigManager:
         for k in keys_to_remove:
             del self._cache[k]
 
-    def _deep_merge(self, base: Dict[str, Any], updates: Dict[str, Any]) -> None:
+    def _deep_merge(self, base: dict[str, Any], updates: dict[str, Any]) -> None:
         """Deep merge updates into base dictionary."""
         for key, value in updates.items():
             if key in base and isinstance(base[key], dict) and isinstance(value, dict):

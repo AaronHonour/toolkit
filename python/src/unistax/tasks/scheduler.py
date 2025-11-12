@@ -1,14 +1,16 @@
 """Task scheduling using APScheduler."""
 
-from typing import Any, Callable, Dict, Optional
-from datetime import datetime
+from collections.abc import Callable
 from dataclasses import dataclass
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.date import DateTrigger
+from datetime import datetime
+from typing import Any
+
 from apscheduler.job import Job as APJob
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 
 @dataclass
@@ -18,10 +20,10 @@ class Job:
     id: str
     func: Callable
     trigger: str  # "cron", "interval", "date"
-    trigger_args: Dict[str, Any]
+    trigger_args: dict[str, Any]
     args: tuple = ()
-    kwargs: Optional[Dict[str, Any]] = None
-    name: Optional[str] = None
+    kwargs: dict[str, Any] | None = None
+    name: str | None = None
     misfire_grace_time: int = 60
     coalesce: bool = True
     max_instances: int = 1
@@ -33,7 +35,7 @@ class Scheduler:
     def __init__(
         self,
         timezone: str = "UTC",
-        job_defaults: Optional[Dict[str, Any]] = None,
+        job_defaults: dict[str, Any] | None = None,
         use_async: bool = False,
     ):
         """Initialize scheduler.
@@ -61,7 +63,7 @@ class Scheduler:
                 timezone=timezone, job_defaults=defaults
             )
 
-        self._jobs: Dict[str, Job] = {}
+        self._jobs: dict[str, Job] = {}
 
     def start(self):
         """Start the scheduler."""
@@ -81,10 +83,10 @@ class Scheduler:
         self,
         func: Callable,
         trigger: str,
-        id: Optional[str] = None,
-        name: Optional[str] = None,
+        id: str | None = None,
+        name: str | None = None,
         args: tuple = (),
-        kwargs: Optional[Dict[str, Any]] = None,
+        kwargs: dict[str, Any] | None = None,
         **trigger_args,
     ) -> str:
         """Add a job to the scheduler.
@@ -281,7 +283,7 @@ class Scheduler:
         """
         self.scheduler.resume_job(job_id)
 
-    def get_job(self, job_id: str) -> Optional[APJob]:
+    def get_job(self, job_id: str) -> APJob | None:
         """Get job by ID.
 
         Args:

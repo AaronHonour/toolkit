@@ -1,9 +1,9 @@
 """Built-in middleware implementations."""
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from .pipeline import Middleware, Request, Response, NextHandler
+from .pipeline import Middleware, NextHandler, Request, Response
 
 
 class LoggingMiddleware(Middleware):
@@ -13,7 +13,7 @@ class LoggingMiddleware(Middleware):
     Logs method, path, status code, and duration.
     """
 
-    def __init__(self, logger: Optional[Any] = None):
+    def __init__(self, logger: Any | None = None):
         self.logger = logger
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
@@ -60,7 +60,7 @@ class MetricsMiddleware(Middleware):
     Tracks request count, duration, and status codes.
     """
 
-    def __init__(self, metrics: Optional[Any] = None):
+    def __init__(self, metrics: Any | None = None):
         self.metrics = metrics
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
@@ -137,9 +137,9 @@ class CORSMiddleware(Middleware):
 
     def __init__(
         self,
-        allow_origins: List[str] = None,
-        allow_methods: List[str] = None,
-        allow_headers: List[str] = None,
+        allow_origins: list[str] = None,
+        allow_methods: list[str] = None,
+        allow_headers: list[str] = None,
         max_age: int = 3600,
     ):
         self.allow_origins = allow_origins or ["*"]
@@ -163,7 +163,7 @@ class CORSMiddleware(Middleware):
 
         return response
 
-    def _get_cors_headers(self, request: Request) -> Dict[str, str]:
+    def _get_cors_headers(self, request: Request) -> dict[str, str]:
         """Get CORS headers."""
         origin = request.headers.get("Origin", "*")
 

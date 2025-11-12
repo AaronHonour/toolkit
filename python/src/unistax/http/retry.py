@@ -1,6 +1,5 @@
 """Retry strategies for HTTP requests."""
 
-import time
 from abc import ABC, abstractmethod
 
 

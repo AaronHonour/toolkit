@@ -1,8 +1,9 @@
 """Middleware pipeline implementation."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Awaitable
+from typing import Any
 
 
 @dataclass
@@ -11,10 +12,10 @@ class Request:
 
     method: str
     path: str
-    headers: Dict[str, str] = field(default_factory=dict)
-    query_params: Dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
+    query_params: dict[str, str] = field(default_factory=dict)
     body: Any = None
-    context: Dict[str, Any] = field(default_factory=dict)  # For passing data between middleware
+    context: dict[str, Any] = field(default_factory=dict)  # For passing data between middleware
 
 
 @dataclass
@@ -22,7 +23,7 @@ class Response:
     """Response context."""
 
     status_code: int = 200
-    headers: Dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
     body: Any = None
 
 
@@ -64,7 +65,7 @@ class MiddlewarePipeline:
     """
 
     def __init__(self):
-        self._middleware: List[Middleware] = []
+        self._middleware: list[Middleware] = []
 
     def use(self, middleware: Middleware) -> "MiddlewarePipeline":
         """
@@ -80,7 +81,7 @@ class MiddlewarePipeline:
         return self
 
     async def execute(
-        self, request: Request, final_handler: Optional[NextHandler] = None
+        self, request: Request, final_handler: NextHandler | None = None
     ) -> Response:
         """
         Execute middleware pipeline.

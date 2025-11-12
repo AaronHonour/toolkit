@@ -1,8 +1,8 @@
 """Filtering utilities."""
 
-from enum import Enum
-from typing import Any, List
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class FilterOperator(str, Enum):
@@ -76,7 +76,7 @@ class Filter:
 class FilterSet:
     """Collection of filters."""
 
-    def __init__(self, filters: Optional[List[Filter]] = None):
+    def __init__(self, filters: Optional[list[Filter]] = None):
         """Initialize filter set.
 
         Args:

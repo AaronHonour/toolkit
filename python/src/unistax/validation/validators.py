@@ -1,7 +1,8 @@
 """Validation utilities."""
 
 import re
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 
 class ValidationRules:
@@ -47,8 +48,8 @@ class Validator:
     """
 
     def __init__(self):
-        self.rules: Dict[str, List[Callable]] = {}
-        self.errors: Dict[str, List[str]] = {}
+        self.rules: dict[str, list[Callable]] = {}
+        self.errors: dict[str, list[str]] = {}
 
     def add_rule(self, field: str, rule: Callable, error_message: str = "Validation failed"):
         """Add validation rule for field."""
@@ -56,7 +57,7 @@ class Validator:
             self.rules[field] = []
         self.rules[field].append((rule, error_message))
 
-    def validate(self, data: Dict[str, Any]) -> bool:
+    def validate(self, data: dict[str, Any]) -> bool:
         """
         Validate data against rules.
 
@@ -85,6 +86,6 @@ class Validator:
 
         return is_valid
 
-    def get_errors(self) -> Dict[str, List[str]]:
+    def get_errors(self) -> dict[str, list[str]]:
         """Get validation errors."""
         return self.errors

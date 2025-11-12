@@ -4,13 +4,13 @@ Cache manager implementation.
 Provides unified interface for caching with multiple backends.
 """
 
-import hashlib
 import json
 import pickle
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
-from .backends import CacheBackend, InMemoryCache, RedisBackend, MemcachedBackend
+from .backends import CacheBackend, InMemoryCache, MemcachedBackend, RedisBackend
 
 
 class CacheManager:
@@ -26,7 +26,7 @@ class CacheManager:
 
     def __init__(
         self,
-        backend: Union[str, CacheBackend] = "memory",
+        backend: str | CacheBackend = "memory",
         prefix: str = "",
         serializer: str = "json",
         compress: bool = False,
@@ -50,7 +50,7 @@ class CacheManager:
         self._compress = compress
 
     @classmethod
-    def from_yaml(cls, path: Union[str, Path]) -> "CacheManager":
+    def from_yaml(cls, path: str | Path) -> "CacheManager":
         """
         Create cache manager from YAML configuration.
 
@@ -145,7 +145,7 @@ class CacheManager:
         except Exception:
             return default
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
         """
         Set value in cache.
 
@@ -198,9 +198,9 @@ class CacheManager:
 
     def memoize(
         self,
-        ttl: Optional[int] = None,
+        ttl: int | None = None,
         key_prefix: str = "",
-        key_func: Optional[Callable] = None,
+        key_func: Callable | None = None,
     ):
         """
         Decorator for memoizing function results.
@@ -251,7 +251,7 @@ class CacheManager:
         return decorator
 
     def get_or_set(
-        self, key: str, factory: Callable, ttl: Optional[int] = None
+        self, key: str, factory: Callable, ttl: int | None = None
     ) -> Any:
         """
         Get value from cache or set it using factory function.
@@ -274,7 +274,7 @@ class CacheManager:
 
 
 # Global cache instance
-_global_cache: Optional[CacheManager] = None
+_global_cache: CacheManager | None = None
 
 
 def get_cache() -> CacheManager:

@@ -5,11 +5,11 @@ mapping, analysis, and visualization.
 """
 
 from unistax.graph.structures import (
-    DirectedGraph,
-    WeightedEdge,
-    ServiceNode,
     DependencyEdge,
+    DirectedGraph,
     ServiceDependencyGraph,
+    ServiceNode,
+    WeightedEdge,
 )
 from unistax.graph.visualizer import (
     GraphVisualizer,

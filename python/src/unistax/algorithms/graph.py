@@ -8,7 +8,6 @@ Implements efficient algorithms for:
 - Dependency ordering (Topological sort)
 """
 
-from typing import Dict, List, Set, Tuple, Optional
 from collections import defaultdict, deque
 from dataclasses import dataclass
 
@@ -17,7 +16,7 @@ from dataclasses import dataclass
 class CircularDependency:
     """Represents a circular dependency cycle."""
 
-    services: List[str]
+    services: list[str]
     cycle_length: int
 
     @property
@@ -31,12 +30,12 @@ class BlastRadiusResult:
     """Result of blast radius calculation."""
 
     failed_service: str
-    affected_services: Set[str]
-    impact_levels: Dict[str, int]  # Service -> distance from failure
+    affected_services: set[str]
+    impact_levels: dict[str, int]  # Service -> distance from failure
     total_affected: int
 
     @property
-    def critical_services(self) -> Set[str]:
+    def critical_services(self) -> set[str]:
         """Services directly dependent on the failed service."""
         return {
             svc for svc, level in self.impact_levels.items()
@@ -52,10 +51,10 @@ class CriticalityScore:
     score: float
     rank: int
     is_critical: bool
-    reasons: List[str]
+    reasons: list[str]
 
 
-def tarjan_scc(adj_list: Dict[str, Set[str]]) -> List[List[str]]:
+def tarjan_scc(adj_list: dict[str, set[str]]) -> list[list[str]]:
     """Find strongly connected components using Tarjan's algorithm.
 
     This detects circular dependencies in the service graph.
@@ -67,11 +66,11 @@ def tarjan_scc(adj_list: Dict[str, Set[str]]) -> List[List[str]]:
         List of strongly connected components (each is a list of services)
     """
     index_counter = [0]
-    stack: List[str] = []
-    lowlinks: Dict[str, int] = {}
-    index: Dict[str, int] = {}
-    on_stack: Set[str] = set()
-    sccs: List[List[str]] = []
+    stack: list[str] = []
+    lowlinks: dict[str, int] = {}
+    index: dict[str, int] = {}
+    on_stack: set[str] = set()
+    sccs: list[list[str]] = []
 
     def strongconnect(node: str) -> None:
         # Set the depth index for this node
@@ -93,7 +92,7 @@ def tarjan_scc(adj_list: Dict[str, Set[str]]) -> List[List[str]]:
 
         # If node is a root node, pop the stack and generate an SCC
         if lowlinks[node] == index[node]:
-            scc: List[str] = []
+            scc: list[str] = []
             while True:
                 successor = stack.pop()
                 on_stack.remove(successor)
@@ -111,8 +110,8 @@ def tarjan_scc(adj_list: Dict[str, Set[str]]) -> List[List[str]]:
 
 
 def detect_circular_dependencies(
-    adj_list: Dict[str, Set[str]]
-) -> List[CircularDependency]:
+    adj_list: dict[str, set[str]]
+) -> list[CircularDependency]:
     """Detect all circular dependencies in the service graph.
 
     Args:
@@ -124,7 +123,7 @@ def detect_circular_dependencies(
     sccs = tarjan_scc(adj_list)
 
     # Filter to only cycles (SCCs with more than one node, or self-loops)
-    circular_deps: List[CircularDependency] = []
+    circular_deps: list[CircularDependency] = []
 
     for scc in sccs:
         # Check if it's a cycle
@@ -150,7 +149,7 @@ def detect_circular_dependencies(
 
 
 def calculate_blast_radius(
-    adj_list: Dict[str, Set[str]],
+    adj_list: dict[str, set[str]],
     failed_service: str,
 ) -> BlastRadiusResult:
     """Calculate the blast radius of a service failure using BFS.
@@ -175,8 +174,8 @@ def calculate_blast_radius(
 
     # BFS to find all affected services
     queue = deque([(failed_service, 0)])
-    visited: Set[str] = {failed_service}
-    impact_levels: Dict[str, int] = {failed_service: 0}
+    visited: set[str] = {failed_service}
+    impact_levels: dict[str, int] = {failed_service: 0}
 
     while queue:
         current, level = queue.popleft()
@@ -200,11 +199,11 @@ def calculate_blast_radius(
 
 
 def compute_pagerank(
-    adj_list: Dict[str, Set[str]],
+    adj_list: dict[str, set[str]],
     damping: float = 0.85,
     max_iterations: int = 100,
     tolerance: float = 1e-6,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Compute PageRank scores for services.
 
     Higher PageRank indicates more critical services that many others depend on.
@@ -225,17 +224,17 @@ def compute_pagerank(
     n = len(nodes)
 
     # Initialize PageRank scores
-    pagerank: Dict[str, float] = {node: 1.0 / n for node in nodes}
+    pagerank: dict[str, float] = dict.fromkeys(nodes, 1.0 / n)
 
     # Build reverse adjacency list (who points to each node)
-    reverse_adj: Dict[str, Set[str]] = defaultdict(set)
+    reverse_adj: dict[str, set[str]] = defaultdict(set)
     for node, successors in adj_list.items():
         for successor in successors:
             reverse_adj[successor].add(node)
 
     # Iterative PageRank calculation
-    for iteration in range(max_iterations):
-        new_pagerank: Dict[str, float] = {}
+    for _iteration in range(max_iterations):
+        new_pagerank: dict[str, float] = {}
         max_diff = 0.0
 
         for node in nodes:
@@ -263,10 +262,10 @@ def compute_pagerank(
 
 
 def calculate_service_criticality(
-    adj_list: Dict[str, Set[str]],
-    reverse_adj_list: Dict[str, Set[str]],
+    adj_list: dict[str, set[str]],
+    reverse_adj_list: dict[str, set[str]],
     threshold: float = 0.7,
-) -> List[CriticalityScore]:
+) -> list[CriticalityScore]:
     """Calculate criticality scores for all services.
 
     Combines multiple metrics:
@@ -292,7 +291,7 @@ def calculate_service_criticality(
     max_in_degree = max(len(deps) for deps in reverse_adj_list.values()) or 1
     max_out_degree = max(len(deps) for deps in adj_list.values()) or 1
 
-    scores: List[CriticalityScore] = []
+    scores: list[CriticalityScore] = []
 
     for service in adj_list.keys():
         in_degree = len(reverse_adj_list.get(service, set()))
@@ -341,8 +340,8 @@ def calculate_service_criticality(
 
 
 def compute_betweenness_centrality(
-    adj_list: Dict[str, Set[str]]
-) -> Dict[str, float]:
+    adj_list: dict[str, set[str]]
+) -> dict[str, float]:
     """Compute betweenness centrality to identify bottleneck services.
 
     Services with high betweenness centrality are bottlenecks that
@@ -355,15 +354,15 @@ def compute_betweenness_centrality(
         Dictionary mapping service names to betweenness scores
     """
     nodes = list(adj_list.keys())
-    betweenness: Dict[str, float] = {node: 0.0 for node in nodes}
+    betweenness: dict[str, float] = dict.fromkeys(nodes, 0.0)
 
     for source in nodes:
         # Single-source shortest paths (BFS)
-        stack: List[str] = []
-        predecessors: Dict[str, List[str]] = defaultdict(list)
-        sigma: Dict[str, int] = defaultdict(int)
+        stack: list[str] = []
+        predecessors: dict[str, list[str]] = defaultdict(list)
+        sigma: dict[str, int] = defaultdict(int)
         sigma[source] = 1
-        distance: Dict[str, int] = {}
+        distance: dict[str, int] = {}
         distance[source] = 0
 
         queue = deque([source])
@@ -384,7 +383,7 @@ def compute_betweenness_centrality(
                     predecessors[neighbor].append(current)
 
         # Accumulate betweenness
-        delta: Dict[str, float] = defaultdict(float)
+        delta: dict[str, float] = defaultdict(float)
 
         while stack:
             node = stack.pop()
@@ -408,7 +407,7 @@ def compute_betweenness_centrality(
     return betweenness
 
 
-def topological_sort(adj_list: Dict[str, Set[str]]) -> Optional[List[str]]:
+def topological_sort(adj_list: dict[str, set[str]]) -> list[str] | None:
     """Perform topological sort on the dependency graph.
 
     Returns a deployment order where dependencies are deployed before
@@ -421,7 +420,7 @@ def topological_sort(adj_list: Dict[str, Set[str]]) -> Optional[List[str]]:
         List of services in topological order, or None if graph has cycles
     """
     # Calculate in-degrees
-    in_degree: Dict[str, int] = {node: 0 for node in adj_list}
+    in_degree: dict[str, int] = dict.fromkeys(adj_list, 0)
 
     for node in adj_list:
         for successor in adj_list[node]:
@@ -431,7 +430,7 @@ def topological_sort(adj_list: Dict[str, Set[str]]) -> Optional[List[str]]:
 
     # Find all nodes with in-degree 0
     queue = deque([node for node, degree in in_degree.items() if degree == 0])
-    result: List[str] = []
+    result: list[str] = []
 
     while queue:
         node = queue.popleft()
@@ -452,9 +451,9 @@ def topological_sort(adj_list: Dict[str, Set[str]]) -> Optional[List[str]]:
 
 
 def find_critical_path(
-    adj_list: Dict[str, Set[str]],
-    edge_weights: Dict[Tuple[str, str], float],
-) -> List[str]:
+    adj_list: dict[str, set[str]],
+    edge_weights: dict[tuple[str, str], float],
+) -> list[str]:
     """Find the critical path (longest path) through the dependency graph.
 
     Useful for understanding the slowest dependency chain.
@@ -473,8 +472,8 @@ def find_critical_path(
         return []
 
     # Calculate longest paths
-    dist: Dict[str, float] = {node: 0.0 for node in adj_list}
-    predecessor: Dict[str, Optional[str]] = {node: None for node in adj_list}
+    dist: dict[str, float] = dict.fromkeys(adj_list, 0.0)
+    predecessor: dict[str, str | None] = dict.fromkeys(adj_list)
 
     # Process nodes in topological order
     for node in topo_order:
@@ -488,8 +487,8 @@ def find_critical_path(
     max_node = max(dist, key=dist.get)  # type: ignore
 
     # Backtrack to find the path
-    path: List[str] = []
-    current: Optional[str] = max_node
+    path: list[str] = []
+    current: str | None = max_node
 
     while current is not None:
         path.append(current)

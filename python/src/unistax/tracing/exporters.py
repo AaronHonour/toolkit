@@ -1,12 +1,12 @@
 """Trace exporters configuration."""
 
-from enum import Enum
 from dataclasses import dataclass
-from typing import Optional
-from opentelemetry.sdk.trace.export import SpanExporter, ConsoleSpanExporter
+from enum import Enum
+
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.exporter.zipkin.json import ZipkinExporter
+from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SpanExporter
 
 
 class ExporterType(str, Enum):
@@ -23,11 +23,11 @@ class ExporterConfig:
     """Exporter configuration."""
 
     type: ExporterType
-    endpoint: Optional[str] = None
-    service_name: Optional[str] = None
-    agent_host: Optional[str] = None
-    agent_port: Optional[int] = None
-    max_tag_value_length: Optional[int] = None
+    endpoint: str | None = None
+    service_name: str | None = None
+    agent_host: str | None = None
+    agent_port: int | None = None
+    max_tag_value_length: int | None = None
     insecure: bool = False
 
 

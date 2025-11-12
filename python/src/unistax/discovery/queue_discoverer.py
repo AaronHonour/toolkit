@@ -1,6 +1,7 @@
 """Message queue discovery for detecting pub/sub dependencies."""
 
-from typing import List, Optional, Dict, Any, Set
+from typing import Any
+
 from unistax.discovery.base import (
     DependencyDiscoverer,
     DiscoveryResult,
@@ -14,9 +15,9 @@ class MessageQueueDiscoverer(DependencyDiscoverer):
     def __init__(
         self,
         service_name: str,
-        publishers: Optional[List[str]] = None,
-        subscribers: Optional[List[str]] = None,
-        queue_config: Optional[Dict[str, Any]] = None,
+        publishers: list[str] | None = None,
+        subscribers: list[str] | None = None,
+        queue_config: dict[str, Any] | None = None,
     ) -> None:
         """Initialize message queue discoverer.
 
@@ -31,13 +32,13 @@ class MessageQueueDiscoverer(DependencyDiscoverer):
         self.subscribers = subscribers or []
         self.queue_config = queue_config or {}
 
-    async def discover(self) -> List[DiscoveryResult]:
+    async def discover(self) -> list[DiscoveryResult]:
         """Discover message queue dependencies.
 
         Returns:
             List of discovered queue dependencies
         """
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Discover publishing dependencies
         results.extend(self._discover_publishers())
@@ -53,9 +54,9 @@ class MessageQueueDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_publishers(self) -> List[DiscoveryResult]:
+    def _discover_publishers(self) -> list[DiscoveryResult]:
         """Discover topics/queues this service publishes to."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         for topic in self.publishers:
             # For publishers, the service sends messages TO the queue
@@ -75,9 +76,9 @@ class MessageQueueDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_subscribers(self) -> List[DiscoveryResult]:
+    def _discover_subscribers(self) -> list[DiscoveryResult]:
         """Discover topics/queues this service subscribes to."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         for topic in self.subscribers:
             # For subscribers, the queue sends messages TO the service
@@ -98,9 +99,9 @@ class MessageQueueDiscoverer(DependencyDiscoverer):
 
         return results
 
-    def _discover_from_config(self) -> List[DiscoveryResult]:
+    def _discover_from_config(self) -> list[DiscoveryResult]:
         """Discover queue connections from configuration."""
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Look for queue broker configurations
         queue_types = ["rabbitmq", "kafka", "redis", "sqs", "pubsub"]
@@ -137,8 +138,8 @@ class TopicSubscriberMapper:
 
     def __init__(self) -> None:
         """Initialize the topic mapper."""
-        self._publishers: Dict[str, Set[str]] = {}  # topic -> set of publishers
-        self._subscribers: Dict[str, Set[str]] = {}  # topic -> set of subscribers
+        self._publishers: dict[str, set[str]] = {}  # topic -> set of publishers
+        self._subscribers: dict[str, set[str]] = {}  # topic -> set of subscribers
 
     def register_publisher(self, service: str, topic: str) -> None:
         """Register a service as a publisher to a topic."""
@@ -152,7 +153,7 @@ class TopicSubscriberMapper:
             self._subscribers[topic] = set()
         self._subscribers[topic].add(service)
 
-    def infer_dependencies(self) -> List[DiscoveryResult]:
+    def infer_dependencies(self) -> list[DiscoveryResult]:
         """Infer service-to-service dependencies via topics.
 
         For each topic, creates dependencies from publishers to subscribers.
@@ -160,7 +161,7 @@ class TopicSubscriberMapper:
         Returns:
             List of inferred dependencies
         """
-        results: List[DiscoveryResult] = []
+        results: list[DiscoveryResult] = []
 
         # Get all topics
         all_topics = set(self._publishers.keys()) | set(self._subscribers.keys())

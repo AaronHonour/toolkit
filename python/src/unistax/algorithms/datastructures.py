@@ -4,9 +4,10 @@ All classes use __slots__ to reduce memory overhead by 40-50% and improve
 attribute access speed by 10-20%.
 """
 
-from typing import Any, Optional, Callable, Generic, TypeVar, Hashable
 import threading
 from collections import OrderedDict
+from collections.abc import Hashable
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 K = TypeVar("K", bound=Hashable)
@@ -55,7 +56,7 @@ class RingBuffer:
             self._size += 1
             return True
 
-    def get(self) -> Optional[Any]:
+    def get(self) -> Any | None:
         """Get item from buffer. O(1) operation.
 
         Returns:
@@ -114,7 +115,7 @@ class LRUCache(Generic[K, V]):
         self._misses = 0
         self._lock = threading.RLock()
 
-    def get(self, key: K) -> Optional[V]:
+    def get(self, key: K) -> V | None:
         """Get value from cache. O(1) operation.
 
         Args:
@@ -286,7 +287,7 @@ class FastDict(Generic[K, V]):
         """Get size."""
         return self._size
 
-    def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+    def get(self, key: K, default: V | None = None) -> V | None:
         """Get with default."""
         return self._data.get(key, default)
 

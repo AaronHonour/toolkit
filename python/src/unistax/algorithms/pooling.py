@@ -6,10 +6,11 @@ Target: 90% reduction in allocations for reusable objects.
 
 import threading
 import time
-from typing import Any, Callable, Generic, Optional, TypeVar
-from queue import Queue, Empty, Full
-from dataclasses import dataclass
+from collections.abc import Callable
 from contextlib import contextmanager
+from dataclasses import dataclass
+from queue import Empty, Full, Queue
+from typing import Generic, TypeVar
 
 T = TypeVar('T')
 
@@ -110,8 +111,8 @@ class ObjectPool(Generic[T]):
     def __init__(
         self,
         factory: Callable[[], T],
-        config: Optional[PoolConfig] = None,
-        health_check: Optional[Callable[[T], bool]] = None
+        config: PoolConfig | None = None,
+        health_check: Callable[[T], bool] | None = None
     ):
         """Initialize object pool.
 
@@ -179,7 +180,7 @@ class ObjectPool(Generic[T]):
 
             return pooled
 
-    def acquire(self, timeout: Optional[float] = None) -> PooledObject[T]:
+    def acquire(self, timeout: float | None = None) -> PooledObject[T]:
         """Acquire object from pool.
 
         Args:
@@ -288,7 +289,7 @@ class ObjectPool(Generic[T]):
                 self._stats['destroyed'] += 1
 
     @contextmanager
-    def get(self, timeout: Optional[float] = None):
+    def get(self, timeout: float | None = None):
         """Context manager for acquiring object.
 
         Args:
@@ -445,7 +446,7 @@ class ObjectPoolManager:
         with self._lock:
             self._pools[name] = pool
 
-    def get_pool(self, name: str) -> Optional[ObjectPool]:
+    def get_pool(self, name: str) -> ObjectPool | None:
         """Get pool by name.
 
         Args:

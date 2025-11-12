@@ -5,7 +5,6 @@ Target: GB/s compression speed, 2-3x size reduction.
 """
 
 import zlib
-from typing import Optional, Union
 from enum import Enum
 
 try:

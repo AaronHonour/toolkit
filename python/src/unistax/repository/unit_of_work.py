@@ -1,6 +1,6 @@
 """Unit of Work pattern implementation."""
 
-from typing import Any, Optional
+from typing import Any
 
 
 class UnitOfWork:
@@ -14,7 +14,7 @@ class UnitOfWork:
         ...     await uow.commit()
     """
 
-    def __init__(self, session: Optional[Any] = None):
+    def __init__(self, session: Any | None = None):
         self._session = session
         self._changes = []
         self._is_committed = False
@@ -33,7 +33,7 @@ class UnitOfWork:
     async def commit(self) -> None:
         """Commit all changes."""
         # Apply all changes
-        for change in self._changes:
+        for _change in self._changes:
             # Execute change
             pass
 

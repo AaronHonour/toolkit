@@ -7,7 +7,7 @@ Provides backends for Prometheus, StatsD, and in-memory storage.
 import threading
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class MetricsBackend(ABC):
@@ -15,27 +15,27 @@ class MetricsBackend(ABC):
 
     @abstractmethod
     def increment(
-        self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float = 1.0, labels: dict[str, str] | None = None
     ) -> None:
         """Increment counter metric."""
         pass
 
     @abstractmethod
     def gauge(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Set gauge metric."""
         pass
 
     @abstractmethod
     def histogram(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Record histogram value."""
         pass
 
     @abstractmethod
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get all metrics."""
         pass
 
@@ -55,11 +55,11 @@ class InMemoryBackend(MetricsBackend):
     def __init__(self) -> None:
         """Initialize in-memory backend."""
         self._lock = threading.RLock()
-        self._counters: Dict[str, float] = defaultdict(float)
-        self._gauges: Dict[str, float] = {}
-        self._histograms: Dict[str, List[float]] = defaultdict(list)
+        self._counters: dict[str, float] = defaultdict(float)
+        self._gauges: dict[str, float] = {}
+        self._histograms: dict[str, list[float]] = defaultdict(list)
 
-    def _make_key(self, name: str, labels: Optional[Dict[str, str]]) -> str:
+    def _make_key(self, name: str, labels: dict[str, str] | None) -> str:
         """Create metric key from name and labels."""
         if not labels:
             return name
@@ -68,7 +68,7 @@ class InMemoryBackend(MetricsBackend):
         return f"{name}{{{label_str}}}"
 
     def increment(
-        self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float = 1.0, labels: dict[str, str] | None = None
     ) -> None:
         """Increment counter."""
         key = self._make_key(name, labels)
@@ -76,7 +76,7 @@ class InMemoryBackend(MetricsBackend):
             self._counters[key] += value
 
     def gauge(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Set gauge value."""
         key = self._make_key(name, labels)
@@ -84,14 +84,14 @@ class InMemoryBackend(MetricsBackend):
             self._gauges[key] = value
 
     def histogram(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Record histogram value."""
         key = self._make_key(name, labels)
         with self._lock:
             self._histograms[key].append(value)
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get all metrics."""
         with self._lock:
             return {
@@ -124,7 +124,7 @@ class PrometheusBackend(MetricsBackend):
     Uses prometheus_client library if available, falls back to in-memory.
     """
 
-    def __init__(self, port: int = 9090, registry: Optional[Any] = None) -> None:
+    def __init__(self, port: int = 9090, registry: Any | None = None) -> None:
         """
         Initialize Prometheus backend.
 
@@ -136,16 +136,16 @@ class PrometheusBackend(MetricsBackend):
         self._fallback = InMemoryBackend()
 
         try:
-            from prometheus_client import Counter, Gauge, Histogram, CollectorRegistry
+            from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram
 
             self._registry = registry or CollectorRegistry()
-            self._metrics: Dict[str, Any] = {}
+            self._metrics: dict[str, Any] = {}
             self._prometheus_available = True
         except ImportError:
             self._prometheus_available = False
 
     def _get_or_create_metric(
-        self, name: str, metric_type: str, labels: Optional[Dict[str, str]]
+        self, name: str, metric_type: str, labels: dict[str, str] | None
     ) -> Any:
         """Get or create Prometheus metric."""
         if not self._prometheus_available:
@@ -174,7 +174,7 @@ class PrometheusBackend(MetricsBackend):
         return self._metrics[key]
 
     def increment(
-        self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float = 1.0, labels: dict[str, str] | None = None
     ) -> None:
         """Increment counter."""
         if not self._prometheus_available:
@@ -188,7 +188,7 @@ class PrometheusBackend(MetricsBackend):
             metric.inc(value)
 
     def gauge(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Set gauge value."""
         if not self._prometheus_available:
@@ -202,7 +202,7 @@ class PrometheusBackend(MetricsBackend):
             metric.set(value)
 
     def histogram(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Record histogram value."""
         if not self._prometheus_available:
@@ -215,7 +215,7 @@ class PrometheusBackend(MetricsBackend):
         else:
             metric.observe(value)
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get all metrics."""
         if not self._prometheus_available:
             return self._fallback.get_metrics()
@@ -265,7 +265,7 @@ class StatsDBackend(MetricsBackend):
         except ImportError:
             self._statsd_available = False
 
-    def _format_name(self, name: str, labels: Optional[Dict[str, str]]) -> str:
+    def _format_name(self, name: str, labels: dict[str, str] | None) -> str:
         """Format metric name with labels."""
         if not labels:
             return name
@@ -275,7 +275,7 @@ class StatsDBackend(MetricsBackend):
         return f"{name}.{label_str}"
 
     def increment(
-        self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float = 1.0, labels: dict[str, str] | None = None
     ) -> None:
         """Increment counter."""
         if not self._statsd_available:
@@ -286,7 +286,7 @@ class StatsDBackend(MetricsBackend):
         self._client.incr(formatted_name, int(value))
 
     def gauge(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Set gauge value."""
         if not self._statsd_available:
@@ -297,7 +297,7 @@ class StatsDBackend(MetricsBackend):
         self._client.gauge(formatted_name, value)
 
     def histogram(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """Record histogram value."""
         if not self._statsd_available:
@@ -307,7 +307,7 @@ class StatsDBackend(MetricsBackend):
         formatted_name = self._format_name(name, labels)
         self._client.timing(formatted_name, value * 1000)  # Convert to ms
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get all metrics (from fallback)."""
         return self._fallback.get_metrics()
 

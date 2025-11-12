@@ -2,9 +2,9 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Set
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class DiscoverySource(str, Enum):
@@ -29,7 +29,7 @@ class DiscoveryResult:
     dependency_type: str
     source: DiscoverySource
     confidence: float = 1.0  # 0.0 to 1.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     discovered_at: datetime = field(default_factory=datetime.utcnow)
 
     def __hash__(self) -> int:
@@ -47,10 +47,10 @@ class DependencyDiscoverer(ABC):
             service_name: Name of the service being analyzed
         """
         self.service_name = service_name
-        self._discovered: Set[DiscoveryResult] = set()
+        self._discovered: set[DiscoveryResult] = set()
 
     @abstractmethod
-    async def discover(self) -> List[DiscoveryResult]:
+    async def discover(self) -> list[DiscoveryResult]:
         """Discover dependencies.
 
         Returns:

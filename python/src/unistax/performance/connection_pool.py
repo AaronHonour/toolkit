@@ -1,10 +1,11 @@
 """Connection pooling optimizations."""
 
-from typing import Any, Callable, Optional, Generic, TypeVar
-from dataclasses import dataclass
-from queue import Queue, Empty, Full
 import threading
 import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from queue import Empty, Full, Queue
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -49,7 +50,7 @@ class ConnectionPool(Generic[T]):
     def __init__(
         self,
         connection_factory: Callable[[], T],
-        config: Optional[PoolConfig] = None
+        config: PoolConfig | None = None
     ):
         """Initialize connection pool.
 
@@ -91,7 +92,7 @@ class ConnectionPool(Generic[T]):
             self.size += 1
             return PooledConnection(conn, self)
 
-    def get_connection(self, timeout: Optional[float] = None) -> PooledConnection[T]:
+    def get_connection(self, timeout: float | None = None) -> PooledConnection[T]:
         """Get connection from pool.
 
         Args:

@@ -1,9 +1,9 @@
 """DTO serializers."""
 
-from abc import ABC, abstractmethod
-from typing import Any
 import json
 import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
+from typing import Any
 
 
 class Serializer(ABC):

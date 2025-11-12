@@ -1,8 +1,9 @@
 """Graph visualization utilities for exporting to various formats."""
 
 from enum import Enum
-from typing import Dict, List, Any
-from unistax.graph.structures import ServiceDependencyGraph, DependencyEdge
+from typing import Any
+
+from unistax.graph.structures import ServiceDependencyGraph
 
 
 class VisualizationFormat(str, Enum):
@@ -18,7 +19,7 @@ class GraphVisualizer:
     """Converts service dependency graphs to various visualization formats."""
 
     @staticmethod
-    def to_d3_force(graph: ServiceDependencyGraph) -> Dict[str, Any]:
+    def to_d3_force(graph: ServiceDependencyGraph) -> dict[str, Any]:
         """Convert graph to D3.js force-directed format.
 
         Returns:
@@ -54,7 +55,7 @@ class GraphVisualizer:
         }
 
     @staticmethod
-    def to_cytoscape(graph: ServiceDependencyGraph) -> Dict[str, List[Dict[str, Any]]]:
+    def to_cytoscape(graph: ServiceDependencyGraph) -> dict[str, list[dict[str, Any]]]:
         """Convert graph to Cytoscape.js format.
 
         Returns:

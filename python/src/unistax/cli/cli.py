@@ -1,7 +1,8 @@
 """CLI framework implementation."""
 
 import sys
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 
 class Command:
@@ -11,8 +12,8 @@ class Command:
         self.name = name
         self.func = func
         self.description = description
-        self.options: Dict[str, Any] = {}
-        self.arguments: List[str] = []
+        self.options: dict[str, Any] = {}
+        self.arguments: list[str] = []
 
 
 class CLI:
@@ -32,9 +33,9 @@ class CLI:
 
     def __init__(self, name: str = "cli"):
         self.name = name
-        self._commands: Dict[str, Command] = {}
+        self._commands: dict[str, Command] = {}
 
-    def command(self, name: Optional[str] = None, description: str = ""):
+    def command(self, name: str | None = None, description: str = ""):
         """
         Register a command.
 
@@ -57,7 +58,7 @@ class CLI:
 
         return decorator
 
-    def run(self, args: Optional[List[str]] = None) -> None:
+    def run(self, args: list[str] | None = None) -> None:
         """
         Run CLI with arguments.
 
@@ -87,7 +88,7 @@ class CLI:
         except Exception as e:
             print(f"Error: {e}")
 
-    def _parse_args(self, command: Command, args: List[str]) -> Dict[str, Any]:
+    def _parse_args(self, command: Command, args: list[str]) -> dict[str, Any]:
         """Parse command arguments."""
         kwargs = {}
         i = 0
@@ -129,7 +130,7 @@ class CLI:
             print(f"  {name:<20} {desc}")
 
 
-def command(name: Optional[str] = None):
+def command(name: str | None = None):
     """Decorator for defining a command."""
 
     def decorator(func: Callable) -> Callable:

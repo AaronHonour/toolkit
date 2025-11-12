@@ -4,19 +4,20 @@ Optimized for low-latency database operations with caching, batching, and poolin
 Target: p99 < 100ms for database queries.
 """
 
-import time
 import hashlib
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
-from functools import wraps
-from dataclasses import dataclass
-from collections import OrderedDict
 import threading
+import time
+from collections import OrderedDict
+from collections.abc import Callable
+from dataclasses import dataclass
+from functools import wraps
+from typing import Any, TypeVar
 
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 from sqlalchemy.engine import Result
+from sqlalchemy.orm import Session
 
-from unistax.algorithms import LRUCache, serialize_for_cache, deserialize_from_cache
+from unistax.algorithms import LRUCache
 
 T = TypeVar('T')
 
@@ -44,7 +45,7 @@ class QueryCache:
 
     __slots__ = ('_cache', '_config', '_stats', '_lock')
 
-    def __init__(self, config: Optional[QueryCacheConfig] = None):
+    def __init__(self, config: QueryCacheConfig | None = None):
         """Initialize query cache.
 
         Args:
@@ -70,7 +71,7 @@ class QueryCache:
         }
         self._lock = threading.RLock()
 
-    def _make_key(self, query: str, params: Optional[Dict] = None) -> str:
+    def _make_key(self, query: str, params: dict | None = None) -> str:
         """Create cache key from query and params.
 
         Args:
@@ -83,7 +84,7 @@ class QueryCache:
         key_data = f"{query}:{params}" if params else query
         return hashlib.sha256(key_data.encode()).hexdigest()[:16]
 
-    def get(self, query: str, params: Optional[Dict] = None) -> Optional[Any]:
+    def get(self, query: str, params: dict | None = None) -> Any | None:
         """Get cached query result.
 
         Args:
@@ -108,7 +109,7 @@ class QueryCache:
                 self._stats['misses'] += 1
                 return None
 
-    def set(self, query: str, result: Any, params: Optional[Dict] = None, ttl: Optional[int] = None):
+    def set(self, query: str, result: Any, params: dict | None = None, ttl: int | None = None):
         """Cache query result.
 
         Args:
@@ -130,7 +131,7 @@ class QueryCache:
         self,
         key: str,
         compute_fn: Callable[[], T],
-        ttl: Optional[int] = None
+        ttl: int | None = None
     ) -> T:
         """Get from cache or compute and cache.
 
@@ -162,14 +163,14 @@ class QueryCache:
 
         return result
 
-    def invalidate(self, query: str, params: Optional[Dict] = None):
+    def invalidate(self, query: str, params: dict | None = None):
         """Invalidate cached query.
 
         Args:
             query: SQL query
             params: Query parameters
         """
-        key = self._make_key(query, params)
+        self._make_key(query, params)
 
         with self._lock:
             # LRUCache doesn't have delete, so we just let it expire
@@ -180,7 +181,7 @@ class QueryCache:
         with self._lock:
             self._cache = LRUCache(capacity=self._config.max_size)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
@@ -247,7 +248,7 @@ class PreparedStatementCache:
 
             return stmt
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
@@ -284,11 +285,11 @@ class QueryBatcher:
                 results = batcher.execute()
         """
         self._session = session
-        self._queries: List[str] = []
-        self._params: List[Dict] = []
-        self._results: List[Any] = []
+        self._queries: list[str] = []
+        self._params: list[dict] = []
+        self._results: list[Any] = []
 
-    def add(self, query: str, params: Optional[Dict] = None):
+    def add(self, query: str, params: dict | None = None):
         """Add query to batch.
 
         Args:
@@ -298,7 +299,7 @@ class QueryBatcher:
         self._queries.append(query)
         self._params.append(params or {})
 
-    def execute(self) -> List[Any]:
+    def execute(self) -> list[Any]:
         """Execute all batched queries.
 
         Returns:
@@ -306,7 +307,7 @@ class QueryBatcher:
         """
         results = []
 
-        for query, params in zip(self._queries, self._params):
+        for query, params in zip(self._queries, self._params, strict=False):
             stmt = text(query)
             result = self._session.execute(stmt, params)
             results.append(result.fetchall() if result.returns_rows else None)
@@ -329,7 +330,7 @@ class ReadWriteSplitter:
     Reduces master load by 70-90% in read-heavy workloads.
     """
 
-    def __init__(self, master_session: Session, replica_sessions: List[Session]):
+    def __init__(self, master_session: Session, replica_sessions: list[Session]):
         """Initialize read/write splitter.
 
         Args:
@@ -361,7 +362,7 @@ class ReadWriteSplitter:
             self._current_replica = (self._current_replica + 1) % len(self._replicas)
             return replica
 
-    def execute_read(self, query: str, params: Optional[Dict] = None) -> Result:
+    def execute_read(self, query: str, params: dict | None = None) -> Result:
         """Execute read query on replica.
 
         Args:
@@ -375,7 +376,7 @@ class ReadWriteSplitter:
         stmt = text(query)
         return replica.execute(stmt, params or {})
 
-    def execute_write(self, query: str, params: Optional[Dict] = None) -> Result:
+    def execute_write(self, query: str, params: dict | None = None) -> Result:
         """Execute write query on master.
 
         Args:
@@ -448,7 +449,7 @@ class ConnectionPoolMonitor:
         }
         self._lock = threading.Lock()
 
-    def get_pool_stats(self) -> Dict[str, Any]:
+    def get_pool_stats(self) -> dict[str, Any]:
         """Get connection pool statistics.
 
         Returns:
@@ -487,10 +488,10 @@ class QueryProfiler:
 
     def __init__(self):
         """Initialize query profiler."""
-        self._queries: List[Dict[str, Any]] = []
+        self._queries: list[dict[str, Any]] = []
         self._lock = threading.Lock()
 
-    def profile_query(self, query: str, duration: float, params: Optional[Dict] = None):
+    def profile_query(self, query: str, duration: float, params: dict | None = None):
         """Record query execution.
 
         Args:
@@ -506,7 +507,7 @@ class QueryProfiler:
                 'timestamp': time.time(),
             })
 
-    def get_slow_queries(self, threshold: float = 0.1) -> List[Dict[str, Any]]:
+    def get_slow_queries(self, threshold: float = 0.1) -> list[dict[str, Any]]:
         """Get slow queries above threshold.
 
         Args:
@@ -518,7 +519,7 @@ class QueryProfiler:
         with self._lock:
             return [q for q in self._queries if q['duration'] > threshold]
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get query statistics.
 
         Returns:

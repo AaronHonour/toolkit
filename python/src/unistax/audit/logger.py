@@ -1,9 +1,10 @@
 """Audit logging implementation."""
 
-from enum import Enum
-from typing import Any, Dict, Optional
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
 from unistax.audit.storage import AuditStorage
 
 
@@ -26,14 +27,14 @@ class AuditEntry:
 
     action: AuditAction
     resource: str
-    user_id: Optional[str] = None
+    user_id: str | None = None
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    changes: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    changes: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
     success: bool = True
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class AuditLogger:
@@ -51,13 +52,13 @@ class AuditLogger:
         self,
         action: AuditAction,
         resource: str,
-        user_id: Optional[str] = None,
-        changes: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        user_id: str | None = None,
+        changes: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
         success: bool = True,
-        error: Optional[str] = None,
+        error: str | None = None,
     ) -> AuditEntry:
         """Log audit entry.
 
@@ -92,11 +93,11 @@ class AuditLogger:
 
     def query(
         self,
-        user_id: Optional[str] = None,
-        resource: Optional[str] = None,
-        action: Optional[AuditAction] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        user_id: str | None = None,
+        resource: str | None = None,
+        action: AuditAction | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100,
     ) -> list[AuditEntry]:
         """Query audit logs.

@@ -6,10 +6,10 @@ Provides unified interface for collecting and reporting metrics.
 
 import time
 from contextlib import contextmanager
-from typing import Any, Dict, Optional, Union
 from pathlib import Path
+from typing import Any
 
-from .backends import MetricsBackend, InMemoryBackend, PrometheusBackend, StatsDBackend
+from .backends import InMemoryBackend, MetricsBackend, PrometheusBackend, StatsDBackend
 
 
 class MetricsManager:
@@ -27,9 +27,9 @@ class MetricsManager:
 
     def __init__(
         self,
-        backend: Union[str, MetricsBackend] = "memory",
+        backend: str | MetricsBackend = "memory",
         prefix: str = "",
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ) -> None:
         """
         Initialize metrics manager.
@@ -48,7 +48,7 @@ class MetricsManager:
         self._default_labels = labels or {}
 
     @classmethod
-    def from_yaml(cls, path: Union[str, Path]) -> "MetricsManager":
+    def from_yaml(cls, path: str | Path) -> "MetricsManager":
         """
         Create metrics manager from YAML configuration.
 
@@ -92,7 +92,7 @@ class MetricsManager:
             return f"{self._prefix}.{name}"
         return name
 
-    def _merge_labels(self, labels: Optional[Dict[str, str]]) -> Dict[str, str]:
+    def _merge_labels(self, labels: dict[str, str] | None) -> dict[str, str]:
         """Merge labels with defaults."""
         merged = dict(self._default_labels)
         if labels:
@@ -100,7 +100,7 @@ class MetricsManager:
         return merged
 
     def counter(
-        self, name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float = 1.0, labels: dict[str, str] | None = None
     ) -> None:
         """
         Increment counter metric.
@@ -115,7 +115,7 @@ class MetricsManager:
         self._backend.increment(formatted_name, value, merged_labels)
 
     def gauge(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """
         Set gauge metric.
@@ -130,7 +130,7 @@ class MetricsManager:
         self._backend.gauge(formatted_name, value, merged_labels)
 
     def histogram(
-        self, name: str, value: float, labels: Optional[Dict[str, str]] = None
+        self, name: str, value: float, labels: dict[str, str] | None = None
     ) -> None:
         """
         Record histogram value.
@@ -145,7 +145,7 @@ class MetricsManager:
         self._backend.histogram(formatted_name, value, merged_labels)
 
     @contextmanager
-    def timer(self, name: str, labels: Optional[Dict[str, str]] = None):
+    def timer(self, name: str, labels: dict[str, str] | None = None):
         """
         Context manager for timing operations.
 
@@ -165,7 +165,7 @@ class MetricsManager:
             duration = time.perf_counter() - start_time
             self.histogram(name, duration, labels)
 
-    def time_function(self, name: str, labels: Optional[Dict[str, str]] = None):
+    def time_function(self, name: str, labels: dict[str, str] | None = None):
         """
         Decorator for timing functions.
 
@@ -190,7 +190,7 @@ class MetricsManager:
 
         return decorator
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """
         Get all collected metrics.
 
@@ -205,7 +205,7 @@ class MetricsManager:
 
 
 # Global metrics instance
-_global_metrics: Optional[MetricsManager] = None
+_global_metrics: MetricsManager | None = None
 
 
 def get_metrics() -> MetricsManager:

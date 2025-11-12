@@ -1,11 +1,13 @@
 """Database connection management."""
 
-from typing import Any, Dict, Optional
-from dataclasses import dataclass
 from contextlib import contextmanager
-from sqlalchemy import create_engine, event, pool
+from dataclasses import dataclass
+from typing import Any
+
+from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
+
 from unistax.config import ConfigManager
 
 
@@ -20,7 +22,7 @@ class DatabaseConfig:
     pool_recycle: int = 3600
     echo: bool = False
     echo_pool: bool = False
-    connect_args: Optional[Dict[str, Any]] = None
+    connect_args: dict[str, Any] | None = None
 
 
 class DatabaseManager:
@@ -33,8 +35,8 @@ class DatabaseManager:
             config: Database configuration
         """
         self.config = config
-        self._engine: Optional[Engine] = None
-        self._session_factory: Optional[sessionmaker] = None
+        self._engine: Engine | None = None
+        self._session_factory: sessionmaker | None = None
 
     @classmethod
     def from_yaml(cls, path: str, prefix: str = "database") -> "DatabaseManager":

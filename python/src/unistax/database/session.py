@@ -1,17 +1,19 @@
 """Database session management."""
 
-from typing import Generator, Optional
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
+
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
+
 from unistax.database.connection import DatabaseManager
 
 # Thread-local session storage
-_session_context: ContextVar[Optional[Session]] = ContextVar("session", default=None)
+_session_context: ContextVar[Session | None] = ContextVar("session", default=None)
 
 # Global session factory
-_session_factory: Optional[sessionmaker] = None
-_scoped_session: Optional[scoped_session] = None
+_session_factory: sessionmaker | None = None
+_scoped_session: scoped_session | None = None
 
 
 class SessionManager:
@@ -74,7 +76,7 @@ class SessionManager:
             _scoped_session.remove()
 
     @staticmethod
-    def get_current_session() -> Optional[Session]:
+    def get_current_session() -> Session | None:
         """Get current session from context.
 
         Returns:

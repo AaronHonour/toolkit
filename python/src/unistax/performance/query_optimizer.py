@@ -1,8 +1,8 @@
 """Query optimization helpers."""
 
-from enum import Enum
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class QueryHint(Enum):
@@ -22,15 +22,15 @@ class QueryPlan:
     query: str
     estimated_cost: float
     estimated_rows: int
-    index_used: Optional[str] = None
-    optimizations: List[str] = None
+    index_used: str | None = None
+    optimizations: list[str] = None
 
 
 class QueryOptimizer:
     """Query optimization utilities."""
 
     @staticmethod
-    def analyze_query(query: Any) -> Dict[str, Any]:
+    def analyze_query(query: Any) -> dict[str, Any]:
         """Analyze query for optimization opportunities.
 
         Args:
@@ -78,7 +78,7 @@ class QueryOptimizer:
         page: int,
         page_size: int,
         use_keyset: bool = False,
-        last_id: Optional[int] = None
+        last_id: int | None = None
     ) -> Any:
         """Optimize pagination query.
 
@@ -118,7 +118,7 @@ class QueryOptimizer:
         return query
 
     @staticmethod
-    def suggest_indexes(model: Any) -> List[str]:
+    def suggest_indexes(model: Any) -> list[str]:
         """Suggest indexes for model.
 
         Args:

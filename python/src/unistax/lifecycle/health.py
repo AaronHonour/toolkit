@@ -1,8 +1,9 @@
 """Health check system."""
 
 import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 
 class HealthStatus(str, Enum):
@@ -28,7 +29,7 @@ class HealthCheck:
         self.func = func
         self.check_type = check_type
 
-    def execute(self) -> Dict[str, Any]:
+    def execute(self) -> dict[str, Any]:
         """
         Execute health check.
 
@@ -72,13 +73,13 @@ class HealthCheckRegistry:
     """Registry for health checks."""
 
     def __init__(self):
-        self._checks: List[HealthCheck] = []
+        self._checks: list[HealthCheck] = []
 
     def register(self, check: HealthCheck) -> None:
         """Register a health check."""
         self._checks.append(check)
 
-    def check_all(self) -> Dict[str, Any]:
+    def check_all(self) -> dict[str, Any]:
         """
         Run all health checks.
 

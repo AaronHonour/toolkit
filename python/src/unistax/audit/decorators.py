@@ -1,8 +1,9 @@
 """Audit decorators."""
 
-from typing import Callable
+from collections.abc import Callable
 from functools import wraps
-from unistax.audit.logger import AuditLogger, AuditAction
+
+from unistax.audit.logger import AuditAction, AuditLogger
 
 _audit_logger: AuditLogger = None
 

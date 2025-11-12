@@ -1,12 +1,11 @@
 """Impact analysis for assessing effects of changes and failures."""
 
 from dataclasses import dataclass, field
-from typing import List, Set, Dict, Optional, Any
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 
+from unistax.algorithms.graph import BlastRadiusResult, calculate_blast_radius
 from unistax.graph.structures import ServiceDependencyGraph
-from unistax.algorithms.graph import calculate_blast_radius, BlastRadiusResult
 
 
 class ChangeType(str, Enum):
@@ -27,8 +26,8 @@ class ChangeImpact:
     impact_level: int  # Distance from change source (0 = direct)
     impact_type: str  # "direct", "indirect", "cascading"
     probability: float  # 0.0 to 1.0
-    estimated_downtime_minutes: Optional[float] = None
-    mitigation: Optional[str] = None
+    estimated_downtime_minutes: float | None = None
+    mitigation: str | None = None
 
 
 @dataclass
@@ -41,21 +40,21 @@ class ImpactReport:
 
     # Impact results
     total_affected: int = 0
-    direct_impact: List[ChangeImpact] = field(default_factory=list)
-    indirect_impact: List[ChangeImpact] = field(default_factory=list)
-    cascading_impact: List[ChangeImpact] = field(default_factory=list)
+    direct_impact: list[ChangeImpact] = field(default_factory=list)
+    indirect_impact: list[ChangeImpact] = field(default_factory=list)
+    cascading_impact: list[ChangeImpact] = field(default_factory=list)
 
     # Risk assessment
     risk_level: str = "LOW"  # LOW, MEDIUM, HIGH, CRITICAL
-    blast_radius: Optional[BlastRadiusResult] = None
+    blast_radius: BlastRadiusResult | None = None
 
     # Recommendations
-    pre_change_actions: List[str] = field(default_factory=list)
-    monitoring_required: List[str] = field(default_factory=list)
-    rollback_plan: Optional[str] = None
+    pre_change_actions: list[str] = field(default_factory=list)
+    monitoring_required: list[str] = field(default_factory=list)
+    rollback_plan: str | None = None
 
     @property
-    def affected_services(self) -> Set[str]:
+    def affected_services(self) -> set[str]:
         """Get all affected service names."""
         services = set()
         for impact in self.direct_impact + self.indirect_impact + self.cascading_impact:
@@ -238,9 +237,9 @@ class ImpactAnalyzer:
 
         return report
 
-    def _build_adj_list(self) -> Dict[str, Set[str]]:
+    def _build_adj_list(self) -> dict[str, set[str]]:
         """Build adjacency list from graph."""
-        adj_list: Dict[str, Set[str]] = {}
+        adj_list: dict[str, set[str]] = {}
         underlying = self.graph.get_underlying_graph()
 
         for service in self.graph.get_all_services():

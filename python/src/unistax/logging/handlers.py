@@ -5,11 +5,9 @@ Provides specialized handlers for enterprise logging needs.
 """
 
 import gzip
-import logging
 import shutil
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 
 class RotatingFileHandlerWithCompression(RotatingFileHandler):
@@ -25,7 +23,7 @@ class RotatingFileHandlerWithCompression(RotatingFileHandler):
         mode: str = "a",
         maxBytes: int = 0,
         backupCount: int = 0,
-        encoding: Optional[str] = None,
+        encoding: str | None = None,
         delay: bool = False,
         compress: bool = True,
     ) -> None:

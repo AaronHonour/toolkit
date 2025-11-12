@@ -1,21 +1,21 @@
 """Core dependency analyzer combining graph algorithms and analysis."""
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Optional, Any
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
-from unistax.graph.structures import ServiceDependencyGraph, DirectedGraph
 from unistax.algorithms.graph import (
-    detect_circular_dependencies,
+    BlastRadiusResult,
+    CircularDependency,
+    CriticalityScore,
     calculate_blast_radius,
     calculate_service_criticality,
     compute_betweenness_centrality,
+    detect_circular_dependencies,
     topological_sort,
-    CircularDependency,
-    BlastRadiusResult,
-    CriticalityScore,
 )
+from unistax.graph.structures import ServiceDependencyGraph
 
 
 class AnalysisType(str, Enum):
@@ -39,19 +39,19 @@ class AnalysisReport:
     dependency_count: int = 0
 
     # Analysis results
-    circular_dependencies: List[CircularDependency] = field(default_factory=list)
-    critical_services: List[CriticalityScore] = field(default_factory=list)
-    bottlenecks: Dict[str, float] = field(default_factory=dict)
-    deployment_order: Optional[List[str]] = None
-    blast_radius_cache: Dict[str, BlastRadiusResult] = field(default_factory=dict)
+    circular_dependencies: list[CircularDependency] = field(default_factory=list)
+    critical_services: list[CriticalityScore] = field(default_factory=list)
+    bottlenecks: dict[str, float] = field(default_factory=dict)
+    deployment_order: list[str] | None = None
+    blast_radius_cache: dict[str, BlastRadiusResult] = field(default_factory=dict)
 
     # Insights and recommendations
-    insights: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
+    insights: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
     # Metadata
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def has_circular_dependencies(self) -> bool:
@@ -63,11 +63,11 @@ class AnalysisReport:
         """Get count of critical services."""
         return sum(1 for s in self.critical_services if s.is_critical)
 
-    def get_most_critical_services(self, top_n: int = 5) -> List[CriticalityScore]:
+    def get_most_critical_services(self, top_n: int = 5) -> list[CriticalityScore]:
         """Get the top N most critical services."""
         return self.critical_services[:top_n]
 
-    def get_top_bottlenecks(self, top_n: int = 5) -> List[tuple[str, float]]:
+    def get_top_bottlenecks(self, top_n: int = 5) -> list[tuple[str, float]]:
         """Get the top N bottleneck services."""
         sorted_bottlenecks = sorted(
             self.bottlenecks.items(),
@@ -152,7 +152,7 @@ class DependencyAnalyzer:
         self,
         service_name: str,
         direction: str = "both",
-    ) -> Dict[str, Set[str]]:
+    ) -> dict[str, set[str]]:
         """Find dependencies for a specific service.
 
         Args:
@@ -162,7 +162,7 @@ class DependencyAnalyzer:
         Returns:
             Dictionary with upstream and/or downstream dependencies
         """
-        result: Dict[str, Set[str]] = {}
+        result: dict[str, set[str]] = {}
 
         if direction in ("upstream", "both"):
             result["upstream"] = self.graph.get_upstream_services(service_name)
@@ -172,18 +172,18 @@ class DependencyAnalyzer:
 
         return result
 
-    def _build_adj_list(self) -> Dict[str, Set[str]]:
+    def _build_adj_list(self) -> dict[str, set[str]]:
         """Build adjacency list from graph."""
-        adj_list: Dict[str, Set[str]] = {}
+        adj_list: dict[str, set[str]] = {}
 
         for service in self.graph.get_all_services():
             adj_list[service.name] = self._underlying_graph.get_successors(service.name)
 
         return adj_list
 
-    def _build_reverse_adj_list(self) -> Dict[str, Set[str]]:
+    def _build_reverse_adj_list(self) -> dict[str, set[str]]:
         """Build reverse adjacency list from graph."""
-        reverse_adj_list: Dict[str, Set[str]] = {}
+        reverse_adj_list: dict[str, set[str]] = {}
 
         for service in self.graph.get_all_services():
             reverse_adj_list[service.name] = self._underlying_graph.get_predecessors(
@@ -194,28 +194,28 @@ class DependencyAnalyzer:
 
     def _analyze_circular_dependencies(
         self,
-        adj_list: Dict[str, Set[str]],
-    ) -> List[CircularDependency]:
+        adj_list: dict[str, set[str]],
+    ) -> list[CircularDependency]:
         """Detect circular dependencies."""
         return detect_circular_dependencies(adj_list)
 
     def _analyze_criticality(
         self,
-        adj_list: Dict[str, Set[str]],
-        reverse_adj_list: Dict[str, Set[str]],
+        adj_list: dict[str, set[str]],
+        reverse_adj_list: dict[str, set[str]],
         threshold: float,
-    ) -> List[CriticalityScore]:
+    ) -> list[CriticalityScore]:
         """Analyze service criticality."""
         return calculate_service_criticality(adj_list, reverse_adj_list, threshold)
 
-    def _analyze_bottlenecks(self, adj_list: Dict[str, Set[str]]) -> Dict[str, float]:
+    def _analyze_bottlenecks(self, adj_list: dict[str, set[str]]) -> dict[str, float]:
         """Identify bottleneck services."""
         return compute_betweenness_centrality(adj_list)
 
     def _calculate_deployment_order(
         self,
-        adj_list: Dict[str, Set[str]],
-    ) -> Optional[List[str]]:
+        adj_list: dict[str, set[str]],
+    ) -> list[str] | None:
         """Calculate safe deployment order."""
         return topological_sort(adj_list)
 

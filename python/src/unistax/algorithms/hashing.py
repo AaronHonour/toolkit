@@ -4,8 +4,6 @@ Uses optimized hash functions for speed over cryptographic security.
 Target: Sub-microsecond hashing for MB-sized data.
 """
 
-import hashlib
-from typing import Any, List
 
 
 def fast_hash(data: bytes) -> int:
@@ -165,7 +163,7 @@ class ConsistentHashRing:
 
     __slots__ = ('_nodes', '_virtual_nodes', '_ring', '_sorted_keys')
 
-    def __init__(self, nodes: List[str] = None, virtual_nodes: int = 150):
+    def __init__(self, nodes: list[str] = None, virtual_nodes: int = 150):
         """Initialize consistent hash ring.
 
         Args:
@@ -241,7 +239,7 @@ class ConsistentHashRing:
 
         return self._ring[self._sorted_keys[0]]
 
-    def get_nodes(self, key: str, count: int = 1) -> List[str]:
+    def get_nodes(self, key: str, count: int = 1) -> list[str]:
         """Get multiple nodes for a key (for replication).
 
         Args:
@@ -279,7 +277,7 @@ class ConsistentHashRing:
         return nodes
 
     @property
-    def nodes(self) -> List[str]:
+    def nodes(self) -> list[str]:
         """Get all nodes in the ring.
 
         Returns:

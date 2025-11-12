@@ -4,8 +4,8 @@ HTTP client implementation with enterprise features.
 
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
 from pathlib import Path
+from typing import Any
 
 try:
     import requests
@@ -18,7 +18,7 @@ except ImportError:
 class Response:
     """HTTP response wrapper."""
     status_code: int
-    headers: Dict[str, str]
+    headers: dict[str, str]
     body: bytes
     elapsed: float
 
@@ -37,10 +37,10 @@ class Request:
     """HTTP request."""
     method: str
     url: str
-    headers: Optional[Dict[str, str]] = None
-    params: Optional[Dict[str, Any]] = None
-    data: Optional[Any] = None
-    json: Optional[Any] = None
+    headers: dict[str, str] | None = None
+    params: dict[str, Any] | None = None
+    data: Any | None = None
+    json: Any | None = None
     timeout: float = 10.0
 
 
@@ -59,7 +59,7 @@ class HTTPClient:
         base_url: str = "",
         timeout: float = 10.0,
         max_retries: int = 3,
-        headers: Optional[Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
     ):
         """
         Initialize HTTP client.
@@ -80,7 +80,7 @@ class HTTPClient:
         self._session = requests.Session()
 
     @classmethod
-    def from_yaml(cls, path: Union[str, Path]) -> "HTTPClient":
+    def from_yaml(cls, path: str | Path) -> "HTTPClient":
         """Create client from YAML configuration."""
         from ..config import ConfigManager
 
@@ -98,7 +98,7 @@ class HTTPClient:
             return url
         return f"{self._base_url}/{url.lstrip('/')}"
 
-    def _merge_headers(self, headers: Optional[Dict[str, str]]) -> Dict[str, str]:
+    def _merge_headers(self, headers: dict[str, str] | None) -> dict[str, str]:
         """Merge headers with defaults."""
         merged = dict(self._default_headers)
         if headers:
@@ -109,11 +109,11 @@ class HTTPClient:
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        data: Optional[Any] = None,
-        json_data: Optional[Any] = None,
-        timeout: Optional[float] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        data: Any | None = None,
+        json_data: Any | None = None,
+        timeout: float | None = None,
         retry: bool = True,
     ) -> Response:
         """

@@ -6,16 +6,17 @@ Provides auto-wiring, lifetime management, and factory registration.
 
 import inspect
 import threading
+from collections.abc import Callable
 from contextvars import ContextVar
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, cast, get_type_hints
+from typing import Any, TypeVar, get_type_hints
 
 from .exceptions import CircularDependencyError, DependencyResolutionError
 
 T = TypeVar("T")
 
 # Context variable for scoped instances
-_scoped_context: ContextVar[Dict[Type, Any]] = ContextVar("_scoped_context", default={})
+_scoped_context: ContextVar[dict[type, Any]] = ContextVar("_scoped_context", default={})
 
 
 class Lifetime(str, Enum):
@@ -31,10 +32,10 @@ class ServiceDescriptor:
 
     def __init__(
         self,
-        service_type: Type,
-        implementation_type: Optional[Type] = None,
-        factory: Optional[Callable] = None,
-        instance: Optional[Any] = None,
+        service_type: type,
+        implementation_type: type | None = None,
+        factory: Callable | None = None,
+        instance: Any | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ):
         self.service_type = service_type
@@ -63,14 +64,14 @@ class Container:
     """
 
     def __init__(self):
-        self._services: Dict[Type, ServiceDescriptor] = {}
+        self._services: dict[type, ServiceDescriptor] = {}
         self._lock = threading.RLock()
         self._resolving: set = set()  # For circular dependency detection
 
     def register(
         self,
-        service_type: Type[T],
-        implementation_type: Optional[Type[T]] = None,
+        service_type: type[T],
+        implementation_type: type[T] | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> "Container":
         """
@@ -93,7 +94,7 @@ class Container:
             self._services[service_type] = descriptor
         return self
 
-    def register_instance(self, service_type: Type[T], instance: T) -> "Container":
+    def register_instance(self, service_type: type[T], instance: T) -> "Container":
         """
         Register a pre-created instance (singleton).
 
@@ -115,7 +116,7 @@ class Container:
 
     def register_factory(
         self,
-        service_type: Type[T],
+        service_type: type[T],
         factory: Callable[[], T],
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> "Container":
@@ -139,7 +140,7 @@ class Container:
             self._services[service_type] = descriptor
         return self
 
-    def resolve(self, service_type: Type[T]) -> T:
+    def resolve(self, service_type: type[T]) -> T:
         """
         Resolve a service instance.
 
@@ -165,7 +166,7 @@ class Container:
         finally:
             self._resolving.discard(service_type)
 
-    def _resolve_internal(self, service_type: Type[T]) -> T:
+    def _resolve_internal(self, service_type: type[T]) -> T:
         """Internal resolution logic."""
         with self._lock:
             if service_type not in self._services:
@@ -244,7 +245,7 @@ class Container:
                 f"Failed to create instance of {implementation.__name__}: {e}"
             ) from e
 
-    def _can_auto_wire(self, service_type: Type) -> bool:
+    def _can_auto_wire(self, service_type: type) -> bool:
         """Check if type can be auto-wired."""
         try:
             # Must be a class
@@ -291,7 +292,7 @@ class Container:
 
 
 # Decorator for marking classes as injectable
-def injectable(cls: Type[T]) -> Type[T]:
+def injectable(cls: type[T]) -> type[T]:
     """
     Mark a class as injectable.
 

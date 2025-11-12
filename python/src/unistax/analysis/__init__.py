@@ -9,14 +9,14 @@ Provides high-level analysis tools for:
 """
 
 from unistax.analysis.dependency_analyzer import (
-    DependencyAnalyzer,
     AnalysisReport,
     AnalysisType,
+    DependencyAnalyzer,
 )
 from unistax.analysis.impact_analyzer import (
+    ChangeImpact,
     ImpactAnalyzer,
     ImpactReport,
-    ChangeImpact,
 )
 
 __all__ = [

@@ -1,13 +1,14 @@
 """DTO validation utilities."""
 
-from typing import Any, Type
+from typing import Any
+
 from pydantic import ValidationError as PydanticValidationError
 
 # Re-export Pydantic ValidationError
 ValidationError = PydanticValidationError
 
 
-def validate_dto(dto_class: Type, data: Any) -> Any:
+def validate_dto(dto_class: type, data: Any) -> Any:
     """Validate data against DTO class.
 
     Args:

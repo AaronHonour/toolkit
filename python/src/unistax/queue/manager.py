@@ -1,8 +1,9 @@
 """Queue manager."""
 
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -11,7 +12,7 @@ class Message:
 
     id: str
     body: Any
-    attributes: Dict[str, Any]
+    attributes: dict[str, Any]
     timestamp: datetime = None
 
     def __post_init__(self):
@@ -31,7 +32,7 @@ class QueueManager:
         """
         self.backend = backend
 
-    def send(self, queue_name: str, message: Any, attributes: Optional[Dict[str, Any]] = None) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any] | None = None) -> str:
         """Send message to queue.
 
         Args:

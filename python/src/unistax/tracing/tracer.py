@@ -1,15 +1,17 @@
 """Tracer management using OpenTelemetry."""
 
-from typing import Callable, Optional
+from collections.abc import Callable
 from functools import wraps
+
 from opentelemetry import trace
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME
+
 from unistax.tracing.exporters import ExporterConfig, create_exporter
 
 # Global tracer provider
-_tracer_provider: Optional[TracerProvider] = None
+_tracer_provider: TracerProvider | None = None
 
 
 class TracerManager:
@@ -60,7 +62,7 @@ class TracerManager:
         span_processor = BatchSpanProcessor(exporter)
         _tracer_provider.add_span_processor(span_processor)
 
-    def get_tracer(self, name: Optional[str] = None) -> trace.Tracer:
+    def get_tracer(self, name: str | None = None) -> trace.Tracer:
         """Get tracer instance.
 
         Args:
@@ -82,7 +84,7 @@ class TracerManager:
             _tracer_provider.shutdown()
 
 
-def get_tracer(name: Optional[str] = None) -> trace.Tracer:
+def get_tracer(name: str | None = None) -> trace.Tracer:
     """Get global tracer.
 
     Args:
@@ -95,9 +97,9 @@ def get_tracer(name: Optional[str] = None) -> trace.Tracer:
 
 
 def trace(
-    name: Optional[str] = None,
+    name: str | None = None,
     kind: trace.SpanKind = trace.SpanKind.INTERNAL,
-    attributes: Optional[dict] = None,
+    attributes: dict | None = None,
 ):
     """Decorator to trace function execution.
 

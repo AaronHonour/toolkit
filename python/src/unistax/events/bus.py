@@ -2,9 +2,10 @@
 
 import asyncio
 import inspect
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Type, TypeVar
+from typing import TypeVar
 from uuid import uuid4
 
 T = TypeVar("T", bound="Event")
@@ -39,9 +40,9 @@ class EventBus:
     """
 
     def __init__(self):
-        self._handlers: Dict[Type[Event], List[Callable]] = {}
+        self._handlers: dict[type[Event], list[Callable]] = {}
 
-    def subscribe(self, event_type: Type[T]) -> Callable:
+    def subscribe(self, event_type: type[T]) -> Callable:
         """
         Subscribe to event type.
 
@@ -86,7 +87,7 @@ class EventBus:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    def unsubscribe(self, event_type: Type[Event], handler: Callable) -> None:
+    def unsubscribe(self, event_type: type[Event], handler: Callable) -> None:
         """Unsubscribe handler from event."""
         if event_type in self._handlers:
             self._handlers[event_type] = [
@@ -94,7 +95,7 @@ class EventBus:
             ]
 
 
-def event_handler(event_type: Type[Event]) -> Callable:
+def event_handler(event_type: type[Event]) -> Callable:
     """
     Decorator to mark function as event handler.
 

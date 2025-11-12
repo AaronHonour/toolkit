@@ -1,8 +1,8 @@
 """Storage backends."""
 
-from abc import ABC, abstractmethod
 import os
 import shutil
+from abc import ABC, abstractmethod
 
 
 class StorageBackend(ABC):

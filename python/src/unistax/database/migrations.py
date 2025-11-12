@@ -1,10 +1,11 @@
 """Database migration management using Alembic."""
 
 import os
-from typing import Optional
 from pathlib import Path
+
 from alembic import command
 from alembic.config import Config
+
 from unistax.database.connection import DatabaseManager
 
 
@@ -15,7 +16,7 @@ class MigrationManager:
         self,
         database_manager: DatabaseManager,
         migrations_dir: str = "migrations",
-        script_location: Optional[str] = None,
+        script_location: str | None = None,
     ):
         """Initialize migration manager.
 
@@ -170,7 +171,7 @@ datefmt = %H:%M:%S
         config = self._get_alembic_config()
         command.stamp(config, revision)
 
-    def merge(self, revisions: str, message: Optional[str] = None):
+    def merge(self, revisions: str, message: str | None = None):
         """Merge multiple revisions.
 
         Args:

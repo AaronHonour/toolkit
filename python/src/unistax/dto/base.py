@@ -1,6 +1,7 @@
 """Base DTO classes."""
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, TypeVar
+
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
@@ -20,7 +21,7 @@ class BaseDTO(BaseModel):
 
     model_config = DTOConfig
 
-    def to_dict(self, exclude_none: bool = False, exclude_unset: bool = False) -> Dict[str, Any]:
+    def to_dict(self, exclude_none: bool = False, exclude_unset: bool = False) -> dict[str, Any]:
         """Convert DTO to dictionary.
 
         Args:
@@ -45,7 +46,7 @@ class BaseDTO(BaseModel):
         return self.model_dump_json(exclude_none=exclude_none, exclude_unset=exclude_unset)
 
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         """Create DTO from dictionary.
 
         Args:
@@ -57,7 +58,7 @@ class BaseDTO(BaseModel):
         return cls(**data)
 
     @classmethod
-    def from_json(cls: Type[T], json_str: str) -> T:
+    def from_json(cls: type[T], json_str: str) -> T:
         """Create DTO from JSON string.
 
         Args:
@@ -69,7 +70,7 @@ class BaseDTO(BaseModel):
         return cls.model_validate_json(json_str)
 
     @classmethod
-    def from_orm(cls: Type[T], obj: Any) -> T:
+    def from_orm(cls: type[T], obj: Any) -> T:
         """Create DTO from ORM model.
 
         Args:

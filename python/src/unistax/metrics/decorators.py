@@ -4,13 +4,14 @@ Decorators for automatic metrics collection.
 Provides convenient decorators for instrumenting functions.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional, Dict
+from typing import Any
 
 from .manager import get_metrics
 
 
-def timer(name: str, labels: Optional[Dict[str, str]] = None) -> Callable:
+def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
     """
     Decorator to time function execution.
 
@@ -37,7 +38,7 @@ def timer(name: str, labels: Optional[Dict[str, str]] = None) -> Callable:
 
 
 def counter(
-    name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
+    name: str, value: float = 1.0, labels: dict[str, str] | None = None
 ) -> Callable:
     """
     Decorator to increment counter on function call.
@@ -65,7 +66,7 @@ def counter(
     return decorator
 
 
-def gauge(name: str, value_func: Optional[Callable] = None) -> Callable:
+def gauge(name: str, value_func: Callable | None = None) -> Callable:
     """
     Decorator to set gauge value based on function result.
 
