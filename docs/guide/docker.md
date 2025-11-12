@@ -1,6 +1,6 @@
 # Docker & Local Development Guide
 
-Complete guide for running the Composable Toolkit with Docker for local development.
+Complete guide for running the Unistax with Docker for local development.
 
 ## Quick Start
 

@@ -1,6 +1,6 @@
 # Observability Stack
 
-Production-ready monitoring, logging, and tracing for Composable Toolkit.
+Production-ready monitoring, logging, and tracing for Unistax.
 
 ## Quick Start
 

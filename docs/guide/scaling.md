@@ -1,6 +1,6 @@
 # Scaling Guide
 
-Comprehensive guide for scaling Composable Toolkit applications from prototype to enterprise scale (100K - 10M+ requests/day).
+Comprehensive guide for scaling Unistax applications from prototype to enterprise scale (100K - 10M+ requests/day).
 
 ## Table of Contents
 
@@ -58,7 +58,7 @@ class UserSession:
         self.sessions[user_id] = data
 
 # ✅ GOOD: Storing state in distributed cache
-from toolkit.cache import CacheManager
+from unistax.cache import CacheManager
 
 class UserSession:
     def __init__(self):
@@ -251,7 +251,7 @@ spec:
 #### Redis-based Sessions
 
 ```python
-from toolkit.cache import CacheManager
+from unistax.cache import CacheManager
 from fastapi import FastAPI, Request, Response
 import uuid
 
@@ -348,7 +348,7 @@ max_requests_jitter = 1000  # Add randomness to avoid thundering herd
 #### Database Connection Pooling
 
 ```python
-from toolkit.database import DatabaseManager
+from unistax.database import DatabaseManager
 
 # Connection pool sized for workers
 db = DatabaseManager(
@@ -713,7 +713,7 @@ class OrderService:
 #### Synchronous (REST/gRPC)
 
 ```python
-from toolkit.http import HTTPClient
+from unistax.http import HTTPClient
 
 class UserServiceClient:
     def __init__(self):
@@ -727,7 +727,7 @@ class UserServiceClient:
 #### Asynchronous (Message Queue)
 
 ```python
-from toolkit.queue import QueueManager
+from unistax.queue import QueueManager
 
 class OrderService:
     def __init__(self):
@@ -991,7 +991,7 @@ class OrderProjection:
 ### Read Replicas
 
 ```python
-from toolkit.database import DatabaseManager
+from unistax.database import DatabaseManager
 
 # Primary for writes
 db_primary = DatabaseManager(
@@ -1064,7 +1064,7 @@ class ShardedDatabase:
 ### Multi-Level Caching
 
 ```python
-from toolkit.cache import CacheManager
+from unistax.cache import CacheManager
 import functools
 
 class MultiLevelCache:
