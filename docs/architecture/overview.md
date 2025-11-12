@@ -1,15 +1,15 @@
 # Architecture Overview
 
-The Composable Toolkit is designed with **composability**, **performance**, and **scalability** as core principles. This document provides a high-level overview of the system architecture.
+Unistax is designed with **composability**, **performance**, and **scalability** as core principles. This document provides a high-level overview of the system architecture.
 
 ## System Architecture
 
-The toolkit follows a modular, composable architecture where each component can work independently or together.
+Unistax follows a modular, composable architecture where each component can work independently or together.
 
 ```mermaid
 graph TB
     subgraph "Frontend Layer"
-        A[React Applications<br/>19 Example Apps]
+        A[React Applications<br/>20 Example Apps]
         B[Atomic Components<br/>Button, Input, Badge]
         C[Performance Hooks<br/>useLRUMemo, useDebounce]
         D[Design Tokens<br/>Colors, Spacing, Typography]
