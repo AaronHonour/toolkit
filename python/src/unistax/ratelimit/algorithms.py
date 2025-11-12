@@ -5,15 +5,13 @@ from collections import deque
 
 
 class TokenBucket:
-    """
-    Token bucket algorithm for rate limiting.
+    """Token bucket algorithm for rate limiting.
 
     Allows bursts while maintaining average rate.
     """
 
     def __init__(self, capacity: int, refill_rate: float):
-        """
-        Initialize token bucket.
+        """Initialize token bucket.
 
         Args:
             capacity: Maximum number of tokens
@@ -33,8 +31,7 @@ class TokenBucket:
         self.last_refill = now
 
     def consume(self, tokens: int = 1) -> bool:
-        """
-        Consume tokens.
+        """Consume tokens.
 
         Args:
             tokens: Number of tokens to consume
@@ -50,15 +47,13 @@ class TokenBucket:
 
 
 class SlidingWindow:
-    """
-    Sliding window algorithm for rate limiting.
+    """Sliding window algorithm for rate limiting.
 
     More accurate than fixed window, prevents burst at window boundaries.
     """
 
     def __init__(self, limit: int, window_size: int):
-        """
-        Initialize sliding window.
+        """Initialize sliding window.
 
         Args:
             limit: Maximum requests in window
@@ -69,8 +64,7 @@ class SlidingWindow:
         self.requests = deque()
 
     def is_allowed(self) -> bool:
-        """
-        Check if request is allowed.
+        """Check if request is allowed.
 
         Returns:
             True if allowed

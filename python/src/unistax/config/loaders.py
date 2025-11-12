@@ -1,5 +1,4 @@
-"""
-Configuration loaders and processors.
+"""Configuration loaders and processors.
 
 Provides utilities for loading configuration from various sources
 and processing them (e.g., environment variable interpolation).
@@ -14,15 +13,13 @@ import yaml
 
 
 class YAMLLoader:
-    """
-    YAML file loader with error handling.
+    """YAML file loader with error handling.
 
     Supports safe loading and provides detailed error messages.
     """
 
     def load(self, path: str | Path) -> dict[str, Any]:
-        """
-        Load YAML file.
+        """Load YAML file.
 
         Args:
             path: Path to YAML file
@@ -47,8 +44,7 @@ class YAMLLoader:
             raise ValueError(f"Invalid YAML in {path}: {e}") from e
 
     def dump(self, data: dict[str, Any], path: str | Path) -> None:
-        """
-        Dump data to YAML file.
+        """Dump data to YAML file.
 
         Args:
             data: Data to dump
@@ -62,8 +58,7 @@ class YAMLLoader:
 
 
 class EnvInterpolator:
-    """
-    Environment variable interpolator.
+    """Environment variable interpolator.
 
     Supports syntax:
     - ${VAR_NAME} - Required variable
@@ -80,8 +75,7 @@ class EnvInterpolator:
     ENV_VAR_PATTERN = re.compile(r"\$\{([^}:]+)(?:(:-|:)([^}]*))?\}")
 
     def interpolate(self, data: Any) -> Any:
-        """
-        Recursively interpolate environment variables in data structure.
+        """Recursively interpolate environment variables in data structure.
 
         Args:
             data: Data to interpolate (dict, list, or string)
@@ -99,8 +93,7 @@ class EnvInterpolator:
             return data
 
     def interpolate_string(self, value: str) -> str:
-        """
-        Interpolate environment variables in a string.
+        """Interpolate environment variables in a string.
 
         Args:
             value: String potentially containing environment variable references

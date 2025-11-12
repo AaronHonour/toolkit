@@ -6,8 +6,7 @@ from unittest.mock import Mock
 
 
 class MockService:
-    """
-    Mock service for testing.
+    """Mock service for testing.
 
     Examples:
         >>> mock_email = MockService()
@@ -24,8 +23,7 @@ class MockService:
 
 
 def mock_service(service_type: type) -> Callable:
-    """
-    Decorator to mock a service in tests.
+    """Decorator to mock a service in tests.
 
     Args:
         service_type: Service class to mock

@@ -1,5 +1,4 @@
-"""
-HTTP client implementation with enterprise features.
+"""HTTP client implementation with enterprise features.
 """
 
 import time
@@ -45,8 +44,7 @@ class Request:
 
 
 class HTTPClient:
-    """
-    Enterprise HTTP client with retry, circuit breaker, and logging.
+    """Enterprise HTTP client with retry, circuit breaker, and logging.
 
     Examples:
         >>> client = HTTPClient()
@@ -61,8 +59,7 @@ class HTTPClient:
         max_retries: int = 3,
         headers: dict[str, str] | None = None,
     ):
-        """
-        Initialize HTTP client.
+        """Initialize HTTP client.
 
         Args:
             base_url: Base URL for all requests
@@ -116,8 +113,7 @@ class HTTPClient:
         timeout: float | None = None,
         retry: bool = True,
     ) -> Response:
-        """
-        Make HTTP request.
+        """Make HTTP request.
 
         Args:
             method: HTTP method

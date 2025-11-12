@@ -1,5 +1,4 @@
-"""
-Metrics Module.
+"""Metrics Module.
 
 Provides application metrics collection and reporting with:
 - Multiple backends (Prometheus, StatsD, in-memory)

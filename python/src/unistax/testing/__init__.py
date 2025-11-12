@@ -1,5 +1,4 @@
-"""
-Testing Module.
+"""Testing Module.
 
 Provides testing utilities:
 - Test fixtures

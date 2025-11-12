@@ -1,5 +1,4 @@
-"""
-Error registry for tracking and categorizing errors.
+"""Error registry for tracking and categorizing errors.
 
 Provides utilities for error management and reporting.
 """
@@ -10,8 +9,7 @@ from .base import ApplicationError, ErrorCategory, ErrorCode
 
 
 class ErrorRegistry:
-    """
-    Registry for tracking error types and occurrences.
+    """Registry for tracking error types and occurrences.
 
     Useful for monitoring and debugging.
     """
@@ -22,8 +20,7 @@ class ErrorRegistry:
         self._occurrences: dict[ErrorCode, int] = defaultdict(int)
 
     def register(self, error_class: type[ApplicationError]) -> None:
-        """
-        Register error class.
+        """Register error class.
 
         Args:
             error_class: Error class to register
@@ -31,8 +28,7 @@ class ErrorRegistry:
         self._errors[error_class.code] = error_class
 
     def record_occurrence(self, error: ApplicationError) -> None:
-        """
-        Record error occurrence.
+        """Record error occurrence.
 
         Args:
             error: Error instance
@@ -40,8 +36,7 @@ class ErrorRegistry:
         self._occurrences[error.code] += 1
 
     def get_error_class(self, code: ErrorCode) -> type[ApplicationError]:
-        """
-        Get error class by code.
+        """Get error class by code.
 
         Args:
             code: Error code
@@ -55,8 +50,7 @@ class ErrorRegistry:
         return self._errors[code]
 
     def get_occurrences(self, code: ErrorCode) -> int:
-        """
-        Get occurrence count for error code.
+        """Get occurrence count for error code.
 
         Args:
             code: Error code
@@ -67,8 +61,7 @@ class ErrorRegistry:
         return self._occurrences[code]
 
     def get_errors_by_category(self, category: ErrorCategory) -> list[type[ApplicationError]]:
-        """
-        Get all errors in a category.
+        """Get all errors in a category.
 
         Args:
             category: Error category
@@ -83,8 +76,7 @@ class ErrorRegistry:
         ]
 
     def get_statistics(self) -> dict[str, int]:
-        """
-        Get error statistics.
+        """Get error statistics.
 
         Returns:
             Dictionary mapping error codes to counts

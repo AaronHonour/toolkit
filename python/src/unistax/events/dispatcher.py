@@ -6,8 +6,7 @@ from .bus import Event
 
 
 class EventDispatcher:
-    """
-    Event dispatcher with priority and filtering.
+    """Event dispatcher with priority and filtering.
 
     Extends EventBus with additional features.
     """
@@ -18,8 +17,7 @@ class EventDispatcher:
     def register(
         self, event_type: type[Event], handler: Callable, priority: int = 0
     ) -> None:
-        """
-        Register event handler with priority.
+        """Register event handler with priority.
 
         Args:
             event_type: Event type

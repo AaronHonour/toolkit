@@ -1,5 +1,4 @@
-"""
-Cache manager implementation.
+"""Cache manager implementation.
 
 Provides unified interface for caching with multiple backends.
 """
@@ -14,8 +13,7 @@ from .backends import CacheBackend, InMemoryCache, MemcachedBackend, RedisBacken
 
 
 class CacheManager:
-    """
-    Unified cache manager supporting multiple backends.
+    """Unified cache manager supporting multiple backends.
 
     Examples:
         >>> cache = CacheManager(backend="redis")
@@ -31,8 +29,7 @@ class CacheManager:
         serializer: str = "json",
         compress: bool = False,
     ) -> None:
-        """
-        Initialize cache manager.
+        """Initialize cache manager.
 
         Args:
             backend: Backend type or instance ("redis", "memcached", "memory")
@@ -51,8 +48,7 @@ class CacheManager:
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "CacheManager":
-        """
-        Create cache manager from YAML configuration.
+        """Create cache manager from YAML configuration.
 
         Args:
             path: Path to YAML config
@@ -124,8 +120,7 @@ class CacheManager:
             return json.loads(data.decode("utf-8"))
 
     def get(self, key: str, default: Any = None) -> Any:
-        """
-        Get value from cache.
+        """Get value from cache.
 
         Args:
             key: Cache key
@@ -146,8 +141,7 @@ class CacheManager:
             return default
 
     def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
-        """
-        Set value in cache.
+        """Set value in cache.
 
         Args:
             key: Cache key
@@ -162,8 +156,7 @@ class CacheManager:
         return self._backend.set(formatted_key, data, ttl)
 
     def delete(self, key: str) -> bool:
-        """
-        Delete value from cache.
+        """Delete value from cache.
 
         Args:
             key: Cache key (supports patterns like "user:*")
@@ -175,8 +168,7 @@ class CacheManager:
         return self._backend.delete(formatted_key)
 
     def exists(self, key: str) -> bool:
-        """
-        Check if key exists in cache.
+        """Check if key exists in cache.
 
         Args:
             key: Cache key
@@ -188,8 +180,7 @@ class CacheManager:
         return self._backend.exists(formatted_key)
 
     def clear(self) -> bool:
-        """
-        Clear all cache entries.
+        """Clear all cache entries.
 
         Returns:
             True if successful
@@ -202,8 +193,7 @@ class CacheManager:
         key_prefix: str = "",
         key_func: Callable | None = None,
     ):
-        """
-        Decorator for memoizing function results.
+        """Decorator for memoizing function results.
 
         Args:
             ttl: Time to live in seconds
@@ -253,8 +243,7 @@ class CacheManager:
     def get_or_set(
         self, key: str, factory: Callable, ttl: int | None = None
     ) -> Any:
-        """
-        Get value from cache or set it using factory function.
+        """Get value from cache or set it using factory function.
 
         Args:
             key: Cache key

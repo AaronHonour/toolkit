@@ -1,5 +1,4 @@
-"""
-Dependency Injection Module.
+"""Dependency Injection Module.
 
 Provides a comprehensive DI container with:
 - Auto-wiring based on type hints

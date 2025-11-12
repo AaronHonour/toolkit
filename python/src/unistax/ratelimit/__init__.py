@@ -1,5 +1,4 @@
-"""
-Rate Limiting Module.
+"""Rate Limiting Module.
 
 Provides rate limiting with multiple algorithms.
 """

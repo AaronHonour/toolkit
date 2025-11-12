@@ -28,8 +28,7 @@ class Role:
 
 
 class RBAC:
-    """
-    Role-Based Access Control system.
+    """Role-Based Access Control system.
 
     Examples:
         >>> rbac = RBAC()
@@ -45,8 +44,7 @@ class RBAC:
         self._roles: dict[str, Role] = {}
 
     def define_role(self, role_name: str, permissions: list[str]) -> None:
-        """
-        Define a role with permissions.
+        """Define a role with permissions.
 
         Args:
             role_name: Role name
@@ -55,8 +53,7 @@ class RBAC:
         self._roles[role_name] = Role(role_name, set(permissions))
 
     def has_permission(self, role_name: str, permission: str) -> bool:
-        """
-        Check if role has permission.
+        """Check if role has permission.
 
         Args:
             role_name: Role name
@@ -69,8 +66,7 @@ class RBAC:
         return role.has_permission(permission) if role else False
 
     def requires(self, permission: str):
-        """
-        Decorator to require permission.
+        """Decorator to require permission.
 
         Args:
             permission: Required permission

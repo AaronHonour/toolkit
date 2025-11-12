@@ -1,5 +1,4 @@
-"""
-Logging context management.
+"""Logging context management.
 
 Provides thread-local context for logging.
 """

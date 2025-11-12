@@ -1,5 +1,4 @@
-"""
-Error handlers for processing and responding to errors.
+"""Error handlers for processing and responding to errors.
 
 Provides composable error handling strategies.
 """
@@ -11,8 +10,7 @@ from .base import ApplicationError
 
 
 class ErrorHandler(ABC):
-    """
-    Abstract base class for error handlers.
+    """Abstract base class for error handlers.
 
     Error handlers can be chained using the Chain of Responsibility pattern.
     """
@@ -22,8 +20,7 @@ class ErrorHandler(ABC):
         self._next_handler: ErrorHandler | None = None
 
     def set_next(self, handler: "ErrorHandler") -> "ErrorHandler":
-        """
-        Set next handler in chain.
+        """Set next handler in chain.
 
         Args:
             handler: Next error handler
@@ -35,8 +32,7 @@ class ErrorHandler(ABC):
         return handler
 
     def handle(self, error: Exception, context: dict[str, Any] | None = None) -> Any:
-        """
-        Handle error and optionally pass to next handler.
+        """Handle error and optionally pass to next handler.
 
         Args:
             error: Exception to handle
@@ -54,8 +50,7 @@ class ErrorHandler(ABC):
 
     @abstractmethod
     def _handle_error(self, error: Exception, context: dict[str, Any]) -> Any:
-        """
-        Implement error handling logic.
+        """Implement error handling logic.
 
         Args:
             error: Exception to handle
@@ -68,8 +63,7 @@ class ErrorHandler(ABC):
 
 
 class LoggingErrorHandler(ErrorHandler):
-    """
-    Error handler that logs errors.
+    """Error handler that logs errors.
 
     Integrates with the logging module for consistent error logging.
     """
@@ -80,8 +74,7 @@ class LoggingErrorHandler(ErrorHandler):
         log_level: str = "ERROR",
         include_traceback: bool = True,
     ) -> None:
-        """
-        Initialize logging error handler.
+        """Initialize logging error handler.
 
         Args:
             logger: Logger instance (uses root logger if None)
@@ -122,8 +115,7 @@ class LoggingErrorHandler(ErrorHandler):
 
 
 class RetryErrorHandler(ErrorHandler):
-    """
-    Error handler that retries failed operations.
+    """Error handler that retries failed operations.
 
     Useful for transient errors (network, database connection, etc.)
     """
@@ -134,8 +126,7 @@ class RetryErrorHandler(ErrorHandler):
         retry_on: list[type[Exception]] | None = None,
         backoff_factor: float = 2.0,
     ) -> None:
-        """
-        Initialize retry error handler.
+        """Initialize retry error handler.
 
         Args:
             max_retries: Maximum number of retry attempts
@@ -164,8 +155,7 @@ class RetryErrorHandler(ErrorHandler):
 
 
 class ErrorHandlerChain:
-    """
-    Manages a chain of error handlers.
+    """Manages a chain of error handlers.
 
     Provides a convenient way to build and execute handler chains.
     """
@@ -175,8 +165,7 @@ class ErrorHandlerChain:
         self._handlers: list[ErrorHandler] = []
 
     def add_handler(self, handler: ErrorHandler) -> "ErrorHandlerChain":
-        """
-        Add handler to chain.
+        """Add handler to chain.
 
         Args:
             handler: Error handler to add
@@ -190,8 +179,7 @@ class ErrorHandlerChain:
         return self
 
     def handle(self, error: Exception, context: dict[str, Any] | None = None) -> Any:
-        """
-        Execute handler chain.
+        """Execute handler chain.
 
         Args:
             error: Exception to handle
@@ -207,8 +195,7 @@ class ErrorHandlerChain:
 
     @classmethod
     def from_config(cls, config: dict[str, Any]) -> "ErrorHandlerChain":
-        """
-        Create handler chain from configuration.
+        """Create handler chain from configuration.
 
         Args:
             config: Handler configuration

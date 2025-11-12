@@ -1,5 +1,4 @@
-"""
-Cache backends for different storage systems.
+"""Cache backends for different storage systems.
 
 Provides backends for Redis, Memcached, and in-memory storage.
 """
@@ -39,15 +38,13 @@ class CacheBackend(ABC):
 
 
 class InMemoryCache(CacheBackend):
-    """
-    In-memory cache backend for testing and development.
+    """In-memory cache backend for testing and development.
 
     Thread-safe with TTL support.
     """
 
     def __init__(self, max_size: int = 1000) -> None:
-        """
-        Initialize in-memory cache.
+        """Initialize in-memory cache.
 
         Args:
             max_size: Maximum number of entries (LRU eviction)
@@ -132,8 +129,7 @@ class InMemoryCache(CacheBackend):
 
 
 class RedisBackend(CacheBackend):
-    """
-    Redis cache backend.
+    """Redis cache backend.
 
     Uses redis-py library if available, falls back to in-memory.
     """
@@ -145,8 +141,7 @@ class RedisBackend(CacheBackend):
         db: int = 0,
         password: str | None = None,
     ) -> None:
-        """
-        Initialize Redis backend.
+        """Initialize Redis backend.
 
         Args:
             host: Redis server host
@@ -233,15 +228,13 @@ class RedisBackend(CacheBackend):
 
 
 class MemcachedBackend(CacheBackend):
-    """
-    Memcached cache backend.
+    """Memcached cache backend.
 
     Uses pymemcache library if available, falls back to in-memory.
     """
 
     def __init__(self, host: str = "localhost", port: int = 11211) -> None:
-        """
-        Initialize Memcached backend.
+        """Initialize Memcached backend.
 
         Args:
             host: Memcached server host

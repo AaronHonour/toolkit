@@ -1,5 +1,4 @@
-"""
-Configuration Manager implementation.
+"""Configuration Manager implementation.
 
 Provides a thread-safe, cached configuration manager with support for:
 - YAML loading
@@ -19,8 +18,7 @@ T = TypeVar("T")
 
 
 class ConfigManager:
-    """
-    Thread-safe configuration manager with caching and hot-reload support.
+    """Thread-safe configuration manager with caching and hot-reload support.
 
     Examples:
         >>> config = ConfigManager.from_yaml("config.yaml")
@@ -30,8 +28,7 @@ class ConfigManager:
     """
 
     def __init__(self, data: dict[str, Any] | None = None) -> None:
-        """
-        Initialize configuration manager.
+        """Initialize configuration manager.
 
         Args:
             data: Initial configuration data
@@ -48,8 +45,7 @@ class ConfigManager:
         interpolate: bool = True,
         validate: bool = True,
     ) -> "ConfigManager":
-        """
-        Load configuration from YAML file.
+        """Load configuration from YAML file.
 
         Args:
             path: Path to YAML file
@@ -78,8 +74,7 @@ class ConfigManager:
         return cls(data)
 
     def get(self, key: str, default: T | None = None) -> Any:
-        """
-        Get configuration value using dot notation.
+        """Get configuration value using dot notation.
 
         Args:
             key: Configuration key (supports dot notation, e.g., "database.host")
@@ -119,8 +114,7 @@ class ConfigManager:
         return float(value) if value is not None else default
 
     def get_bool(self, key: str, default: bool = False) -> bool:
-        """
-        Get boolean value.
+        """Get boolean value.
 
         Handles string representations: "true", "yes", "1" -> True
         """
@@ -142,8 +136,7 @@ class ConfigManager:
         return dict(value) if isinstance(value, dict) else default or {}
 
     def require(self, key: str) -> Any:
-        """
-        Get required configuration value.
+        """Get required configuration value.
 
         Args:
             key: Configuration key
@@ -160,8 +153,7 @@ class ConfigManager:
         return value
 
     def set(self, key: str, value: Any) -> None:
-        """
-        Set configuration value using dot notation.
+        """Set configuration value using dot notation.
 
         Args:
             key: Configuration key
@@ -173,8 +165,7 @@ class ConfigManager:
             self._invalidate_cache(key)
 
     def update(self, data: dict[str, Any]) -> None:
-        """
-        Update configuration with new data.
+        """Update configuration with new data.
 
         Args:
             data: Dictionary to merge into configuration
@@ -184,8 +175,7 @@ class ConfigManager:
             self._cache.clear()
 
     def reload(self, path: str | Path) -> None:
-        """
-        Reload configuration from file.
+        """Reload configuration from file.
 
         Args:
             path: Path to YAML file

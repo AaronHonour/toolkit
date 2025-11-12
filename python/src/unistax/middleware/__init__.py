@@ -1,5 +1,4 @@
-"""
-Middleware Module.
+"""Middleware Module.
 
 Provides request/response middleware pipeline with:
 - Middleware chain execution

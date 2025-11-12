@@ -7,8 +7,7 @@ from .algorithms import TokenBucket
 
 
 class RateLimiter:
-    """
-    Rate limiter with configurable algorithms.
+    """Rate limiter with configurable algorithms.
 
     Examples:
         >>> limiter = RateLimiter(rate=100, period=60)  # 100 requests per minute
@@ -17,8 +16,7 @@ class RateLimiter:
     """
 
     def __init__(self, rate: int = 100, period: int = 60):
-        """
-        Initialize rate limiter.
+        """Initialize rate limiter.
 
         Args:
             rate: Number of allowed requests
@@ -35,8 +33,7 @@ class RateLimiter:
         return self._buckets[key]
 
     def is_allowed(self, key: str) -> bool:
-        """
-        Check if request is allowed.
+        """Check if request is allowed.
 
         Args:
             key: Identifier (e.g., user ID, IP address)
@@ -48,8 +45,7 @@ class RateLimiter:
         return bucket.consume()
 
     def limit(self, key_func: Callable | None = None):
-        """
-        Decorator for rate limiting functions.
+        """Decorator for rate limiting functions.
 
         Args:
             key_func: Function to extract key from arguments

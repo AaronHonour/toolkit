@@ -1,5 +1,4 @@
-"""
-Dependency Injection Container implementation.
+"""Dependency Injection Container implementation.
 
 Provides auto-wiring, lifetime management, and factory registration.
 """
@@ -46,8 +45,7 @@ class ServiceDescriptor:
 
 
 class Container:
-    """
-    Dependency Injection Container.
+    """Dependency Injection Container.
 
     Supports auto-wiring, multiple lifetimes, and factory registration.
 
@@ -74,8 +72,7 @@ class Container:
         implementation_type: type[T] | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> "Container":
-        """
-        Register a service type.
+        """Register a service type.
 
         Args:
             service_type: The service type (interface)
@@ -95,8 +92,7 @@ class Container:
         return self
 
     def register_instance(self, service_type: type[T], instance: T) -> "Container":
-        """
-        Register a pre-created instance (singleton).
+        """Register a pre-created instance (singleton).
 
         Args:
             service_type: The service type
@@ -120,8 +116,7 @@ class Container:
         factory: Callable[[], T],
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> "Container":
-        """
-        Register a factory function.
+        """Register a factory function.
 
         Args:
             service_type: The service type
@@ -141,8 +136,7 @@ class Container:
         return self
 
     def resolve(self, service_type: type[T]) -> T:
-        """
-        Resolve a service instance.
+        """Resolve a service instance.
 
         Args:
             service_type: The service type to resolve
@@ -273,8 +267,7 @@ class Container:
             return False
 
     def create_scope(self) -> "Container":
-        """
-        Create a child container for scoped services.
+        """Create a child container for scoped services.
 
         Returns:
             New scoped container
@@ -293,8 +286,7 @@ class Container:
 
 # Decorator for marking classes as injectable
 def injectable(cls: type[T]) -> type[T]:
-    """
-    Mark a class as injectable.
+    """Mark a class as injectable.
 
     This is optional - the container can auto-wire classes with type hints.
     """
@@ -304,8 +296,7 @@ def injectable(cls: type[T]) -> type[T]:
 
 # Decorator for injecting dependencies
 def inject(func: Callable) -> Callable:
-    """
-    Decorator to inject dependencies into a function.
+    """Decorator to inject dependencies into a function.
 
     Example:
         >>> @inject

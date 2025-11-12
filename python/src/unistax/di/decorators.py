@@ -8,8 +8,7 @@ T = TypeVar("T")
 
 
 def singleton(cls: type[T]) -> type[T]:
-    """
-    Mark a class as singleton.
+    """Mark a class as singleton.
 
     Example:
         >>> @singleton
@@ -21,8 +20,7 @@ def singleton(cls: type[T]) -> type[T]:
 
 
 def transient(cls: type[T]) -> type[T]:
-    """
-    Mark a class as transient (new instance each time).
+    """Mark a class as transient (new instance each time).
 
     Example:
         >>> @transient
@@ -34,8 +32,7 @@ def transient(cls: type[T]) -> type[T]:
 
 
 def scoped(cls: type[T]) -> type[T]:
-    """
-    Mark a class as scoped (one instance per scope).
+    """Mark a class as scoped (one instance per scope).
 
     Example:
         >>> @scoped

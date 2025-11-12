@@ -13,8 +13,7 @@ class CircuitState(Enum):
 
 
 class CircuitBreaker:
-    """
-    Circuit breaker for preventing cascading failures.
+    """Circuit breaker for preventing cascading failures.
 
     Examples:
         >>> breaker = CircuitBreaker(failure_threshold=5, timeout=60)
@@ -34,8 +33,7 @@ class CircuitBreaker:
         self.half_open_calls = 0
 
     def protected(self, fallback=None):
-        """
-        Decorator to protect function with circuit breaker.
+        """Decorator to protect function with circuit breaker.
 
         Args:
             fallback: Fallback function to call when circuit is open

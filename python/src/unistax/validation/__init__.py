@@ -1,5 +1,4 @@
-"""
-Validation Module.
+"""Validation Module.
 
 Provides data validation with Pydantic integration.
 """

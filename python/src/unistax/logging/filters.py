@@ -1,5 +1,4 @@
-"""
-Log filters for sensitive data and context management.
+"""Log filters for sensitive data and context management.
 
 Provides filters to protect sensitive information and add context.
 """
@@ -11,8 +10,7 @@ from .context import log_context
 
 
 class SensitiveDataFilter(logging.Filter):
-    """
-    Filter to redact sensitive data from logs.
+    """Filter to redact sensitive data from logs.
 
     Supports pattern-based redaction of sensitive information like:
     - Passwords
@@ -32,8 +30,7 @@ class SensitiveDataFilter(logging.Filter):
     ]
 
     def __init__(self, patterns: list[str] | None = None) -> None:
-        """
-        Initialize sensitive data filter.
+        """Initialize sensitive data filter.
 
         Args:
             patterns: List of regex patterns to redact (uses defaults if None)
@@ -49,8 +46,7 @@ class SensitiveDataFilter(logging.Filter):
             ]
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Filter log record by redacting sensitive data.
+        """Filter log record by redacting sensitive data.
 
         Args:
             record: Log record
@@ -69,8 +65,7 @@ class SensitiveDataFilter(logging.Filter):
         return True
 
     def _redact(self, text: str) -> str:
-        """
-        Redact sensitive data from text.
+        """Redact sensitive data from text.
 
         Args:
             text: Text to redact
@@ -84,15 +79,13 @@ class SensitiveDataFilter(logging.Filter):
 
 
 class ContextFilter(logging.Filter):
-    """
-    Filter to add context to log records.
+    """Filter to add context to log records.
 
     Injects context variables into log records.
     """
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Add context to log record.
+        """Add context to log record.
 
         Args:
             record: Log record
@@ -110,15 +103,13 @@ class ContextFilter(logging.Filter):
 
 
 class RateLimitFilter(logging.Filter):
-    """
-    Filter to rate-limit log messages.
+    """Filter to rate-limit log messages.
 
     Prevents log flooding by limiting messages per time window.
     """
 
     def __init__(self, rate: int = 10, per_seconds: int = 60) -> None:
-        """
-        Initialize rate limit filter.
+        """Initialize rate limit filter.
 
         Args:
             rate: Maximum number of messages
@@ -130,8 +121,7 @@ class RateLimitFilter(logging.Filter):
         self._message_counts: dict[str, list[float]] = {}
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """
-        Filter log record based on rate limit.
+        """Filter log record based on rate limit.
 
         Args:
             record: Log record

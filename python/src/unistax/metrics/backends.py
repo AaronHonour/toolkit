@@ -1,5 +1,4 @@
-"""
-Metrics backends for different storage/reporting systems.
+"""Metrics backends for different storage/reporting systems.
 
 Provides backends for Prometheus, StatsD, and in-memory storage.
 """
@@ -46,8 +45,7 @@ class MetricsBackend(ABC):
 
 
 class InMemoryBackend(MetricsBackend):
-    """
-    In-memory metrics backend for testing and development.
+    """In-memory metrics backend for testing and development.
 
     Stores all metrics in memory with thread-safe operations.
     """
@@ -118,15 +116,13 @@ class InMemoryBackend(MetricsBackend):
 
 
 class PrometheusBackend(MetricsBackend):
-    """
-    Prometheus metrics backend.
+    """Prometheus metrics backend.
 
     Uses prometheus_client library if available, falls back to in-memory.
     """
 
     def __init__(self, port: int = 9090, registry: Any | None = None) -> None:
-        """
-        Initialize Prometheus backend.
+        """Initialize Prometheus backend.
 
         Args:
             port: HTTP server port for metrics endpoint
@@ -235,8 +231,7 @@ class PrometheusBackend(MetricsBackend):
 
 
 class StatsDBackend(MetricsBackend):
-    """
-    StatsD metrics backend.
+    """StatsD metrics backend.
 
     Sends metrics to StatsD server if available, falls back to in-memory.
     """
@@ -244,8 +239,7 @@ class StatsDBackend(MetricsBackend):
     def __init__(
         self, host: str = "localhost", port: int = 8125, prefix: str = ""
     ) -> None:
-        """
-        Initialize StatsD backend.
+        """Initialize StatsD backend.
 
         Args:
             host: StatsD server host

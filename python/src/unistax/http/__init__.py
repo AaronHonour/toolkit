@@ -1,5 +1,4 @@
-"""
-HTTP Client Module.
+"""HTTP Client Module.
 
 Provides enterprise HTTP client with:
 - Automatic retries with exponential backoff

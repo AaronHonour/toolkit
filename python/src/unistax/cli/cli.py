@@ -17,8 +17,7 @@ class Command:
 
 
 class CLI:
-    """
-    CLI framework for building command-line tools.
+    """CLI framework for building command-line tools.
 
     Examples:
         >>> cli = CLI("toolkit")
@@ -36,8 +35,7 @@ class CLI:
         self._commands: dict[str, Command] = {}
 
     def command(self, name: str | None = None, description: str = ""):
-        """
-        Register a command.
+        """Register a command.
 
         Args:
             name: Command name (defaults to function name)
@@ -59,8 +57,7 @@ class CLI:
         return decorator
 
     def run(self, args: list[str] | None = None) -> None:
-        """
-        Run CLI with arguments.
+        """Run CLI with arguments.
 
         Args:
             args: Command-line arguments (defaults to sys.argv)

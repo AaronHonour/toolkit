@@ -1,5 +1,4 @@
-"""
-Backend Toolkit - Enterprise-grade Python toolkit for backend development.
+"""Backend Toolkit - Enterprise-grade Python toolkit for backend development.
 
 This package provides composable, configuration-driven modules for:
 - Configuration management

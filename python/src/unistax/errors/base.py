@@ -1,5 +1,4 @@
-"""
-Base exception classes and error codes.
+"""Base exception classes and error codes.
 
 Provides a typed exception hierarchy with error codes, categories,
 and context preservation.
@@ -26,8 +25,7 @@ class ErrorCategory(str, Enum):
 
 
 class ErrorCode(str, Enum):
-    """
-    Standardized error codes.
+    """Standardized error codes.
 
     Follow pattern: CATEGORY_SPECIFIC_ERROR
     """
@@ -78,8 +76,7 @@ class ErrorCode(str, Enum):
 
 
 class ApplicationError(Exception):
-    """
-    Base application error with enhanced context.
+    """Base application error with enhanced context.
 
     Attributes:
         code: Error code for identification
@@ -100,8 +97,7 @@ class ApplicationError(Exception):
         details: dict[str, Any] | None = None,
         cause: Exception | None = None,
     ) -> None:
-        """
-        Initialize application error.
+        """Initialize application error.
 
         Args:
             message: Error message
@@ -118,8 +114,7 @@ class ApplicationError(Exception):
         self.cause = cause
 
     def to_dict(self) -> dict[str, Any]:
-        """
-        Convert error to dictionary for serialization.
+        """Convert error to dictionary for serialization.
 
         Returns:
             Dictionary representation of error

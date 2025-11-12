@@ -7,8 +7,7 @@ from typing import Any
 
 
 class LifecycleHook:
-    """
-    Lifecycle hook wrapper.
+    """Lifecycle hook wrapper.
 
     Handles both sync and async functions.
     """
@@ -19,8 +18,7 @@ class LifecycleHook:
         self.is_async = inspect.iscoroutinefunction(func)
 
     async def execute(self) -> Any:
-        """
-        Execute the hook function.
+        """Execute the hook function.
 
         Returns:
             Function result

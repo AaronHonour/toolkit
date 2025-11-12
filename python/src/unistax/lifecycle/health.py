@@ -15,8 +15,7 @@ class HealthStatus(str, Enum):
 
 
 class HealthCheck:
-    """
-    Health check definition.
+    """Health check definition.
 
     Attributes:
         name: Check name
@@ -30,8 +29,7 @@ class HealthCheck:
         self.check_type = check_type
 
     def execute(self) -> dict[str, Any]:
-        """
-        Execute health check.
+        """Execute health check.
 
         Returns:
             Dict with check results
@@ -80,8 +78,7 @@ class HealthCheckRegistry:
         self._checks.append(check)
 
     def check_all(self) -> dict[str, Any]:
-        """
-        Run all health checks.
+        """Run all health checks.
 
         Returns:
             Dict with all check results
@@ -104,8 +101,7 @@ class HealthCheckRegistry:
         }
 
     def check_liveness(self) -> bool:
-        """
-        Run liveness checks.
+        """Run liveness checks.
 
         Returns:
             True if all liveness checks pass
@@ -118,8 +114,7 @@ class HealthCheckRegistry:
         return True
 
     def check_readiness(self) -> bool:
-        """
-        Run readiness checks.
+        """Run readiness checks.
 
         Returns:
             True if all readiness checks pass

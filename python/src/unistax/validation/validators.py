@@ -38,8 +38,7 @@ class ValidationRules:
 
 
 class Validator:
-    """
-    Base validator class.
+    """Base validator class.
 
     Examples:
         >>> validator = Validator()
@@ -58,8 +57,7 @@ class Validator:
         self.rules[field].append((rule, error_message))
 
     def validate(self, data: dict[str, Any]) -> bool:
-        """
-        Validate data against rules.
+        """Validate data against rules.
 
         Args:
             data: Data to validate

@@ -32,16 +32,14 @@ NextHandler = Callable[[Request], Awaitable[Response]]
 
 
 class Middleware(ABC):
-    """
-    Base middleware class.
+    """Base middleware class.
 
     Subclass and implement process() method.
     """
 
     @abstractmethod
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
-        """
-        Process request through middleware.
+        """Process request through middleware.
 
         Args:
             request: Request context
@@ -54,8 +52,7 @@ class Middleware(ABC):
 
 
 class MiddlewarePipeline:
-    """
-    Middleware pipeline for request/response processing.
+    """Middleware pipeline for request/response processing.
 
     Examples:
         >>> pipeline = MiddlewarePipeline()
@@ -68,8 +65,7 @@ class MiddlewarePipeline:
         self._middleware: list[Middleware] = []
 
     def use(self, middleware: Middleware) -> "MiddlewarePipeline":
-        """
-        Add middleware to pipeline.
+        """Add middleware to pipeline.
 
         Args:
             middleware: Middleware instance
@@ -83,8 +79,7 @@ class MiddlewarePipeline:
     async def execute(
         self, request: Request, final_handler: NextHandler | None = None
     ) -> Response:
-        """
-        Execute middleware pipeline.
+        """Execute middleware pipeline.
 
         Args:
             request: Request to process

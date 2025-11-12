@@ -5,8 +5,7 @@ import secrets
 
 
 class PasswordHasher:
-    """
-    Password hashing with salt.
+    """Password hashing with salt.
 
     Examples:
         >>> hasher = PasswordHasher()
@@ -20,8 +19,7 @@ class PasswordHasher:
         self.salt_length = salt_length
 
     def hash(self, password: str) -> str:
-        """
-        Hash password with salt.
+        """Hash password with salt.
 
         Args:
             password: Plain text password
@@ -34,8 +32,7 @@ class PasswordHasher:
         return f"{salt}${pwd_hash}"
 
     def verify(self, password: str, hashed: str) -> bool:
-        """
-        Verify password against hash.
+        """Verify password against hash.
 
         Args:
             password: Plain text password

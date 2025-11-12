@@ -1,5 +1,4 @@
-"""
-Logging Module.
+"""Logging Module.
 
 Provides enterprise-grade structured logging with:
 - Multiple handlers (console, file, rotating, JSON)

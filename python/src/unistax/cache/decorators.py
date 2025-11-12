@@ -1,5 +1,4 @@
-"""
-Decorators for caching function results.
+"""Decorators for caching function results.
 
 Provides convenient decorators for memoization.
 """
@@ -16,8 +15,7 @@ def memoize(
     key_prefix: str = "",
     key_func: Callable | None = None,
 ) -> Callable:
-    """
-    Decorator for memoizing function results.
+    """Decorator for memoizing function results.
 
     Args:
         ttl: Time to live in seconds
@@ -34,8 +32,7 @@ def memoize(
 
 
 def cache_result(ttl: int | None = None, key: str | None = None) -> Callable:
-    """
-    Decorator to cache function result with fixed key.
+    """Decorator to cache function result with fixed key.
 
     Args:
         ttl: Time to live in seconds

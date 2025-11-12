@@ -6,8 +6,7 @@ from typing import Any
 
 
 class JWT:
-    """
-    JWT token encoder/decoder.
+    """JWT token encoder/decoder.
 
     Examples:
         >>> jwt = JWT(secret="my-secret")
@@ -21,8 +20,7 @@ class JWT:
         self.expiration = expiration
 
     def encode(self, payload: dict[str, Any], exp: int | None = None) -> str:
-        """
-        Encode payload to JWT token.
+        """Encode payload to JWT token.
 
         Args:
             payload: Data to encode
@@ -60,8 +58,7 @@ class JWT:
         return f"{message}.{signature_b64}"
 
     def decode(self, token: str, verify: bool = True) -> dict[str, Any]:
-        """
-        Decode JWT token.
+        """Decode JWT token.
 
         Args:
             token: JWT token string

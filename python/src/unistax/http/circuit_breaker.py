@@ -12,8 +12,7 @@ class CircuitState(Enum):
 
 
 class CircuitBreaker:
-    """
-    Circuit breaker implementation.
+    """Circuit breaker implementation.
 
     Prevents cascading failures by opening circuit after threshold failures.
     """

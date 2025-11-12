@@ -4,8 +4,7 @@ from typing import Any
 
 
 class UnitOfWork:
-    """
-    Unit of Work pattern for managing transactions.
+    """Unit of Work pattern for managing transactions.
 
     Examples:
         >>> async with UnitOfWork() as uow:

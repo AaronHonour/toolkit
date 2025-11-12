@@ -1,5 +1,4 @@
-"""
-Configuration schema validation using Pydantic.
+"""Configuration schema validation using Pydantic.
 
 Provides base classes and utilities for defining and validating
 configuration schemas.
@@ -13,8 +12,7 @@ T = TypeVar("T", bound="ConfigSchema")
 
 
 class ConfigSchema(BaseModel):
-    """
-    Base class for configuration schemas.
+    """Base class for configuration schemas.
 
     Uses Pydantic for validation and type safety.
 
@@ -41,8 +39,7 @@ class ConfigSchema(BaseModel):
 
     @classmethod
     def from_dict(cls: type[T], data: dict[str, Any]) -> T:
-        """
-        Create schema instance from dictionary.
+        """Create schema instance from dictionary.
 
         Args:
             data: Configuration data
@@ -61,8 +58,7 @@ class ConfigSchema(BaseModel):
 
     @classmethod
     def from_yaml(cls: type[T], path: str) -> T:
-        """
-        Load and validate configuration from YAML file.
+        """Load and validate configuration from YAML file.
 
         Args:
             path: Path to YAML file

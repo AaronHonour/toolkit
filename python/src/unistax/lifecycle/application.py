@@ -20,8 +20,7 @@ class LifecycleEvent(str, Enum):
 
 
 class Application:
-    """
-    Application lifecycle manager.
+    """Application lifecycle manager.
 
     Manages startup, shutdown, and health checks.
 
@@ -44,8 +43,7 @@ class Application:
     """
 
     def __init__(self, name: str = "app", shutdown_timeout: float = 30.0):
-        """
-        Initialize application.
+        """Initialize application.
 
         Args:
             name: Application name
@@ -60,8 +58,7 @@ class Application:
         self._signal_handlers_installed = False
 
     def on_startup(self, func: Callable) -> Callable:
-        """
-        Register startup hook.
+        """Register startup hook.
 
         Args:
             func: Startup function (can be sync or async)
@@ -74,8 +71,7 @@ class Application:
         return func
 
     def on_shutdown(self, func: Callable) -> Callable:
-        """
-        Register shutdown hook.
+        """Register shutdown hook.
 
         Args:
             func: Shutdown function (can be sync or async)
@@ -90,8 +86,7 @@ class Application:
     def health_check(
         self, name: str | None = None, check_type: str = "readiness"
     ) -> Callable:
-        """
-        Register health check.
+        """Register health check.
 
         Args:
             name: Health check name (defaults to function name)
@@ -110,8 +105,7 @@ class Application:
         return decorator
 
     async def start(self) -> None:
-        """
-        Start the application.
+        """Start the application.
 
         Runs all startup hooks and installs signal handlers.
         """
@@ -136,8 +130,7 @@ class Application:
         print(f"✓ Application started: {self.name}")
 
     async def stop(self) -> None:
-        """
-        Stop the application.
+        """Stop the application.
 
         Runs all shutdown hooks with timeout.
         """
@@ -183,8 +176,7 @@ class Application:
         self._signal_handlers_installed = True
 
     def get_health_status(self) -> dict[str, Any]:
-        """
-        Get application health status.
+        """Get application health status.
 
         Returns:
             Dictionary with health check results
@@ -192,8 +184,7 @@ class Application:
         return self._health_registry.check_all()
 
     def is_healthy(self) -> bool:
-        """
-        Check if application is healthy.
+        """Check if application is healthy.
 
         Returns:
             True if all health checks pass
@@ -202,8 +193,7 @@ class Application:
         return status.get("status") == "healthy"
 
     def is_ready(self) -> bool:
-        """
-        Check if application is ready to serve requests.
+        """Check if application is ready to serve requests.
 
         Returns:
             True if running and readiness checks pass
@@ -214,8 +204,7 @@ class Application:
         return self._health_registry.check_readiness()
 
     def is_alive(self) -> bool:
-        """
-        Check if application is alive (liveness check).
+        """Check if application is alive (liveness check).
 
         Returns:
             True if running and liveness checks pass

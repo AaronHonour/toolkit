@@ -4,8 +4,7 @@ from pathlib import Path
 
 
 class Scaffolder:
-    """
-    Code scaffolding generator.
+    """Code scaffolding generator.
 
     Examples:
         >>> scaffolder = Scaffolder()
@@ -17,8 +16,7 @@ class Scaffolder:
         self.base_path = base_path or Path.cwd()
 
     def create_service(self, name: str) -> None:
-        """
-        Create a new service class.
+        """Create a new service class.
 
         Args:
             name: Service name
@@ -54,8 +52,7 @@ class {name}:
         print(f"Created service: {filename}")
 
     def create_repository(self, name: str) -> None:
-        """
-        Create a new repository class.
+        """Create a new repository class.
 
         Args:
             name: Repository name

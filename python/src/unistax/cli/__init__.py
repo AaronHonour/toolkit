@@ -1,5 +1,4 @@
-"""
-CLI Module.
+"""CLI Module.
 
 Provides CLI framework with:
 - Command registration

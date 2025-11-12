@@ -4,8 +4,7 @@ from collections.abc import Callable
 
 
 class TestCase:
-    """
-    Base test case class.
+    """Base test case class.
 
     Provides common test utilities and fixtures.
 
@@ -26,8 +25,7 @@ class TestCase:
 
 
 def fixture(func: Callable) -> Callable:
-    """
-    Mark function as a test fixture.
+    """Mark function as a test fixture.
 
     Args:
         func: Fixture function
@@ -40,8 +38,7 @@ def fixture(func: Callable) -> Callable:
 
 
 def use_test_db(func: Callable) -> Callable:
-    """
-    Decorator to use test database.
+    """Decorator to use test database.
 
     Sets up and tears down test database for test.
 

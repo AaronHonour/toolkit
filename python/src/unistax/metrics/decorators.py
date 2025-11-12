@@ -1,5 +1,4 @@
-"""
-Decorators for automatic metrics collection.
+"""Decorators for automatic metrics collection.
 
 Provides convenient decorators for instrumenting functions.
 """
@@ -12,8 +11,7 @@ from .manager import get_metrics
 
 
 def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
-    """
-    Decorator to time function execution.
+    """Decorator to time function execution.
 
     Args:
         name: Metric name
@@ -40,8 +38,7 @@ def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
 def counter(
     name: str, value: float = 1.0, labels: dict[str, str] | None = None
 ) -> Callable:
-    """
-    Decorator to increment counter on function call.
+    """Decorator to increment counter on function call.
 
     Args:
         name: Metric name
@@ -67,8 +64,7 @@ def counter(
 
 
 def gauge(name: str, value_func: Callable | None = None) -> Callable:
-    """
-    Decorator to set gauge value based on function result.
+    """Decorator to set gauge value based on function result.
 
     Args:
         name: Metric name

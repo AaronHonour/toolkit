@@ -1,5 +1,4 @@
-"""
-Core logging implementation.
+"""Core logging implementation.
 
 Provides Logger class and factory for creating loggers with
 enterprise features.
@@ -17,8 +16,7 @@ from .handlers import RotatingFileHandlerWithCompression
 
 
 class Logger:
-    """
-    Enterprise logger wrapper with structured logging support.
+    """Enterprise logger wrapper with structured logging support.
 
     Provides additional functionality over standard logging:
     - Structured logging with extra fields
@@ -28,8 +26,7 @@ class Logger:
     """
 
     def __init__(self, logger: logging.Logger) -> None:
-        """
-        Initialize logger wrapper.
+        """Initialize logger wrapper.
 
         Args:
             logger: Underlying Python logger
@@ -116,8 +113,7 @@ class Logger:
         extra: dict[str, Any] | None,
         **kwargs: Any,
     ) -> None:
-        """
-        Internal logging method with context support.
+        """Internal logging method with context support.
 
         Args:
             level: Log level
@@ -135,8 +131,7 @@ class Logger:
         self._logger.log(level, message, *args, extra=merged_extra, **kwargs)
 
     def set_level(self, level: int | str) -> None:
-        """
-        Set logger level.
+        """Set logger level.
 
         Args:
             level: Log level (int or string)
@@ -154,8 +149,7 @@ class Logger:
         self._logger.removeHandler(handler)
 
     def set_context(self, **kwargs: Any) -> None:
-        """
-        Set logging context.
+        """Set logging context.
 
         Context is included in all log messages.
 
@@ -171,8 +165,7 @@ class Logger:
 
 
 class LoggerFactory:
-    """
-    Factory for creating configured loggers.
+    """Factory for creating configured loggers.
 
     Supports YAML-based configuration.
     """
@@ -184,8 +177,7 @@ class LoggerFactory:
         handlers: list | None = None,
         filters: list | None = None,
     ) -> Logger:
-        """
-        Create configured logger.
+        """Create configured logger.
 
         Args:
             name: Logger name
@@ -219,8 +211,7 @@ class LoggerFactory:
 
     @staticmethod
     def from_yaml(path: str | Path) -> Logger:
-        """
-        Create logger from YAML configuration.
+        """Create logger from YAML configuration.
 
         Args:
             path: Path to YAML config file
@@ -235,8 +226,7 @@ class LoggerFactory:
 
     @staticmethod
     def from_config(config: Any) -> Logger:
-        """
-        Create logger from configuration.
+        """Create logger from configuration.
 
         Args:
             config: Configuration object
@@ -326,8 +316,7 @@ class LoggerFactory:
 
 
 def get_logger(name: str) -> Logger:
-    """
-    Get logger by name.
+    """Get logger by name.
 
     Convenience function for getting loggers.
 

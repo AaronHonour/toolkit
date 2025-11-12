@@ -1,5 +1,4 @@
-"""
-Event System Module.
+"""Event System Module.
 
 Provides pub/sub event bus with:
 - Event definition and typing

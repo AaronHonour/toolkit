@@ -6,8 +6,7 @@ from typing import Any
 
 
 class Fallback:
-    """
-    Fallback pattern for graceful degradation.
+    """Fallback pattern for graceful degradation.
 
     Examples:
         >>> fallback = Fallback(default_value={"status": "unavailable"})
@@ -21,8 +20,7 @@ class Fallback:
         self.fallback_func = fallback_func
 
     def with_fallback(self, fallback_func: Callable = None):
-        """
-        Decorator to add fallback behavior.
+        """Decorator to add fallback behavior.
 
         Args:
             fallback_func: Custom fallback function

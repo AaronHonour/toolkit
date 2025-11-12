@@ -1,5 +1,4 @@
-"""
-Error Handling Module.
+"""Error Handling Module.
 
 Provides a comprehensive error handling system with:
 - Typed exception hierarchy

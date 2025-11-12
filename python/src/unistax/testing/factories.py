@@ -6,8 +6,7 @@ T = TypeVar("T")
 
 
 class Factory:
-    """
-    Factory for generating test data.
+    """Factory for generating test data.
 
     Examples:
         >>> class UserFactory(Factory):
@@ -30,8 +29,7 @@ class Factory:
 
     @classmethod
     def defaults(cls) -> dict[str, Any]:
-        """
-        Default attributes for factory.
+        """Default attributes for factory.
 
         Override this method to provide default values.
         """
@@ -39,8 +37,7 @@ class Factory:
 
     @classmethod
     def create(cls, **kwargs) -> Any:
-        """
-        Create a single instance.
+        """Create a single instance.
 
         Args:
             **kwargs: Override default attributes
@@ -57,8 +54,7 @@ class Factory:
 
     @classmethod
     def create_batch(cls, count: int, **kwargs) -> list:
-        """
-        Create multiple instances.
+        """Create multiple instances.
 
         Args:
             count: Number of instances to create
@@ -71,8 +67,7 @@ class Factory:
 
     @classmethod
     def sequence(cls) -> int:
-        """
-        Get next sequence number.
+        """Get next sequence number.
 
         Returns:
             Sequence number

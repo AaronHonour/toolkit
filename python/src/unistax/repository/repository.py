@@ -36,8 +36,7 @@ class IRepository(ABC, Generic[T]):
 
 
 class Repository(IRepository[T]):
-    """
-    Base repository implementation.
+    """Base repository implementation.
 
     Provides common CRUD operations.
 

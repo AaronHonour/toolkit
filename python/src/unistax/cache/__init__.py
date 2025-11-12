@@ -1,5 +1,4 @@
-"""
-Cache Module.
+"""Cache Module.
 
 Provides unified caching interface with:
 - Multiple backends (Redis, Memcached, in-memory)

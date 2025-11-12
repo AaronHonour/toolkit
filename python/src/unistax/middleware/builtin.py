@@ -7,8 +7,7 @@ from .pipeline import Middleware, NextHandler, Request, Response
 
 
 class LoggingMiddleware(Middleware):
-    """
-    Logs request/response information.
+    """Logs request/response information.
 
     Logs method, path, status code, and duration.
     """
@@ -54,8 +53,7 @@ class LoggingMiddleware(Middleware):
 
 
 class MetricsMiddleware(Middleware):
-    """
-    Collects request metrics.
+    """Collects request metrics.
 
     Tracks request count, duration, and status codes.
     """
@@ -109,8 +107,7 @@ class MetricsMiddleware(Middleware):
 
 
 class ErrorHandlerMiddleware(Middleware):
-    """
-    Handles exceptions and converts to responses.
+    """Handles exceptions and converts to responses.
 
     Catches exceptions and returns appropriate error responses.
     """
@@ -129,8 +126,7 @@ class ErrorHandlerMiddleware(Middleware):
 
 
 class CORSMiddleware(Middleware):
-    """
-    Adds CORS headers to responses.
+    """Adds CORS headers to responses.
 
     Handles preflight requests and adds CORS headers.
     """
@@ -180,8 +176,7 @@ class CORSMiddleware(Middleware):
 
 
 class CompressionMiddleware(Middleware):
-    """
-    Compresses response bodies.
+    """Compresses response bodies.
 
     Uses gzip compression for large responses.
     """

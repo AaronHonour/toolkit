@@ -26,8 +26,7 @@ class Event:
 
 
 class EventBus:
-    """
-    Event bus for pub/sub pattern.
+    """Event bus for pub/sub pattern.
 
     Examples:
         >>> bus = EventBus()
@@ -43,8 +42,7 @@ class EventBus:
         self._handlers: dict[type[Event], list[Callable]] = {}
 
     def subscribe(self, event_type: type[T]) -> Callable:
-        """
-        Subscribe to event type.
+        """Subscribe to event type.
 
         Args:
             event_type: Event class to subscribe to
@@ -62,8 +60,7 @@ class EventBus:
         return decorator
 
     async def publish(self, event: Event) -> None:
-        """
-        Publish event to all subscribers.
+        """Publish event to all subscribers.
 
         Args:
             event: Event instance
@@ -96,8 +93,7 @@ class EventBus:
 
 
 def event_handler(event_type: type[Event]) -> Callable:
-    """
-    Decorator to mark function as event handler.
+    """Decorator to mark function as event handler.
 
     Args:
         event_type: Event type to handle

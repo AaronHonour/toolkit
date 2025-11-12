@@ -1,5 +1,4 @@
-"""
-Log formatters for structured and JSON output.
+"""Log formatters for structured and JSON output.
 
 Provides formatters that support structured logging with extra fields.
 """
@@ -12,8 +11,7 @@ from typing import Any
 
 
 class StructuredFormatter(logging.Formatter):
-    """
-    Structured log formatter.
+    """Structured log formatter.
 
     Outputs logs in a human-readable format with structured fields.
 
@@ -21,8 +19,7 @@ class StructuredFormatter(logging.Formatter):
     """
 
     def __init__(self, include_extra: bool = True) -> None:
-        """
-        Initialize formatter.
+        """Initialize formatter.
 
         Args:
             include_extra: Whether to include extra fields
@@ -88,15 +85,13 @@ class StructuredFormatter(logging.Formatter):
 
 
 class JSONFormatter(logging.Formatter):
-    """
-    JSON log formatter.
+    """JSON log formatter.
 
     Outputs logs as JSON objects for machine parsing.
     """
 
     def __init__(self, include_exc_info: bool = True) -> None:
-        """
-        Initialize formatter.
+        """Initialize formatter.
 
         Args:
             include_exc_info: Whether to include exception info
