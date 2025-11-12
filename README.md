@@ -83,7 +83,7 @@ unistax/
 ### Prerequisites
 
 **Backend:**
-- Python 3.9+
+- Python 3.10+
 - pip or uv
 
 **Frontend:**
@@ -192,7 +192,7 @@ Perfect for our needs:
 ## CI/CD Pipeline
 
 ### Pull Request Checks
-- ✅ Backend tests (Python 3.9, 3.10, 3.11, 3.12)
+- ✅ Backend tests (Python 3.10, 3.11, 3.12)
 - ✅ Frontend tests (Node 18, 20)
 - ✅ Linting and formatting
 - ✅ Type checking
@@ -232,7 +232,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed publishing configuration.
 ## Features
 
 ### Backend Components
-- 🐍 Modern Python (3.9+) with type hints
+- 🐍 Modern Python (3.10+) with type hints
 - 🧩 Composable building blocks
 - 🧪 Comprehensive test coverage
 - 📚 Well-documented APIs
