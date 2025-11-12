@@ -7,4 +7,4 @@ from contextvars import ContextVar
 from typing import Any
 
 # Context for request/correlation IDs
-log_context: ContextVar[dict[str, Any]] = ContextVar("log_context", default={})
+log_context: ContextVar[dict[str, Any] | None] = ContextVar("log_context", default=None)

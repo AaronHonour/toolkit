@@ -213,10 +213,10 @@ class ObjectPool(Generic[T]):
                 pooled = self._create_object()
                 self._stats['acquisitions'] += 1
                 return pooled
-            except RuntimeError:
+            except RuntimeError as e:
                 # Pool exhausted
                 self._stats['timeouts'] += 1
-                raise Empty("Pool exhausted, no objects available")
+                raise Empty("Pool exhausted, no objects available") from e
 
     def return_object(self, pooled: PooledObject[T]):
         """Return object to pool.
@@ -357,9 +357,9 @@ class ObjectPool(Generic[T]):
         return {
             'healthy': self._size >= self._config.min_size,
             'size': self._size,
-            'utilization': (self._size - self._available.qsize()) / self._size if self._size > 0 else 0,
+            'utilization': (self._size - self._available.qsize()) / self._size if self._size > 0 else 0,  # noqa: E501
             'success_rate': 1 - (self._stats['timeouts'] / total_ops) if total_ops > 0 else 1.0,
-            'health_check_failure_rate': self._stats['health_check_failures'] / total_ops if total_ops > 0 else 0,
+            'health_check_failure_rate': self._stats['health_check_failures'] / total_ops if total_ops > 0 else 0,  # noqa: E501
         }
 
 

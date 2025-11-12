@@ -80,8 +80,9 @@ def xxhash_fast(data: bytes) -> int:
 
     # Process in chunks for better cache locality
     for i in range(0, len(data), 8):
-        chunk = data[i:i+8]
-        h = ((h + int.from_bytes(chunk.ljust(8, b'\0'), 'little')) * 3266489917) & 0xFFFFFFFFFFFFFFFF
+        chunk = data[i : i + 8]
+        chunk_int = int.from_bytes(chunk.ljust(8, b"\0"), "little")
+        h = ((h + chunk_int) * 3266489917) & 0xFFFFFFFFFFFFFFFF
 
     h ^= len(data)
     h = (h ^ (h >> 33)) * 0xFF51AFD7ED558CCD & 0xFFFFFFFFFFFFFFFF

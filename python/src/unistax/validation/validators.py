@@ -32,7 +32,7 @@ class ValidationRules:
         return min_len <= len(value) <= max_len
 
     @staticmethod
-    def range_check(value: float, min_val: float = float('-inf'), max_val: float = float('inf')) -> bool:
+    def range_check(value: float, min_val: float = float('-inf'), max_val: float = float('inf')) -> bool:  # noqa: E501
         """Validate numeric range."""
         return min_val <= value <= max_val
 

@@ -194,7 +194,7 @@ class CompressionMiddleware(Middleware):
 
         # Check response size
         if response.body and isinstance(response.body, (str, bytes)):
-            body_size = len(response.body if isinstance(response.body, bytes) else response.body.encode())
+            body_size = len(response.body if isinstance(response.body, bytes) else response.body.encode())  # noqa: E501
 
             if body_size >= self.min_size:
                 import gzip

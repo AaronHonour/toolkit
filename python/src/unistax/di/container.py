@@ -15,7 +15,7 @@ from .exceptions import CircularDependencyError, DependencyResolutionError
 T = TypeVar("T")
 
 # Context variable for scoped instances
-_scoped_context: ContextVar[dict[type, Any]] = ContextVar("_scoped_context", default={})
+_scoped_context: ContextVar[dict[type, Any] | None] = ContextVar("_scoped_context", default=None)
 
 
 class Lifetime(str, Enum):

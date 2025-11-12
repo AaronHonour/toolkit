@@ -3,7 +3,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .channels import ChannelBackend
 
 
 class NotificationChannel(str, Enum):

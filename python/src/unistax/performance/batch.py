@@ -222,8 +222,8 @@ class AsyncBatchProcessor:
         # Wait for result
         try:
             result = await asyncio.wait_for(result_future, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise TimeoutError(f"Batch processing timeout after {timeout}s")
+        except asyncio.TimeoutError as e:
+            raise TimeoutError(f"Batch processing timeout after {timeout}s") from e
 
         if isinstance(result, Exception):
             raise result

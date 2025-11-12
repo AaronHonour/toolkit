@@ -134,6 +134,6 @@ class QueryOptimizer:
         if hasattr(model, "__table__"):
             for column in model.__table__.columns:
                 if column.foreign_keys:
-                    suggestions.append(f"CREATE INDEX idx_{model.__tablename__}_{column.name} ON {model.__tablename__}({column.name})")
+                    suggestions.append(f"CREATE INDEX idx_{model.__tablename__}_{column.name} ON {model.__tablename__}({column.name})")  # noqa: E501
 
         return suggestions

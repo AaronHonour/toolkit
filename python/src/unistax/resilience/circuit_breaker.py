@@ -22,7 +22,7 @@ class CircuitBreaker:
         ...     return requests.get("https://api.example.com")
     """
 
-    def __init__(self, failure_threshold: int = 5, timeout: float = 60.0, half_open_max_calls: int = 1):
+    def __init__(self, failure_threshold: int = 5, timeout: float = 60.0, half_open_max_calls: int = 1):  # noqa: E501
         self.failure_threshold = failure_threshold
         self.timeout = timeout
         self.half_open_max_calls = half_open_max_calls
