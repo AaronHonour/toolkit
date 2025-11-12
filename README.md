@@ -48,7 +48,7 @@ import { YourComponent } from '@unistax/frontend';
 
 ```
 unistax/
-├── backend/              # Python package
+├── python/              # Python package
 │   ├── src/
 │   │   └── unistax/     # Source code
 │   ├── tests/           # Test suite
@@ -98,7 +98,7 @@ git clone https://github.com/AaronHonour/unistax.git
 cd unistax
 
 # Backend setup
-cd backend
+cd python
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e ".[dev]"
@@ -112,7 +112,7 @@ npm install
 
 **Backend:**
 ```bash
-cd backend
+cd python
 pytest                    # Run tests
 pytest --cov=unistax      # With coverage
 ruff check src tests      # Lint
@@ -126,7 +126,7 @@ cd frontend
 npm test                  # Run tests
 npm run test:coverage     # With coverage
 npm run lint              # Lint
-npm run typecheck         # Type check
+npm run type-check        # Type check
 npm run format            # Format
 ```
 
@@ -207,10 +207,11 @@ Perfect for our needs:
 
 ## Documentation
 
-- [Backend README](backend/README.md) - Python package documentation
+- [Backend README](python/README.md) - Python package documentation
 - [Frontend README](frontend/README.md) - JavaScript/TypeScript package documentation
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Development workflow and branching strategy
 - [Examples](examples/) - Usage examples and demos
+- [Full Documentation](https://aaronhonour.github.io/unistax/) - Comprehensive guides and API references
 
 ## Publishing
 

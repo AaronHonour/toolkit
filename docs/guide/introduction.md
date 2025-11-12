@@ -1,14 +1,14 @@
 # Introduction
 
-Welcome to the **Composable Toolkit** - an enterprise-grade collection of building blocks for creating scalable, high-performance applications.
+Welcome to **Unistax** - an enterprise-grade collection of building blocks for creating scalable, high-performance applications.
 
-## What is Composable Toolkit?
+## What is Unistax?
 
-Composable Toolkit is a full-stack development toolkit that provides battle-tested patterns, algorithms, and abstractions for building modern applications. It consists of:
+Unistax is a full-stack development toolkit that provides battle-tested patterns, algorithms, and abstractions for building modern applications. It consists of:
 
-- **19 Backend Modules** (Python) - From caching to event sourcing
+- **20 Backend Modules** (Python) - From caching to service dependency analysis
 - **Frontend Component Library** (React/TypeScript) - Atomic design system
-- **19 Full-Stack Example Apps** - Complete reference implementations
+- **20 Full-Stack Example Apps** - Complete reference implementations
 - **Comprehensive Testing** - 90%+ coverage, 180+ tests
 - **Production-Ready** - Docker, CI/CD, monitoring
 
@@ -30,15 +30,15 @@ Every module works **independently** or **together**.
 
 ```python
 # Use just caching
-from toolkit.cache import CacheManager
+from unistax.cache import CacheManager
 cache = CacheManager(backend="redis")
 
 # Or compose with rate limiting
-from toolkit.ratelimit import RateLimiter
+from unistax.ratelimit import RateLimiter
 limiter = RateLimiter(rate=100, period=60)
 
 # And metrics
-from toolkit.metrics import MetricsManager
+from unistax.metrics import MetricsManager
 metrics = MetricsManager(backend="prometheus")
 ```
 
@@ -131,7 +131,7 @@ All components are **benchmarked** and **optimized**:
 - **Typography**: Type scale and font system
 - **Performance Tokens**: Mapping to backend concepts
 
-### 19 Example Applications
+### 20 Example Applications
 
 Each pattern has a **full-stack implementation**:
 
@@ -154,6 +154,7 @@ Each pattern has a **full-stack implementation**:
 17. **OLAP Dashboard** - Multi-dimensional analytics
 18. **Trace Viewer** - Distributed tracing UI
 19. **Probabilistic Structures** - Bloom filters, HyperLogLog
+20. **Service Dependency Graph** - Dependency analysis and visualization
 
 ## Architecture Overview
 
@@ -207,10 +208,10 @@ graph TB
 
 ```bash
 # Install
-pip install toolkit
+pip install unistax
 
 # Use caching
-from toolkit.cache import CacheManager
+from unistax.cache import CacheManager
 
 cache = CacheManager(backend="memory")
 cache.set("key", "value", ttl=3600)
@@ -221,11 +222,11 @@ value = cache.get("key")
 
 ```bash
 # Install
-npm install @composable/atoms @composable/performance
+npm install @unistax/atoms @unistax/performance
 
 # Use components
-import { Button } from '@composable/atoms'
-import { useDebounce } from '@composable/performance'
+import { Button } from '@unistax/atoms'
+import { useDebounce } from '@unistax/performance'
 
 function MyComponent() {
   const [input, setInput] = useState('')
@@ -238,14 +239,14 @@ function MyComponent() {
 ### Full Stack
 
 ```bash
-# Clone and run all 19 apps
-git clone https://github.com/yourusername/toolkit
-cd toolkit
+# Clone and run all 20 apps
+git clone https://github.com/AaronHonour/unistax
+cd unistax
 docker-compose up
 
 # Access apps at:
-# Backend: http://localhost:8000-8019
-# Frontend: http://localhost:3001-3019
+# Backend: http://localhost:8000-8020
+# Frontend: http://localhost:3001-3020
 ```
 
 ## Performance Benchmarks
@@ -265,12 +266,12 @@ All modules are **benchmarked** with regression detection:
 
 - **[Quick Start Guide](/guide/quick-start)** - Get up and running in 5 minutes
 - **[Architecture Overview](/architecture/overview)** - Understand the system design
-- **[Pattern Library](/patterns/overview)** - Explore all 19 patterns
+- **[Pattern Library](/patterns/overview)** - Explore all 20 patterns
 - **[API Reference](/api/overview)** - Detailed API documentation
 
 ## Community & Support
 
-- **GitHub**: [Star the repo](https://github.com/yourusername/toolkit)
+- **GitHub**: [Star the repo](https://github.com/AaronHonour/unistax)
 - **Discussions**: Ask questions, share projects
 - **Issues**: Report bugs, request features
 - **Discord** (coming soon): Real-time community support
