@@ -76,7 +76,7 @@ class Filter:
 class FilterSet:
     """Collection of filters."""
 
-    def __init__(self, filters: Optional[list[Filter]] = None):
+    def __init__(self, filters: list[Filter] | None = None):
         """Initialize filter set.
 
         Args:

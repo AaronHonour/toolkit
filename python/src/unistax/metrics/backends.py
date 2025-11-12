@@ -132,7 +132,7 @@ class PrometheusBackend(MetricsBackend):
         self._fallback = InMemoryBackend()
 
         try:
-            from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram
+            from prometheus_client import CollectorRegistry
 
             self._registry = registry or CollectorRegistry()
             self._metrics: dict[str, Any] = {}

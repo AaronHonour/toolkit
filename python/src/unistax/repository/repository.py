@@ -48,7 +48,7 @@ class Repository(IRepository[T]):
 
     def __init__(self, session: Any | None = None):
         self._session = session
-        self._entities: Dict[Any, T] = {}  # In-memory store for example
+        self._entities: dict[Any, T] = {}  # In-memory store for example
 
     async def get(self, id: Any) -> T | None:
         """Get entity by ID."""
