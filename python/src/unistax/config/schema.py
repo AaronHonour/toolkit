@@ -1,20 +1,18 @@
-"""
-Configuration schema validation using Pydantic.
+"""Configuration schema validation using Pydantic.
 
 Provides base classes and utilities for defining and validating
 configuration schemas.
 """
 
-from typing import Any, Dict, Type, TypeVar
+from typing import Any, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict  # type: ignore[import-not-found]
 
 T = TypeVar("T", bound="ConfigSchema")
 
 
-class ConfigSchema(BaseModel):
-    """
-    Base class for configuration schemas.
+class ConfigSchema(BaseModel):  # type: ignore[misc]
+    """Base class for configuration schemas.
 
     Uses Pydantic for validation and type safety.
 
@@ -40,9 +38,8 @@ class ConfigSchema(BaseModel):
     )
 
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
-        """
-        Create schema instance from dictionary.
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
+        """Create schema instance from dictionary.
 
         Args:
             data: Configuration data
@@ -55,14 +52,13 @@ class ConfigSchema(BaseModel):
         """
         return cls(**data)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Export schema as dictionary."""
-        return self.model_dump()
+        return self.model_dump()  # type: ignore[no-any-return]
 
     @classmethod
-    def from_yaml(cls: Type[T], path: str) -> T:
-        """
-        Load and validate configuration from YAML file.
+    def from_yaml(cls: type[T], path: str) -> T:
+        """Load and validate configuration from YAML file.
 
         Args:
             path: Path to YAML file
@@ -70,7 +66,7 @@ class ConfigSchema(BaseModel):
         Returns:
             Validated schema instance
         """
-        from .loaders import YAMLLoader, EnvInterpolator
+        from .loaders import EnvInterpolator, YAMLLoader
 
         loader = YAMLLoader()
         data = loader.load(path)

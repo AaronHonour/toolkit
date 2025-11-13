@@ -1,5 +1,4 @@
-"""
-Security Module.
+"""Security Module.
 
 Provides security utilities:
 - JWT encoding/decoding

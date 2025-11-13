@@ -1,9 +1,12 @@
 """Feature flag manager."""
 
-from enum import Enum
-from typing import Any, Dict, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .storage import FeatureStorage
 
 
 class FeatureStatus(str, Enum):
@@ -20,9 +23,9 @@ class Feature:
 
     name: str
     status: FeatureStatus = FeatureStatus.DISABLED
-    description: Optional[str] = None
+    description: str | None = None
     rollout_percentage: int = 0
-    targeting_rules: Dict[str, Any] = field(default_factory=dict)
+    targeting_rules: dict[str, Any] = field(default_factory=dict[str, Any])
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -30,7 +33,7 @@ class Feature:
 class FeatureManager:
     """Manage feature flags."""
 
-    def __init__(self, storage: "FeatureStorage"):
+    def __init__(self, storage: "FeatureStorage") -> None:
         """Initialize feature manager.
 
         Args:
@@ -41,8 +44,8 @@ class FeatureManager:
     def is_enabled(
         self,
         feature_name: str,
-        user_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        user_id: str | None = None,
+        context: dict[str, Any] | None = None,
     ) -> bool:
         """Check if feature is enabled.
 
@@ -69,7 +72,7 @@ class FeatureManager:
 
         return False
 
-    def enable(self, feature_name: str):
+    def enable(self, feature_name: str) -> None:
         """Enable feature.
 
         Args:
@@ -80,7 +83,7 @@ class FeatureManager:
         feature.updated_at = datetime.utcnow()
         self.storage.save(feature)
 
-    def disable(self, feature_name: str):
+    def disable(self, feature_name: str) -> None:
         """Disable feature.
 
         Args:
@@ -92,7 +95,7 @@ class FeatureManager:
             feature.updated_at = datetime.utcnow()
             self.storage.save(feature)
 
-    def set_rollout(self, feature_name: str, percentage: int):
+    def set_rollout(self, feature_name: str, percentage: int) -> None:
         """Set rollout percentage.
 
         Args:
@@ -108,8 +111,8 @@ class FeatureManager:
     def _check_rollout(
         self,
         feature: Feature,
-        user_id: Optional[str],
-        context: Optional[Dict[str, Any]],
+        user_id: str | None,
+        context: dict[str, Any] | None,
     ) -> bool:
         """Check if user is in rollout.
 

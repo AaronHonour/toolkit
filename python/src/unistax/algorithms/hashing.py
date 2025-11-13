@@ -4,9 +4,6 @@ Uses optimized hash functions for speed over cryptographic security.
 Target: Sub-microsecond hashing for MB-sized data.
 """
 
-import hashlib
-from typing import Any, List
-
 
 def fast_hash(data: bytes) -> int:
     """Ultra-fast non-cryptographic hash.
@@ -82,8 +79,9 @@ def xxhash_fast(data: bytes) -> int:
 
     # Process in chunks for better cache locality
     for i in range(0, len(data), 8):
-        chunk = data[i:i+8]
-        h = ((h + int.from_bytes(chunk.ljust(8, b'\0'), 'little')) * 3266489917) & 0xFFFFFFFFFFFFFFFF
+        chunk = data[i : i + 8]
+        chunk_int = int.from_bytes(chunk.ljust(8, b"\0"), "little")
+        h = ((h + chunk_int) * 3266489917) & 0xFFFFFFFFFFFFFFFF
 
     h ^= len(data)
     h = (h ^ (h >> 33)) * 0xFF51AFD7ED558CCD & 0xFFFFFFFFFFFFFFFF
@@ -121,9 +119,9 @@ class FastHasher:
     Optimized for hashing large streams without loading all into memory.
     """
 
-    __slots__ = ('_state',)
+    __slots__ = ("_state",)
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize hasher."""
         self._state = 0
 
@@ -163,19 +161,19 @@ class ConsistentHashRing:
         ring.remove_node('node2')
     """
 
-    __slots__ = ('_nodes', '_virtual_nodes', '_ring', '_sorted_keys')
+    __slots__ = ("_nodes", "_virtual_nodes", "_ring", "_sorted_keys")
 
-    def __init__(self, nodes: List[str] = None, virtual_nodes: int = 150):
+    def __init__(self, nodes: list[str] | None = None, virtual_nodes: int = 150) -> None:
         """Initialize consistent hash ring.
 
         Args:
             nodes: Initial list of node identifiers
             virtual_nodes: Number of virtual nodes per physical node (higher = better distribution)
         """
-        self._nodes = set()
+        self._nodes: set[str] = set()
         self._virtual_nodes = virtual_nodes
-        self._ring = {}
-        self._sorted_keys = []
+        self._ring: dict[int, str] = {}
+        self._sorted_keys: list[int] = []
 
         if nodes:
             for node in nodes:
@@ -241,7 +239,7 @@ class ConsistentHashRing:
 
         return self._ring[self._sorted_keys[0]]
 
-    def get_nodes(self, key: str, count: int = 1) -> List[str]:
+    def get_nodes(self, key: str, count: int = 1) -> list[str]:
         """Get multiple nodes for a key (for replication).
 
         Args:
@@ -261,7 +259,7 @@ class ConsistentHashRing:
             count = len(self._nodes)
 
         hash_value = fast_hash_str(key)
-        nodes = []
+        nodes: list[str] = []
         start_idx = 0
 
         for idx, ring_key in enumerate(self._sorted_keys):
@@ -279,7 +277,7 @@ class ConsistentHashRing:
         return nodes
 
     @property
-    def nodes(self) -> List[str]:
+    def nodes(self) -> list[str]:
         """Get all nodes in the ring.
 
         Returns:

@@ -1,5 +1,4 @@
-"""
-CLI Module.
+"""CLI Module.
 
 Provides CLI framework with:
 - Command registration
@@ -7,7 +6,7 @@ Provides CLI framework with:
 - Code generation/scaffolding
 """
 
-from .cli import CLI, command, option, argument
+from .cli import CLI, argument, command, option
 from .scaffold import Scaffolder
 
 __all__ = ["CLI", "command", "option", "argument", "Scaffolder"]

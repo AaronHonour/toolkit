@@ -1,15 +1,14 @@
 """Rate limiter implementation."""
 
-import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Dict, Optional
+from typing import Any
 
 from .algorithms import TokenBucket
 
 
 class RateLimiter:
-    """
-    Rate limiter with configurable algorithms.
+    """Rate limiter with configurable algorithms.
 
     Examples:
         >>> limiter = RateLimiter(rate=100, period=60)  # 100 requests per minute
@@ -17,9 +16,8 @@ class RateLimiter:
         ...     process_request()
     """
 
-    def __init__(self, rate: int = 100, period: int = 60):
-        """
-        Initialize rate limiter.
+    def __init__(self, rate: int = 100, period: int = 60) -> None:
+        """Initialize rate limiter.
 
         Args:
             rate: Number of allowed requests
@@ -27,7 +25,7 @@ class RateLimiter:
         """
         self.rate = rate
         self.period = period
-        self._buckets: Dict[str, TokenBucket] = {}
+        self._buckets: dict[str, TokenBucket] = {}
 
     def _get_bucket(self, key: str) -> TokenBucket:
         """Get or create token bucket for key."""
@@ -36,8 +34,7 @@ class RateLimiter:
         return self._buckets[key]
 
     def is_allowed(self, key: str) -> bool:
-        """
-        Check if request is allowed.
+        """Check if request is allowed.
 
         Args:
             key: Identifier (e.g., user ID, IP address)
@@ -48,9 +45,8 @@ class RateLimiter:
         bucket = self._get_bucket(key)
         return bucket.consume()
 
-    def limit(self, key_func: Optional[Callable] = None):
-        """
-        Decorator for rate limiting functions.
+    def limit(self, key_func: Callable[..., Any]| None = None) -> Callable[..., Any]:
+        """Decorator for rate limiting functions.
 
         Args:
             key_func: Function to extract key from arguments
@@ -61,9 +57,9 @@ class RateLimiter:
             ...     pass
         """
 
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Extract key
                 if key_func:
                     key = key_func(*args, **kwargs)

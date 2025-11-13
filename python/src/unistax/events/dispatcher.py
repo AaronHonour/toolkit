@@ -1,25 +1,23 @@
 """Event dispatcher for routing events."""
 
-from typing import Any, Callable, Dict, List, Type
+from collections.abc import Callable
+from typing import Any
 
 from .bus import Event
 
 
 class EventDispatcher:
-    """
-    Event dispatcher with priority and filtering.
+    """Event dispatcher with priority and filtering.
 
     Extends EventBus with additional features.
     """
 
-    def __init__(self):
-        self._handlers: Dict[Type[Event], List[tuple[int, Callable]]] = {}
+    def __init__(self) -> None:
+        """Initialize EventDispatcher."""
+        self._handlers: dict[type[Event], list[tuple[int, Callable[..., Any]]]] = {}
 
-    def register(
-        self, event_type: Type[Event], handler: Callable, priority: int = 0
-    ) -> None:
-        """
-        Register event handler with priority.
+    def register(self, event_type: type[Event], handler: Callable[..., Any], priority: int = 0) -> None:  # noqa: E501
+        """Register event handler with priority.
 
         Args:
             event_type: Event type
@@ -40,5 +38,5 @@ class EventDispatcher:
         if event_type not in self._handlers:
             return
 
-        for priority, handler in self._handlers[event_type]:
+        for _priority, handler in self._handlers[event_type]:
             await handler(event)

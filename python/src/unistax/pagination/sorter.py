@@ -1,8 +1,8 @@
 """Sorting utilities."""
 
-from enum import Enum
-from typing import List, Optional
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class SortOrder(str, Enum):
@@ -19,7 +19,7 @@ class SortField:
     field: str
     order: SortOrder = SortOrder.ASC
 
-    def apply_to_query(self, query: any, model: any) -> any:
+    def apply_to_query(self, query: Any, model: Any) -> Any:
         """Apply sort to SQLAlchemy query.
 
         Args:
@@ -39,7 +39,7 @@ class SortField:
 class Sorter:
     """Sorting utility."""
 
-    def __init__(self, sort_fields: Optional[List[SortField]] = None):
+    def __init__(self, sort_fields: list[SortField] | None = None) -> None:
         """Initialize sorter.
 
         Args:
@@ -47,7 +47,7 @@ class Sorter:
         """
         self.sort_fields = sort_fields or []
 
-    def add_sort(self, field: str, order: SortOrder = SortOrder.ASC):
+    def add_sort(self, field: str, order: SortOrder = SortOrder.ASC) -> None:
         """Add sort field.
 
         Args:
@@ -56,7 +56,7 @@ class Sorter:
         """
         self.sort_fields.append(SortField(field, order))
 
-    def apply_to_query(self, query: any, model: any) -> any:
+    def apply_to_query(self, query: Any, model: Any) -> Any:
         """Apply all sorts to query.
 
         Args:

@@ -1,6 +1,6 @@
 # Testing Guide
 
-Complete guide to running and writing tests for the Composable Toolkit.
+Complete guide to running and writing tests for the Unistax.
 
 ---
 
@@ -236,7 +236,7 @@ Testing Strategy:
 """
 
 import pytest
-from toolkit.module import MyClass
+from unistax.module import MyClass
 
 
 class TestMyClass:

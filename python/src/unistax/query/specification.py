@@ -1,7 +1,7 @@
 """Specification pattern for queries."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -55,7 +55,7 @@ class Specification(ABC, Generic[T]):
 class AndSpecification(Specification[T]):
     """AND combination of specifications."""
 
-    def __init__(self, left: Specification[T], right: Specification[T]):
+    def __init__(self, left: Specification[T], right: Specification[T]) -> None:
         """Initialize AND specification.
 
         Args:
@@ -73,7 +73,7 @@ class AndSpecification(Specification[T]):
 class OrSpecification(Specification[T]):
     """OR combination of specifications."""
 
-    def __init__(self, left: Specification[T], right: Specification[T]):
+    def __init__(self, left: Specification[T], right: Specification[T]) -> None:
         """Initialize OR specification.
 
         Args:
@@ -91,7 +91,7 @@ class OrSpecification(Specification[T]):
 class NotSpecification(Specification[T]):
     """NOT negation of specification."""
 
-    def __init__(self, spec: Specification[T]):
+    def __init__(self, spec: Specification[T]) -> None:
         """Initialize NOT specification.
 
         Args:

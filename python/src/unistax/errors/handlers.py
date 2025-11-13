@@ -1,31 +1,26 @@
-"""
-Error handlers for processing and responding to errors.
+"""Error handlers for processing and responding to errors.
 
 Provides composable error handling strategies.
 """
 
-import sys
-import traceback
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any
 
-from .base import ApplicationError, ErrorCategory
+from .base import ApplicationError
 
 
 class ErrorHandler(ABC):
-    """
-    Abstract base class for error handlers.
+    """Abstract base class for error handlers.
 
     Error handlers can be chained using the Chain of Responsibility pattern.
     """
 
     def __init__(self) -> None:
         """Initialize error handler."""
-        self._next_handler: Optional["ErrorHandler"] = None
+        self._next_handler: ErrorHandler | None = None
 
     def set_next(self, handler: "ErrorHandler") -> "ErrorHandler":
-        """
-        Set next handler in chain.
+        """Set next handler in chain.
 
         Args:
             handler: Next error handler
@@ -36,9 +31,8 @@ class ErrorHandler(ABC):
         self._next_handler = handler
         return handler
 
-    def handle(self, error: Exception, context: Optional[Dict[str, Any]] = None) -> Any:
-        """
-        Handle error and optionally pass to next handler.
+    def handle(self, error: Exception, context: dict[str, Any] | None = None) -> Any:
+        """Handle error and optionally pass to next handler.
 
         Args:
             error: Exception to handle
@@ -55,9 +49,8 @@ class ErrorHandler(ABC):
         return result
 
     @abstractmethod
-    def _handle_error(self, error: Exception, context: Dict[str, Any]) -> Any:
-        """
-        Implement error handling logic.
+    def _handle_error(self, error: Exception, context: dict[str, Any]) -> Any:
+        """Implement error handling logic.
 
         Args:
             error: Exception to handle
@@ -70,20 +63,18 @@ class ErrorHandler(ABC):
 
 
 class LoggingErrorHandler(ErrorHandler):
-    """
-    Error handler that logs errors.
+    """Error handler that logs errors.
 
     Integrates with the logging module for consistent error logging.
     """
 
     def __init__(
         self,
-        logger: Optional[Any] = None,
+        logger: Any | None = None,
         log_level: str = "ERROR",
         include_traceback: bool = True,
     ) -> None:
-        """
-        Initialize logging error handler.
+        """Initialize logging error handler.
 
         Args:
             logger: Logger instance (uses root logger if None)
@@ -95,7 +86,7 @@ class LoggingErrorHandler(ErrorHandler):
         self._log_level = log_level
         self._include_traceback = include_traceback
 
-    def _handle_error(self, error: Exception, context: Dict[str, Any]) -> None:
+    def _handle_error(self, error: Exception, context: dict[str, Any]) -> None:
         """Log the error with context."""
         import logging
 
@@ -124,8 +115,7 @@ class LoggingErrorHandler(ErrorHandler):
 
 
 class RetryErrorHandler(ErrorHandler):
-    """
-    Error handler that retries failed operations.
+    """Error handler that retries failed operations.
 
     Useful for transient errors (network, database connection, etc.)
     """
@@ -133,11 +123,10 @@ class RetryErrorHandler(ErrorHandler):
     def __init__(
         self,
         max_retries: int = 3,
-        retry_on: Optional[List[Type[Exception]]] = None,
+        retry_on: list[type[Exception]] | None = None,
         backoff_factor: float = 2.0,
     ) -> None:
-        """
-        Initialize retry error handler.
+        """Initialize retry error handler.
 
         Args:
             max_retries: Maximum number of retry attempts
@@ -149,14 +138,14 @@ class RetryErrorHandler(ErrorHandler):
         self._retry_on = retry_on
         self._backoff_factor = backoff_factor
 
-    def _handle_error(self, error: Exception, context: Dict[str, Any]) -> None:
+    def _handle_error(self, error: Exception, context: dict[str, Any]) -> None:
         """Determine if error should be retried."""
         if self._should_retry(error):
             retry_count = context.get("retry_count", 0)
             if retry_count < self._max_retries:
                 context["should_retry"] = True
                 context["retry_count"] = retry_count + 1
-                context["backoff_delay"] = self._backoff_factor ** retry_count
+                context["backoff_delay"] = self._backoff_factor**retry_count
 
     def _should_retry(self, error: Exception) -> bool:
         """Check if error should be retried."""
@@ -166,19 +155,17 @@ class RetryErrorHandler(ErrorHandler):
 
 
 class ErrorHandlerChain:
-    """
-    Manages a chain of error handlers.
+    """Manages a chain of error handlers.
 
     Provides a convenient way to build and execute handler chains.
     """
 
     def __init__(self) -> None:
         """Initialize error handler chain."""
-        self._handlers: List[ErrorHandler] = []
+        self._handlers: list[ErrorHandler] = []
 
     def add_handler(self, handler: ErrorHandler) -> "ErrorHandlerChain":
-        """
-        Add handler to chain.
+        """Add handler to chain.
 
         Args:
             handler: Error handler to add
@@ -191,9 +178,8 @@ class ErrorHandlerChain:
         self._handlers.append(handler)
         return self
 
-    def handle(self, error: Exception, context: Optional[Dict[str, Any]] = None) -> Any:
-        """
-        Execute handler chain.
+    def handle(self, error: Exception, context: dict[str, Any] | None = None) -> Any:
+        """Execute handler chain.
 
         Args:
             error: Exception to handle
@@ -208,9 +194,8 @@ class ErrorHandlerChain:
         return self._handlers[0].handle(error, context or {})
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "ErrorHandlerChain":
-        """
-        Create handler chain from configuration.
+    def from_config(cls, config: dict[str, Any]) -> "ErrorHandlerChain":
+        """Create handler chain from configuration.
 
         Args:
             config: Handler configuration
@@ -229,7 +214,7 @@ class ErrorHandlerChain:
                     include_traceback=handler_config.get("traceback", True),
                 )
             elif handler_type == "retry":
-                handler = RetryErrorHandler(
+                handler = RetryErrorHandler(  # type: ignore[assignment]
                     max_retries=handler_config.get("max_retries", 3),
                     backoff_factor=handler_config.get("backoff_factor", 2.0),
                 )

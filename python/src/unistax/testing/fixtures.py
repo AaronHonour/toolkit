@@ -1,12 +1,11 @@
 """Testing fixtures and utilities."""
 
-import asyncio
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class TestCase:
-    """
-    Base test case class.
+    """Base test case class.
 
     Provides common test utilities and fixtures.
 
@@ -17,18 +16,17 @@ class TestCase:
         ...         assert user.id is not None
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Setup method called before each test."""
         pass
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Teardown method called after each test."""
         pass
 
 
-def fixture(func: Callable) -> Callable:
-    """
-    Mark function as a test fixture.
+def fixture(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Mark function as a test fixture.
 
     Args:
         func: Fixture function
@@ -36,13 +34,12 @@ def fixture(func: Callable) -> Callable:
     Returns:
         Decorated function
     """
-    func.__test_fixture__ = True
+    func.__test_fixture__ = True  # type: ignore[attr-defined]
     return func
 
 
-def use_test_db(func: Callable) -> Callable:
-    """
-    Decorator to use test database.
+def use_test_db(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator to use test database.
 
     Sets up and tears down test database for test.
 
@@ -55,7 +52,7 @@ def use_test_db(func: Callable) -> Callable:
     from functools import wraps
 
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         # Setup test database
         print("Setting up test database...")
 

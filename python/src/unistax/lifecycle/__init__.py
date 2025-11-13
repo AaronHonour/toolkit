@@ -1,5 +1,4 @@
-"""
-Application Lifecycle Module.
+"""Application Lifecycle Module.
 
 Provides application lifecycle management with:
 - Startup/shutdown hooks

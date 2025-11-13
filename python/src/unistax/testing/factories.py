@@ -1,13 +1,12 @@
 """Factory pattern for test data generation."""
 
-from typing import Any, Callable, Dict, Type, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
 
 class Factory:
-    """
-    Factory for generating test data.
+    """Factory for generating test data.
 
     Examples:
         >>> class UserFactory(Factory):
@@ -25,22 +24,20 @@ class Factory:
         >>> users = UserFactory.create_batch(10)
     """
 
-    model: Type = None
+    model: type | None = None
     _sequence = 0
 
     @classmethod
-    def defaults(cls) -> Dict[str, Any]:
-        """
-        Default attributes for factory.
+    def defaults(cls) -> dict[str, Any]:
+        """Default attributes for factory.
 
         Override this method to provide default values.
         """
         return {}
 
     @classmethod
-    def create(cls, **kwargs) -> Any:
-        """
-        Create a single instance.
+    def create(cls, **kwargs: Any) -> Any:
+        """Create a single instance.
 
         Args:
             **kwargs: Override default attributes
@@ -56,9 +53,8 @@ class Factory:
         return attrs
 
     @classmethod
-    def create_batch(cls, count: int, **kwargs) -> list:
-        """
-        Create multiple instances.
+    def create_batch(cls, count: int, **kwargs: Any) -> list[Any]:
+        """Create multiple instances.
 
         Args:
             count: Number of instances to create
@@ -71,8 +67,7 @@ class Factory:
 
     @classmethod
     def sequence(cls) -> int:
-        """
-        Get next sequence number.
+        """Get next sequence number.
 
         Returns:
             Sequence number

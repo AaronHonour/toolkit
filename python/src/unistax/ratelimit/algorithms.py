@@ -5,15 +5,13 @@ from collections import deque
 
 
 class TokenBucket:
-    """
-    Token bucket algorithm for rate limiting.
+    """Token bucket algorithm for rate limiting.
 
     Allows bursts while maintaining average rate.
     """
 
-    def __init__(self, capacity: int, refill_rate: float):
-        """
-        Initialize token bucket.
+    def __init__(self, capacity: int, refill_rate: float) -> None:
+        """Initialize token bucket.
 
         Args:
             capacity: Maximum number of tokens
@@ -21,10 +19,10 @@ class TokenBucket:
         """
         self.capacity = capacity
         self.refill_rate = refill_rate
-        self.tokens = capacity
+        self.tokens: float = capacity
         self.last_refill = time.time()
 
-    def _refill(self):
+    def _refill(self) -> None:
         """Refill tokens based on elapsed time."""
         now = time.time()
         elapsed = now - self.last_refill
@@ -33,8 +31,7 @@ class TokenBucket:
         self.last_refill = now
 
     def consume(self, tokens: int = 1) -> bool:
-        """
-        Consume tokens.
+        """Consume tokens.
 
         Args:
             tokens: Number of tokens to consume
@@ -50,15 +47,13 @@ class TokenBucket:
 
 
 class SlidingWindow:
-    """
-    Sliding window algorithm for rate limiting.
+    """Sliding window algorithm for rate limiting.
 
     More accurate than fixed window, prevents burst at window boundaries.
     """
 
-    def __init__(self, limit: int, window_size: int):
-        """
-        Initialize sliding window.
+    def __init__(self, limit: int, window_size: int) -> None:
+        """Initialize sliding window.
 
         Args:
             limit: Maximum requests in window
@@ -66,11 +61,10 @@ class SlidingWindow:
         """
         self.limit = limit
         self.window_size = window_size
-        self.requests = deque()
+        self.requests: deque[float] = deque()
 
     def is_allowed(self) -> bool:
-        """
-        Check if request is allowed.
+        """Check if request is allowed.
 
         Returns:
             True if allowed

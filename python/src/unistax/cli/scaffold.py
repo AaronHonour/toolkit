@@ -1,12 +1,10 @@
 """Code scaffolding utilities."""
 
 from pathlib import Path
-from typing import Optional
 
 
 class Scaffolder:
-    """
-    Code scaffolding generator.
+    """Code scaffolding generator.
 
     Examples:
         >>> scaffolder = Scaffolder()
@@ -14,12 +12,16 @@ class Scaffolder:
         >>> scaffolder.create_repository("UserRepository")
     """
 
-    def __init__(self, base_path: Optional[Path] = None):
+    def __init__(self, base_path: Path | None = None) -> None:
+        """Initialize Scaffolder.
+
+        Args:
+            base_path: Base path for scaffolding (defaults to current directory)
+        """
         self.base_path = base_path or Path.cwd()
 
     def create_service(self, name: str) -> None:
-        """
-        Create a new service class.
+        """Create a new service class.
 
         Args:
             name: Service name
@@ -42,7 +44,7 @@ class {name}:
         >>> result = await service.process()
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     async def process(self):
@@ -55,8 +57,7 @@ class {name}:
         print(f"Created service: {filename}")
 
     def create_repository(self, name: str) -> None:
-        """
-        Create a new repository class.
+        """Create a new repository class.
 
         Args:
             name: Repository name

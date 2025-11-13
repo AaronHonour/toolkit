@@ -1,12 +1,13 @@
 """Base DTO classes."""
 
-from typing import Any, Dict, Optional, Type, TypeVar
-from pydantic import BaseModel, ConfigDict
+from typing import Any, TypeVar
+
+from pydantic import BaseModel, ConfigDict  # type: ignore[import-not-found]
 
 T = TypeVar("T")
 
 
-class DTOConfig(ConfigDict):
+class DTOConfig(ConfigDict):  # type: ignore[misc]
     """DTO configuration."""
 
     from_attributes = True
@@ -15,12 +16,12 @@ class DTOConfig(ConfigDict):
     str_strip_whitespace = True
 
 
-class BaseDTO(BaseModel):
+class BaseDTO(BaseModel):  # type: ignore[misc]
     """Base Data Transfer Object."""
 
     model_config = DTOConfig
 
-    def to_dict(self, exclude_none: bool = False, exclude_unset: bool = False) -> Dict[str, Any]:
+    def to_dict(self, exclude_none: bool = False, exclude_unset: bool = False) -> dict[str, Any]:
         """Convert DTO to dictionary.
 
         Args:
@@ -30,7 +31,7 @@ class BaseDTO(BaseModel):
         Returns:
             Dictionary representation
         """
-        return self.model_dump(exclude_none=exclude_none, exclude_unset=exclude_unset)
+        return self.model_dump(exclude_none=exclude_none, exclude_unset=exclude_unset)  # type: ignore[no-any-return]
 
     def to_json(self, exclude_none: bool = False, exclude_unset: bool = False) -> str:
         """Convert DTO to JSON string.
@@ -42,10 +43,10 @@ class BaseDTO(BaseModel):
         Returns:
             JSON string
         """
-        return self.model_dump_json(exclude_none=exclude_none, exclude_unset=exclude_unset)
+        return self.model_dump_json(exclude_none=exclude_none, exclude_unset=exclude_unset)  # type: ignore[no-any-return]
 
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         """Create DTO from dictionary.
 
         Args:
@@ -57,7 +58,7 @@ class BaseDTO(BaseModel):
         return cls(**data)
 
     @classmethod
-    def from_json(cls: Type[T], json_str: str) -> T:
+    def from_json(cls: type[T], json_str: str) -> T:
         """Create DTO from JSON string.
 
         Args:
@@ -66,10 +67,10 @@ class BaseDTO(BaseModel):
         Returns:
             DTO instance
         """
-        return cls.model_validate_json(json_str)
+        return cls.model_validate_json(json_str)  # type: ignore[no-any-return,attr-defined]
 
     @classmethod
-    def from_orm(cls: Type[T], obj: Any) -> T:
+    def from_orm(cls: type[T], obj: Any) -> T:
         """Create DTO from ORM model.
 
         Args:
@@ -78,4 +79,4 @@ class BaseDTO(BaseModel):
         Returns:
             DTO instance
         """
-        return cls.model_validate(obj)
+        return cls.model_validate(obj)  # type: ignore[no-any-return,attr-defined]

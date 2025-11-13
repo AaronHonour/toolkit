@@ -1,24 +1,24 @@
 """Query builder for composable queries."""
 
-from typing import Any, List, Optional
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
 class Query:
     """Query representation."""
 
-    filters: List[dict] = field(default_factory=list)
-    sorts: List[dict] = field(default_factory=list)
-    limit: Optional[int] = None
-    offset: Optional[int] = None
-    select_fields: Optional[List[str]] = None
+    filters: list[dict[str, Any]] = field(default_factory=list[Any])
+    sorts: list[dict[str, Any]] = field(default_factory=list[Any])
+    limit: int | None = None
+    offset: int | None = None
+    select_fields: list[str] | None = None
 
 
 class QueryBuilder:
     """Fluent query builder."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize query builder."""
         self._query = Query()
 
@@ -33,11 +33,13 @@ class QueryBuilder:
         Returns:
             QueryBuilder for chaining
         """
-        self._query.filters.append({
-            "field": field,
-            "operator": operator,
-            "value": value,
-        })
+        self._query.filters.append(
+            {
+                "field": field,
+                "operator": operator,
+                "value": value,
+            }
+        )
         return self
 
     def order_by(self, field: str, direction: str = "asc") -> "QueryBuilder":
@@ -50,10 +52,12 @@ class QueryBuilder:
         Returns:
             QueryBuilder for chaining
         """
-        self._query.sorts.append({
-            "field": field,
-            "direction": direction,
-        })
+        self._query.sorts.append(
+            {
+                "field": field,
+                "direction": direction,
+            }
+        )
         return self
 
     def limit(self, limit: int) -> "QueryBuilder":

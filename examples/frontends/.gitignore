@@ -1,0 +1,2 @@
+# Ignore node_modules symlinks created by postinstall script
+*/node_modules

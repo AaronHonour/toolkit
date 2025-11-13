@@ -1,5 +1,4 @@
-"""
-Cache backends for different storage systems.
+"""Cache backends for different storage systems.
 
 Provides backends for Redis, Memcached, and in-memory storage.
 """
@@ -7,19 +6,18 @@ Provides backends for Redis, Memcached, and in-memory storage.
 import threading
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
 
 
 class CacheBackend(ABC):
     """Abstract base class for cache backends."""
 
     @abstractmethod
-    def get(self, key: str) -> Optional[bytes]:
+    def get(self, key: str) -> bytes | None:
         """Get value from cache."""
         pass
 
     @abstractmethod
-    def set(self, key: str, value: bytes, ttl: Optional[int] = None) -> bool:
+    def set(self, key: str, value: bytes, ttl: int | None = None) -> bool:
         """Set value in cache."""
         pass
 
@@ -40,24 +38,22 @@ class CacheBackend(ABC):
 
 
 class InMemoryCache(CacheBackend):
-    """
-    In-memory cache backend for testing and development.
+    """In-memory cache backend for testing and development.
 
     Thread-safe with TTL support.
     """
 
     def __init__(self, max_size: int = 1000) -> None:
-        """
-        Initialize in-memory cache.
+        """Initialize in-memory cache.
 
         Args:
             max_size: Maximum number of entries (LRU eviction)
         """
         self._lock = threading.RLock()
-        self._cache: Dict[str, tuple[bytes, Optional[float]]] = {}
+        self._cache: dict[str, tuple[bytes, float | None]] = {}
         self._max_size = max_size
 
-    def _is_expired(self, expiry: Optional[float]) -> bool:
+    def _is_expired(self, expiry: float | None) -> bool:
         """Check if entry is expired."""
         if expiry is None:
             return False
@@ -81,7 +77,7 @@ class InMemoryCache(CacheBackend):
             oldest_key = next(iter(self._cache))
             del self._cache[oldest_key]
 
-    def get(self, key: str) -> Optional[bytes]:
+    def get(self, key: str) -> bytes | None:
         """Get value from cache."""
         with self._lock:
             if key not in self._cache:
@@ -95,7 +91,7 @@ class InMemoryCache(CacheBackend):
 
             return value
 
-    def set(self, key: str, value: bytes, ttl: Optional[int] = None) -> bool:
+    def set(self, key: str, value: bytes, ttl: int | None = None) -> bool:
         """Set value in cache."""
         with self._lock:
             self._evict_expired()
@@ -133,8 +129,7 @@ class InMemoryCache(CacheBackend):
 
 
 class RedisBackend(CacheBackend):
-    """
-    Redis cache backend.
+    """Redis cache backend.
 
     Uses redis-py library if available, falls back to in-memory.
     """
@@ -144,10 +139,9 @@ class RedisBackend(CacheBackend):
         host: str = "localhost",
         port: int = 6379,
         db: int = 0,
-        password: Optional[str] = None,
+        password: str | None = None,
     ) -> None:
-        """
-        Initialize Redis backend.
+        """Initialize Redis backend.
 
         Args:
             host: Redis server host
@@ -162,7 +156,7 @@ class RedisBackend(CacheBackend):
         self._fallback = InMemoryCache()
 
         try:
-            import redis
+            import redis  # type: ignore[import-not-found]
 
             self._client = redis.Redis(
                 host=host, port=port, db=db, password=password, decode_responses=False
@@ -173,17 +167,17 @@ class RedisBackend(CacheBackend):
         except (ImportError, Exception):
             self._redis_available = False
 
-    def get(self, key: str) -> Optional[bytes]:
+    def get(self, key: str) -> bytes | None:
         """Get value from cache."""
         if not self._redis_available:
             return self._fallback.get(key)
 
         try:
-            return self._client.get(key)
+            return self._client.get(key)  # type: ignore[no-any-return]
         except Exception:
             return None
 
-    def set(self, key: str, value: bytes, ttl: Optional[int] = None) -> bool:
+    def set(self, key: str, value: bytes, ttl: int | None = None) -> bool:
         """Set value in cache."""
         if not self._redis_available:
             return self._fallback.set(key, value, ttl)
@@ -234,15 +228,13 @@ class RedisBackend(CacheBackend):
 
 
 class MemcachedBackend(CacheBackend):
-    """
-    Memcached cache backend.
+    """Memcached cache backend.
 
     Uses pymemcache library if available, falls back to in-memory.
     """
 
     def __init__(self, host: str = "localhost", port: int = 11211) -> None:
-        """
-        Initialize Memcached backend.
+        """Initialize Memcached backend.
 
         Args:
             host: Memcached server host
@@ -253,24 +245,24 @@ class MemcachedBackend(CacheBackend):
         self._fallback = InMemoryCache()
 
         try:
-            from pymemcache.client import base
+            from pymemcache.client import base  # type: ignore[import-not-found]
 
             self._client = base.Client((host, port))
             self._memcached_available = True
         except ImportError:
             self._memcached_available = False
 
-    def get(self, key: str) -> Optional[bytes]:
+    def get(self, key: str) -> bytes | None:
         """Get value from cache."""
         if not self._memcached_available:
             return self._fallback.get(key)
 
         try:
-            return self._client.get(key)
+            return self._client.get(key)  # type: ignore[no-any-return]
         except Exception:
             return None
 
-    def set(self, key: str, value: bytes, ttl: Optional[int] = None) -> bool:
+    def set(self, key: str, value: bytes, ttl: int | None = None) -> bool:
         """Set value in cache."""
         if not self._memcached_available:
             return self._fallback.set(key, value, ttl)

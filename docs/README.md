@@ -1,6 +1,6 @@
-# Composable Toolkit Documentation
+# Unistax Documentation
 
-Welcome to the comprehensive documentation for the Composable Toolkit - a production-grade library of reusable backend modules and frontend components for building scalable, composable applications.
+Welcome to the comprehensive documentation for **Unistax** - a production-grade library of reusable backend modules and frontend components for building scalable, composable applications.
 
 ## 📚 Documentation Structure
 
@@ -18,30 +18,11 @@ This documentation site is built with VitePress and includes:
 
 ### 📖 API Reference
 - **[API Overview](/api/overview)** - Complete API documentation
-- **[OpenAPI Specifications](/api/openapi/index)** - OpenAPI 3.0 specs for all 19 services
+- **[OpenAPI Specifications](/api/openapi/index)** - OpenAPI 3.0 specs for all 20 services
 
 ### 🎯 Pattern Library
-- **[Pattern Overview](/patterns/overview)** - All 19 patterns with selection guide
-- **Individual Patterns** - Deep-dive guides for each pattern:
-  - [01 - REST API](/patterns/01-rest-api)
-  - [02 - Analytics Engine](/patterns/02-analytics)
-  - [03 - File Processing](/patterns/03-file-processing)
-  - [04 - API Gateway](/patterns/04-api-gateway)
-  - [05 - Data Export](/patterns/05-data-export)
-  - [06 - Kappa Monitor](/patterns/06-kappa-monitor)
-  - [07 - Event Sourcing](/patterns/07-event-sourcing)
-  - [08 - TimeSeries](/patterns/08-timeseries)
-  - [09 - Cache Browser](/patterns/09-cache-browser)
-  - [10 - Message Queue](/patterns/10-message-queue)
-  - [11 - Rate Limiter](/patterns/11-rate-limiter)
-  - [12 - Lambda Architecture](/patterns/12-lambda-architecture)
-  - [13 - CDC Monitor](/patterns/13-cdc-monitor)
-  - [14 - Recommendations](/patterns/14-recommendations)
-  - [15 - Search](/patterns/15-search)
-  - [16 - Feature Store](/patterns/16-feature-store)
-  - [17 - OLAP Dashboard](/patterns/17-olap-dashboard)
-  - [18 - Trace Viewer](/patterns/18-trace-viewer)
-  - [19 - Probabilistic](/patterns/19-probabilistic)
+- **[Pattern Overview](/patterns/overview)** - All 20 patterns with selection guide
+- **Individual Patterns** - Deep-dive guides for each pattern (01-20)
 
 ## 🎨 Documentation Features
 
@@ -59,7 +40,7 @@ This documentation site is built with VitePress and includes:
 - **Testing Examples** for unit, integration, and E2E tests
 
 ### Pattern Library
-- **19 Full-Stack Patterns** covering common use cases
+- **20 Full-Stack Patterns** covering common use cases
 - **Problem Statements** explaining when to use each pattern
 - **Solution Architectures** with detailed diagrams
 - **Scaling Strategies** for production deployments
@@ -67,7 +48,7 @@ This documentation site is built with VitePress and includes:
 
 ### API Documentation
 - **Complete API Reference** for all backend modules
-- **OpenAPI 3.0 Specifications** for all 19 services
+- **OpenAPI 3.0 Specifications** for all 20 services
 - **120+ Documented Endpoints** with examples
 - **SDK Generation Ready** - use with OpenAPI Generator
 
@@ -104,10 +85,10 @@ npm run docs:preview
 
 ```bash
 # Build Docker image
-docker build -t toolkit-docs .
+docker build -t unistax-docs .
 
 # Run container
-docker run -p 80:80 toolkit-docs
+docker run -p 80:80 unistax-docs
 ```
 
 ## 📊 Documentation Statistics
@@ -115,9 +96,9 @@ docker run -p 80:80 toolkit-docs
 - **Total Pages**: 35+ comprehensive guides
 - **Mermaid Diagrams**: 60+ architecture visualizations
 - **Code Examples**: 300+ backend and frontend samples
-- **Pattern Guides**: 19 complete pattern implementations
+- **Pattern Guides**: 20 complete pattern implementations
 - **API Endpoints**: 120+ documented endpoints
-- **OpenAPI Specs**: 19 services, 7,659 lines
+- **OpenAPI Specs**: 20 services, 7,659+ lines
 - **Total Lines**: 25,000+ lines of documentation
 
 ## 🎯 What's Documented
@@ -127,6 +108,7 @@ docker run -p 80:80 toolkit-docs
 - **Performance**: Cache (326K+ ops/sec), Rate Limiter (100K+ checks/sec), HTTP Client
 - **Architecture Patterns**: DI Container, Event Bus, Repository Pattern
 - **Data Processing**: Event Sourcing, Lambda/Kappa Architecture, TimeSeries
+- **Graph & Analysis**: Dependency graphs, graph algorithms, impact analysis
 - **Operations**: Security (JWT, RBAC), CLI Framework
 
 ### Frontend Packages
@@ -135,27 +117,8 @@ docker run -p 80:80 toolkit-docs
 - **Design Tokens**: Colors, Spacing, Typography
 - **Utilities**: Shared utilities and helpers
 
-### 19 Example Applications
-Each with complete documentation:
-1. REST API - E-commerce inventory
-2. Analytics Engine - Real-time event tracking
-3. File Processor - Upload and processing pipeline
-4. API Gateway - Service routing and load balancing
-5. Data Export - Multi-format export service
-6. Kappa Monitor - Stream processing visualization
-7. Event Sourcing - CQRS dashboard
-8. TimeSeries - Metrics visualization
-9. Cache Browser - Distributed cache management
-10. Message Queue - Queue monitoring
-11. Rate Limiter - Token bucket visualization
-12. Lambda Architecture - Batch + stream merger
-13. CDC Monitor - Change data capture viewer
-14. Recommendations - ML-powered suggestions
-15. Search - Full-text search engine
-16. Feature Store - ML feature management
-17. OLAP Dashboard - Multi-dimensional analytics
-18. Trace Viewer - Distributed tracing UI
-19. Probabilistic - Bloom filters, HyperLogLog
+### 20 Example Applications
+Each with complete documentation including the new Service Dependency Graph Builder.
 
 ## 🏆 Performance Benchmarks
 
@@ -212,18 +175,15 @@ cp docs/patterns/01-rest-api.md docs/patterns/XX-new-pattern.md
 # Update .vitepress/config.ts to add to navigation
 ```
 
-## 🔗 External Links
+## 🔗 Links
 
-- **GitHub Repository**: [github.com/yourusername/toolkit](https://github.com/yourusername/toolkit)
-- **NPM Packages**: [@composable/atoms](https://npmjs.com/package/@composable/atoms)
-- **PyPI Package**: [composable-toolkit](https://pypi.org/project/composable-toolkit)
-- **Swagger Editor**: [editor.swagger.io](https://editor.swagger.io/)
-- **VitePress**: [vitepress.dev](https://vitepress.dev/)
-- **Mermaid**: [mermaid.js.org](https://mermaid.js.org/)
+- **GitHub Repository**: [github.com/AaronHonour/unistax](https://github.com/AaronHonour/unistax)
+- **NPM Packages**: [@unistax/*](https://npmjs.com/org/unistax)
+- **PyPI Package**: [unistax](https://pypi.org/project/unistax)
 
 ## 📄 License
 
-This documentation is part of the Composable Toolkit project.
+MIT License - See [LICENSE](../LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
@@ -236,68 +196,4 @@ Built with:
 
 **Version**: 1.0.0
 **Last Updated**: November 2024
-**Status**: ✅ Complete (Phase 1.2 - Documentation Excellence)
-# Unistax Documentation
-
-Welcome to the Unistax documentation!
-
-## Quick Links
-
-- [Getting Started](#getting-started)
-- [Backend Documentation](../backend/README.md)
-- [Frontend Documentation](../frontend/README.md)
-- [Contributing Guide](../CONTRIBUTING.md)
-- [API Reference](#api-reference)
-
-## Getting Started
-
-### Installation
-
-**Backend:**
-```bash
-pip install unistax
-```
-
-**Frontend:**
-```bash
-npm install @unistax/frontend
-```
-
-### First Steps
-
-1. Check out the [examples](../examples/) directory
-2. Read the package-specific documentation:
-   - [Backend](../backend/README.md)
-   - [Frontend](../frontend/README.md)
-3. Review [CONTRIBUTING.md](../CONTRIBUTING.md) if you want to contribute
-
-## API Reference
-
-(API documentation will be generated as features are developed)
-
-### Backend API
-
-Coming soon...
-
-### Frontend API
-
-Coming soon...
-
-## Guides
-
-### Development Workflow
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for our branching strategy and development process.
-
-### Release Process
-
-We use continuous releases with semantic versioning. See [Release Process](../CONTRIBUTING.md#release-process) for details.
-
-### Architecture
-
-Learn about our [architecture decisions](../README.md#architecture-decisions) and why we chose a monorepo structure with GitHub Flow.
-
-## Support
-
-- [GitHub Issues](https://github.com/AaronHonour/unistax/issues)
-- [GitHub Discussions](https://github.com/AaronHonour/unistax/discussions)
+**Status**: ✅ Production Ready

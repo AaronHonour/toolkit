@@ -1,9 +1,9 @@
 """DTO serializers."""
 
-from abc import ABC, abstractmethod
-from typing import Any
 import json
 import xml.etree.ElementTree as ET
+from abc import ABC, abstractmethod
+from typing import Any
 
 
 class Serializer(ABC):
@@ -51,7 +51,7 @@ class XMLSerializer(Serializer):
         root = ET.fromstring(data)
         return self._xml_to_dict(root)
 
-    def _dict_to_xml(self, data: dict, parent: ET.Element):
+    def _dict_to_xml(self, data: dict[str, Any], parent: ET.Element) -> None:
         """Convert dict to XML elements."""
         for key, value in data.items():
             child = ET.SubElement(parent, key)
@@ -68,9 +68,9 @@ class XMLSerializer(Serializer):
             else:
                 child.text = str(value)
 
-    def _xml_to_dict(self, element: ET.Element) -> dict:
+    def _xml_to_dict(self, element: ET.Element) -> dict[str, Any]:
         """Convert XML element to dict."""
-        result = {}
+        result: dict[str, Any] = {}
         for child in element:
             if len(child) == 0:
                 result[child.tag] = child.text

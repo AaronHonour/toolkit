@@ -4,9 +4,10 @@ All classes use __slots__ to reduce memory overhead by 40-50% and improve
 attribute access speed by 10-20%.
 """
 
-from typing import Any, Optional, Callable, Generic, TypeVar, Hashable
 import threading
 from collections import OrderedDict
+from collections.abc import Hashable
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 K = TypeVar("K", bound=Hashable)
@@ -22,9 +23,9 @@ class RingBuffer:
     Performance: 10M+ ops/sec for put/get operations.
     """
 
-    __slots__ = ('_buffer', '_capacity', '_head', '_tail', '_size', '_lock')
+    __slots__ = ("_buffer", "_capacity", "_head", "_tail", "_size", "_lock")
 
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int) -> None:
         """Initialize ring buffer.
 
         Args:
@@ -55,7 +56,7 @@ class RingBuffer:
             self._size += 1
             return True
 
-    def get(self) -> Optional[Any]:
+    def get(self) -> Any | None:
         """Get item from buffer. O(1) operation.
 
         Returns:
@@ -100,9 +101,9 @@ class LRUCache(Generic[K, V]):
     Memory: 50% less than dict-based cache.
     """
 
-    __slots__ = ('_cache', '_capacity', '_hits', '_misses', '_lock')
+    __slots__ = ("_cache", "_capacity", "_hits", "_misses", "_lock")
 
-    def __init__(self, capacity: int = 10000):
+    def __init__(self, capacity: int = 10000) -> None:
         """Initialize LRU cache.
 
         Args:
@@ -114,7 +115,7 @@ class LRUCache(Generic[K, V]):
         self._misses = 0
         self._lock = threading.RLock()
 
-    def get(self, key: K) -> Optional[V]:
+    def get(self, key: K) -> V | None:
         """Get value from cache. O(1) operation.
 
         Args:
@@ -179,9 +180,9 @@ class BloomFilter:
     Performance: 50M+ ops/sec for contains checks.
     """
 
-    __slots__ = ('_size', '_hash_count', '_bit_array', '_count', '_lock')
+    __slots__ = ("_size", "_hash_count", "_bit_array", "_count", "_lock")
 
-    def __init__(self, expected_elements: int = 10000, false_positive_rate: float = 0.01):
+    def __init__(self, expected_elements: int = 10000, false_positive_rate: float = 0.01) -> None:
         """Initialize Bloom filter.
 
         Args:
@@ -210,7 +211,7 @@ class BloomFilter:
                 index = self._hash(item, seed) % self._size
                 byte_index = index // 8
                 bit_index = index % 8
-                self._bit_array[byte_index] |= (1 << bit_index)
+                self._bit_array[byte_index] |= 1 << bit_index
             self._count += 1
 
     def contains(self, item: str) -> bool:
@@ -250,9 +251,9 @@ class FastDict(Generic[K, V]):
     Performance: 8M+ ops/sec for get/set operations.
     """
 
-    __slots__ = ('_data', '_size', '_capacity')
+    __slots__ = ("_data", "_size", "_capacity")
 
-    def __init__(self, capacity: int = 1000):
+    def __init__(self, capacity: int = 1000) -> None:
         """Initialize fast dict.
 
         Args:
@@ -286,7 +287,7 @@ class FastDict(Generic[K, V]):
         """Get size."""
         return self._size
 
-    def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
+    def get(self, key: K, default: V | None = None) -> V | None:
         """Get with default."""
         return self._data.get(key, default)
 
@@ -295,14 +296,14 @@ class FastDict(Generic[K, V]):
         self._data.clear()
         self._size = 0
 
-    def keys(self):
+    def keys(self) -> Any:
         """Get keys."""
         return self._data.keys()
 
-    def values(self):
+    def values(self) -> Any:
         """Get values."""
         return self._data.values()
 
-    def items(self):
+    def items(self) -> Any:
         """Get items."""
         return self._data.items()

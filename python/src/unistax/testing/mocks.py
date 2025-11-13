@@ -1,12 +1,12 @@
 """Service mocking utilities."""
 
-from typing import Any, Callable, Type
+from collections.abc import Callable
+from typing import Any
 from unittest.mock import Mock
 
 
 class MockService:
-    """
-    Mock service for testing.
+    """Mock service for testing.
 
     Examples:
         >>> mock_email = MockService()
@@ -15,16 +15,17 @@ class MockService:
         True
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize MockService."""
         self._mock = Mock()
 
     def __getattr__(self, name: str) -> Any:
+        """Get attribute."""
         return getattr(self._mock, name)
 
 
-def mock_service(service_type: Type) -> Callable:
-    """
-    Decorator to mock a service in tests.
+def mock_service(service_type: type) -> Callable[..., Any]:
+    """Decorator to mock a service in tests.
 
     Args:
         service_type: Service class to mock
@@ -40,11 +41,11 @@ def mock_service(service_type: Type) -> Callable:
         ...     email_service.send.assert_called_once()
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         from functools import wraps
 
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             mock = MockService()
             kwargs[service_type.__name__.lower().replace("service", "")] = mock
             return await func(*args, **kwargs)

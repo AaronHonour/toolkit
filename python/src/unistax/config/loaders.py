@@ -1,5 +1,4 @@
-"""
-Configuration loaders and processors.
+"""Configuration loaders and processors.
 
 Provides utilities for loading configuration from various sources
 and processing them (e.g., environment variable interpolation).
@@ -8,21 +7,19 @@ and processing them (e.g., environment variable interpolation).
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 class YAMLLoader:
-    """
-    YAML file loader with error handling.
+    """YAML file loader with error handling.
 
     Supports safe loading and provides detailed error messages.
     """
 
-    def load(self, path: Union[str, Path]) -> Dict[str, Any]:
-        """
-        Load YAML file.
+    def load(self, path: str | Path) -> dict[str, Any]:
+        """Load YAML file.
 
         Args:
             path: Path to YAML file
@@ -40,15 +37,14 @@ class YAMLLoader:
             raise FileNotFoundError(f"Configuration file not found: {path}")
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data if data is not None else {}
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in {path}: {e}") from e
 
-    def dump(self, data: Dict[str, Any], path: Union[str, Path]) -> None:
-        """
-        Dump data to YAML file.
+    def dump(self, data: dict[str, Any], path: str | Path) -> None:
+        """Dump data to YAML file.
 
         Args:
             data: Data to dump
@@ -62,8 +58,7 @@ class YAMLLoader:
 
 
 class EnvInterpolator:
-    """
-    Environment variable interpolator.
+    """Environment variable interpolator.
 
     Supports syntax:
     - ${VAR_NAME} - Required variable
@@ -80,11 +75,10 @@ class EnvInterpolator:
     ENV_VAR_PATTERN = re.compile(r"\$\{([^}:]+)(?:(:-|:)([^}]*))?\}")
 
     def interpolate(self, data: Any) -> Any:
-        """
-        Recursively interpolate environment variables in data structure.
+        """Recursively interpolate environment variables in data structure.
 
         Args:
-            data: Data to interpolate (dict, list, or string)
+            data: Data to interpolate (dict[str, Any], list[Any], or string)
 
         Returns:
             Data with interpolated values
@@ -99,8 +93,7 @@ class EnvInterpolator:
             return data
 
     def interpolate_string(self, value: str) -> str:
-        """
-        Interpolate environment variables in a string.
+        """Interpolate environment variables in a string.
 
         Args:
             value: String potentially containing environment variable references
@@ -122,9 +115,7 @@ class EnvInterpolator:
             # No separator: variable is required
             if separator is None:
                 if env_value is None:
-                    raise ValueError(
-                        f"Required environment variable not set: {var_name}"
-                    )
+                    raise ValueError(f"Required environment variable not set: {var_name}")
                 return env_value
 
             # :- separator: use default if variable is unset or empty

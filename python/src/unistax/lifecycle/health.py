@@ -1,8 +1,9 @@
 """Health check system."""
 
 import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 
 class HealthStatus(str, Enum):
@@ -14,8 +15,7 @@ class HealthStatus(str, Enum):
 
 
 class HealthCheck:
-    """
-    Health check definition.
+    """Health check definition.
 
     Attributes:
         name: Check name
@@ -23,14 +23,20 @@ class HealthCheck:
         check_type: "liveness" or "readiness"
     """
 
-    def __init__(self, name: str, func: Callable, check_type: str = "readiness"):
+    def __init__(self, name: str, func: Callable[..., Any], check_type: str = "readiness") -> None:
+        """Initialize HealthCheck.
+
+        Args:
+            name: Health check name
+            func: Function to execute for the check
+            check_type: Type of check ("liveness" or "readiness")
+        """
         self.name = name
         self.func = func
         self.check_type = check_type
 
-    def execute(self) -> Dict[str, Any]:
-        """
-        Execute health check.
+    def execute(self) -> dict[str, Any]:
+        """Execute health check.
 
         Returns:
             Dict with check results
@@ -71,16 +77,16 @@ class HealthCheck:
 class HealthCheckRegistry:
     """Registry for health checks."""
 
-    def __init__(self):
-        self._checks: List[HealthCheck] = []
+    def __init__(self) -> None:
+        """Initialize HealthCheckRegistry."""
+        self._checks: list[HealthCheck] = []
 
     def register(self, check: HealthCheck) -> None:
         """Register a health check."""
         self._checks.append(check)
 
-    def check_all(self) -> Dict[str, Any]:
-        """
-        Run all health checks.
+    def check_all(self) -> dict[str, Any]:
+        """Run all health checks.
 
         Returns:
             Dict with all check results
@@ -103,8 +109,7 @@ class HealthCheckRegistry:
         }
 
     def check_liveness(self) -> bool:
-        """
-        Run liveness checks.
+        """Run liveness checks.
 
         Returns:
             True if all liveness checks pass
@@ -117,8 +122,7 @@ class HealthCheckRegistry:
         return True
 
     def check_readiness(self) -> bool:
-        """
-        Run readiness checks.
+        """Run readiness checks.
 
         Returns:
             True if all readiness checks pass

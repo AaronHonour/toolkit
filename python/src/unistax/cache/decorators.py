@@ -1,22 +1,21 @@
-"""
-Decorators for caching function results.
+"""Decorators for caching function results.
 
 Provides convenient decorators for memoization.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any
 
 from .manager import get_cache
 
 
 def memoize(
-    ttl: Optional[int] = None,
+    ttl: int | None = None,
     key_prefix: str = "",
-    key_func: Optional[Callable] = None,
-) -> Callable:
-    """
-    Decorator for memoizing function results.
+    key_func: Callable[..., Any]| None = None,
+) -> Callable[..., Any]:
+    """Decorator for memoizing function results.
 
     Args:
         ttl: Time to live in seconds
@@ -32,9 +31,8 @@ def memoize(
     return cache.memoize(ttl=ttl, key_prefix=key_prefix, key_func=key_func)
 
 
-def cache_result(ttl: Optional[int] = None, key: Optional[str] = None) -> Callable:
-    """
-    Decorator to cache function result with fixed key.
+def cache_result(ttl: int | None = None, key: str | None = None) -> Callable[..., Any]:
+    """Decorator to cache function result with fixed key.
 
     Args:
         ttl: Time to live in seconds
@@ -46,7 +44,7 @@ def cache_result(ttl: Optional[int] = None, key: Optional[str] = None) -> Callab
         ...     return db.query("SELECT * FROM users ORDER BY created_at DESC LIMIT 10")
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         cache = get_cache()
         cache_key = key or func.__name__
 
@@ -63,8 +61,8 @@ def cache_result(ttl: Optional[int] = None, key: Optional[str] = None) -> Callab
             return result
 
         # Add cache control
-        wrapper.cache_clear = lambda: cache.delete(cache_key)
-        wrapper.cache_key = cache_key
+        wrapper.cache_clear = lambda: cache.delete(cache_key)  # type: ignore[attr-defined]
+        wrapper.cache_key = cache_key  # type: ignore[attr-defined]
 
         return wrapper
 

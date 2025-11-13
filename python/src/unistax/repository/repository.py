@@ -1,7 +1,7 @@
 """Repository pattern implementation."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -10,12 +10,12 @@ class IRepository(ABC, Generic[T]):
     """Repository interface."""
 
     @abstractmethod
-    async def get(self, id: Any) -> Optional[T]:
+    async def get(self, id: Any) -> T | None:
         """Get entity by ID."""
         pass
 
     @abstractmethod
-    async def find(self, **kwargs) -> List[T]:
+    async def find(self, **kwargs: Any) -> list[T]:
         """Find entities matching criteria."""
         pass
 
@@ -36,8 +36,7 @@ class IRepository(ABC, Generic[T]):
 
 
 class Repository(IRepository[T]):
-    """
-    Base repository implementation.
+    """Base repository implementation.
 
     Provides common CRUD operations.
 
@@ -47,15 +46,20 @@ class Repository(IRepository[T]):
         ...         return await self.find_one(email=email)
     """
 
-    def __init__(self, session: Optional[Any] = None):
-        self._session = session
-        self._entities: Dict[Any, T] = {}  # In-memory store for example
+    def __init__(self, session: Any | None = None) -> None:
+        """Initialize Repository.
 
-    async def get(self, id: Any) -> Optional[T]:
+        Args:
+            session: Database session (optional)
+        """
+        self._session = session
+        self._entities: dict[Any, T] = {}  # In-memory store for example
+
+    async def get(self, id: Any) -> T | None:
         """Get entity by ID."""
         return self._entities.get(id)
 
-    async def find(self, **kwargs) -> List[T]:
+    async def find(self, **kwargs: Any) -> list[T]:
         """Find entities matching criteria."""
         results = []
         for entity in self._entities.values():
@@ -68,7 +72,7 @@ class Repository(IRepository[T]):
                 results.append(entity)
         return results
 
-    async def find_one(self, **kwargs) -> Optional[T]:
+    async def find_one(self, **kwargs: Any) -> T | None:
         """Find single entity matching criteria."""
         results = await self.find(**kwargs)
         return results[0] if results else None
@@ -79,14 +83,14 @@ class Repository(IRepository[T]):
         if entity_id is None:
             # Generate ID if needed
             entity_id = len(self._entities) + 1
-            setattr(entity, "id", entity_id)
+            entity.id = entity_id  # type: ignore[attr-defined]
 
         self._entities[entity_id] = entity
         return entity
 
     async def update(self, entity: T) -> T:
         """Update existing entity."""
-        entity_id = getattr(entity, "id")
+        entity_id = entity.id  # type: ignore[attr-defined]
         self._entities[entity_id] = entity
         return entity
 
@@ -97,7 +101,7 @@ class Repository(IRepository[T]):
             return True
         return False
 
-    async def count(self, **kwargs) -> int:
+    async def count(self, **kwargs: Any) -> int:
         """Count entities matching criteria."""
         results = await self.find(**kwargs)
         return len(results)

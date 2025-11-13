@@ -1,9 +1,12 @@
 """Notification manager."""
 
-from enum import Enum
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .channels import ChannelBackend
 
 
 class NotificationChannel(str, Enum):
@@ -21,22 +24,22 @@ class Notification:
 
     channel: NotificationChannel
     recipient: str
-    subject: Optional[str] = None
+    subject: str | None = None
     body: str = ""
-    template: Optional[str] = None
-    template_vars: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
-    scheduled_at: Optional[datetime] = None
+    template: str | None = None
+    template_vars: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
+    scheduled_at: datetime | None = None
 
 
 class NotificationManager:
     """Multi-channel notification manager."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize notification manager."""
-        self.channels: Dict[NotificationChannel, "ChannelBackend"] = {}
+        self.channels: dict[NotificationChannel, ChannelBackend] = {}
 
-    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend"):
+    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend") -> None:  # noqa: E501
         """Register channel backend.
 
         Args:
@@ -63,7 +66,7 @@ class NotificationManager:
         backend = self.channels[notification.channel]
         return backend.send(notification)
 
-    def send_bulk(self, notifications: List[Notification]) -> List[str]:
+    def send_bulk(self, notifications: list[Notification]) -> list[str]:
         """Send multiple notifications.
 
         Args:

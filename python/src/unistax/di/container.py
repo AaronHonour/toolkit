@@ -1,21 +1,21 @@
-"""
-Dependency Injection Container implementation.
+"""Dependency Injection Container implementation.
 
 Provides auto-wiring, lifetime management, and factory registration.
 """
 
 import inspect
 import threading
+from collections.abc import Callable
 from contextvars import ContextVar
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, cast, get_type_hints
+from typing import Any, TypeVar, get_type_hints
 
 from .exceptions import CircularDependencyError, DependencyResolutionError
 
 T = TypeVar("T")
 
 # Context variable for scoped instances
-_scoped_context: ContextVar[Dict[Type, Any]] = ContextVar("_scoped_context", default={})
+_scoped_context: ContextVar[dict[type, Any] | None] = ContextVar("_scoped_context", default=None)
 
 
 class Lifetime(str, Enum):
@@ -31,12 +31,21 @@ class ServiceDescriptor:
 
     def __init__(
         self,
-        service_type: Type,
-        implementation_type: Optional[Type] = None,
-        factory: Optional[Callable] = None,
-        instance: Optional[Any] = None,
+        service_type: type,
+        implementation_type: type | None = None,
+        factory: Callable[..., Any]| None = None,
+        instance: Any | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
-    ):
+    ) -> None:
+        """Initialize ServiceDescriptor.
+
+        Args:
+            service_type: Service type
+            implementation_type: Implementation type (defaults to service_type)
+            factory: Factory function for creating instances
+            instance: Pre-created instance for singleton
+            lifetime: Service lifetime
+        """
         self.service_type = service_type
         self.implementation_type = implementation_type or service_type
         self.factory = factory
@@ -45,8 +54,7 @@ class ServiceDescriptor:
 
 
 class Container:
-    """
-    Dependency Injection Container.
+    """Dependency Injection Container.
 
     Supports auto-wiring, multiple lifetimes, and factory registration.
 
@@ -62,19 +70,19 @@ class Container:
         >>> container.register(IUserRepository, SQLUserRepository)
     """
 
-    def __init__(self):
-        self._services: Dict[Type, ServiceDescriptor] = {}
+    def __init__(self) -> None:
+        """Initialize Container."""
+        self._services: dict[type, ServiceDescriptor] = {}
         self._lock = threading.RLock()
-        self._resolving: set = set()  # For circular dependency detection
+        self._resolving: set[type] = set()  # For circular dependency detection
 
     def register(
         self,
-        service_type: Type[T],
-        implementation_type: Optional[Type[T]] = None,
+        service_type: type[T],
+        implementation_type: type[T] | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> "Container":
-        """
-        Register a service type.
+        """Register a service type.
 
         Args:
             service_type: The service type (interface)
@@ -93,9 +101,8 @@ class Container:
             self._services[service_type] = descriptor
         return self
 
-    def register_instance(self, service_type: Type[T], instance: T) -> "Container":
-        """
-        Register a pre-created instance (singleton).
+    def register_instance(self, service_type: type[T], instance: T) -> "Container":
+        """Register a pre-created instance (singleton).
 
         Args:
             service_type: The service type
@@ -115,12 +122,11 @@ class Container:
 
     def register_factory(
         self,
-        service_type: Type[T],
+        service_type: type[T],
         factory: Callable[[], T],
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> "Container":
-        """
-        Register a factory function.
+        """Register a factory function.
 
         Args:
             service_type: The service type
@@ -139,9 +145,8 @@ class Container:
             self._services[service_type] = descriptor
         return self
 
-    def resolve(self, service_type: Type[T]) -> T:
-        """
-        Resolve a service instance.
+    def resolve(self, service_type: type[T]) -> T:
+        """Resolve a service instance.
 
         Args:
             service_type: The service type to resolve
@@ -165,7 +170,7 @@ class Container:
         finally:
             self._resolving.discard(service_type)
 
-    def _resolve_internal(self, service_type: Type[T]) -> T:
+    def _resolve_internal(self, service_type: type[T]) -> T:
         """Internal resolution logic."""
         with self._lock:
             if service_type not in self._services:
@@ -181,13 +186,13 @@ class Container:
 
             # Return existing instance for singleton
             if descriptor.lifetime == Lifetime.SINGLETON and descriptor.instance is not None:
-                return descriptor.instance
+                return descriptor.instance  # type: ignore[no-any-return]
 
             # Check scoped context
             if descriptor.lifetime == Lifetime.SCOPED:
                 scoped_instances = _scoped_context.get()
-                if service_type in scoped_instances:
-                    return scoped_instances[service_type]
+                if scoped_instances is not None and service_type in scoped_instances:
+                    return scoped_instances[service_type]  # type: ignore[no-any-return]
 
             # Create new instance
             instance = self._create_instance(descriptor)
@@ -199,10 +204,11 @@ class Container:
             # Store for scoped
             if descriptor.lifetime == Lifetime.SCOPED:
                 scoped_instances = _scoped_context.get()
-                scoped_instances[service_type] = instance
-                _scoped_context.set(scoped_instances)
+                if scoped_instances is not None:
+                    scoped_instances[service_type] = instance
+                    _scoped_context.set(scoped_instances)
 
-            return instance
+            return instance  # type: ignore[no-any-return]
 
     def _create_instance(self, descriptor: ServiceDescriptor) -> Any:
         """Create an instance from descriptor."""
@@ -215,8 +221,8 @@ class Container:
 
         try:
             # Get constructor parameters
-            sig = inspect.signature(implementation.__init__)
-            type_hints = get_type_hints(implementation.__init__)
+            sig = inspect.signature(implementation.__init__)  # type: ignore[misc]
+            type_hints = get_type_hints(implementation.__init__)  # type: ignore[misc]
 
             # Build arguments
             kwargs = {}
@@ -244,7 +250,7 @@ class Container:
                 f"Failed to create instance of {implementation.__name__}: {e}"
             ) from e
 
-    def _can_auto_wire(self, service_type: Type) -> bool:
+    def _can_auto_wire(self, service_type: type) -> bool:
         """Check if type can be auto-wired."""
         try:
             # Must be a class
@@ -272,8 +278,7 @@ class Container:
             return False
 
     def create_scope(self) -> "Container":
-        """
-        Create a child container for scoped services.
+        """Create a child container for scoped services.
 
         Returns:
             New scoped container
@@ -287,24 +292,23 @@ class Container:
         _scoped_context.set({})
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"Container(services={len(self._services)})"
 
 
 # Decorator for marking classes as injectable
-def injectable(cls: Type[T]) -> Type[T]:
-    """
-    Mark a class as injectable.
+def injectable(cls: type[T]) -> type[T]:
+    """Mark a class as injectable.
 
     This is optional - the container can auto-wire classes with type hints.
     """
-    cls.__injectable__ = True
+    cls.__injectable__ = True  # type: ignore[attr-defined]
     return cls
 
 
 # Decorator for injecting dependencies
-def inject(func: Callable) -> Callable:
-    """
-    Decorator to inject dependencies into a function.
+def inject(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator to inject dependencies into a function.
 
     Example:
         >>> @inject
@@ -314,7 +318,7 @@ def inject(func: Callable) -> Callable:
     from functools import wraps
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         # Get container from somewhere (could be passed, or use global)
         # This is a simplified implementation
         container = kwargs.pop("_container", None)

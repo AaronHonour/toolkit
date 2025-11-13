@@ -1,5 +1,4 @@
-"""
-Dependency Injection Module.
+"""Dependency Injection Module.
 
 Provides a comprehensive DI container with:
 - Auto-wiring based on type hints
@@ -9,9 +8,9 @@ Provides a comprehensive DI container with:
 - Configuration binding
 """
 
-from .container import Container, injectable, inject, Lifetime
-from .decorators import singleton, transient, scoped
-from .exceptions import DependencyResolutionError, CircularDependencyError
+from .container import Container, Lifetime, inject, injectable
+from .decorators import scoped, singleton, transient
+from .exceptions import CircularDependencyError, DependencyResolutionError
 
 __all__ = [
     "Container",

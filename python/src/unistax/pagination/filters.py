@@ -1,8 +1,8 @@
 """Filtering utilities."""
 
-from enum import Enum
-from typing import Any, List
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class FilterOperator(str, Enum):
@@ -31,7 +31,7 @@ class Filter:
     operator: FilterOperator
     value: Any = None
 
-    def apply_to_query(self, query: any, model: any) -> any:
+    def apply_to_query(self, query: Any, model: Any) -> Any:
         """Apply filter to SQLAlchemy query.
 
         Args:
@@ -76,7 +76,7 @@ class Filter:
 class FilterSet:
     """Collection of filters."""
 
-    def __init__(self, filters: Optional[List[Filter]] = None):
+    def __init__(self, filters: list[Filter] | None = None) -> None:
         """Initialize filter set.
 
         Args:
@@ -84,7 +84,7 @@ class FilterSet:
         """
         self.filters = filters or []
 
-    def add_filter(self, field: str, operator: FilterOperator, value: Any = None):
+    def add_filter(self, field: str, operator: FilterOperator, value: Any = None) -> None:
         """Add filter.
 
         Args:
@@ -94,7 +94,7 @@ class FilterSet:
         """
         self.filters.append(Filter(field, operator, value))
 
-    def apply_to_query(self, query: any, model: any) -> any:
+    def apply_to_query(self, query: Any, model: Any) -> Any:
         """Apply all filters to query.
 
         Args:

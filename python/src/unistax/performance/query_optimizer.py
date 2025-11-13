@@ -1,8 +1,8 @@
 """Query optimization helpers."""
 
-from enum import Enum
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class QueryHint(Enum):
@@ -22,15 +22,15 @@ class QueryPlan:
     query: str
     estimated_cost: float
     estimated_rows: int
-    index_used: Optional[str] = None
-    optimizations: List[str] = None
+    index_used: str | None = None
+    optimizations: list[str] | None = None
 
 
 class QueryOptimizer:
     """Query optimization utilities."""
 
     @staticmethod
-    def analyze_query(query: Any) -> Dict[str, Any]:
+    def analyze_query(query: Any) -> dict[str, Any]:
         """Analyze query for optimization opportunities.
 
         Args:
@@ -48,7 +48,7 @@ class QueryOptimizer:
         }
 
     @staticmethod
-    def add_eager_loading(query: Any, *relationships) -> Any:
+    def add_eager_loading(query: Any, *relationships: Any) -> Any:
         """Add eager loading for relationships.
 
         Args:
@@ -65,7 +65,7 @@ class QueryOptimizer:
                 User.profile
             )
         """
-        from sqlalchemy.orm import joinedload
+        from sqlalchemy.orm import joinedload  # type: ignore[import-not-found]
 
         for rel in relationships:
             query = query.options(joinedload(rel))
@@ -74,11 +74,7 @@ class QueryOptimizer:
 
     @staticmethod
     def optimize_pagination(
-        query: Any,
-        page: int,
-        page_size: int,
-        use_keyset: bool = False,
-        last_id: Optional[int] = None
+        query: Any, page: int, page_size: int, use_keyset: bool = False, last_id: int | None = None
     ) -> Any:
         """Optimize pagination query.
 
@@ -118,7 +114,7 @@ class QueryOptimizer:
         return query
 
     @staticmethod
-    def suggest_indexes(model: Any) -> List[str]:
+    def suggest_indexes(model: Any) -> list[str]:
         """Suggest indexes for model.
 
         Args:
@@ -134,6 +130,8 @@ class QueryOptimizer:
         if hasattr(model, "__table__"):
             for column in model.__table__.columns:
                 if column.foreign_keys:
-                    suggestions.append(f"CREATE INDEX idx_{model.__tablename__}_{column.name} ON {model.__tablename__}({column.name})")
+                    suggestions.append(
+                        f"CREATE INDEX idx_{model.__tablename__}_{column.name} ON {model.__tablename__}({column.name})"  # noqa: E501
+                    )
 
         return suggestions

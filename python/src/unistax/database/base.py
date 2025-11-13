@@ -2,9 +2,13 @@
 
 from datetime import datetime
 from typing import Any
-from sqlalchemy import Column, DateTime, Boolean, Integer
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import DeclarativeMeta
+
+from sqlalchemy import Boolean, Column, DateTime, Integer  # type: ignore[import-not-found]
+from sqlalchemy.ext.declarative import (  # type: ignore[import-not-found]
+    declarative_base,
+    declared_attr,
+)
+from sqlalchemy.orm import DeclarativeMeta  # type: ignore[import-not-found]
 
 # Base class for all models
 Base: DeclarativeMeta = declarative_base()
@@ -13,7 +17,7 @@ Base: DeclarativeMeta = declarative_base()
 class TimestampMixin:
     """Mixin for created_at and updated_at timestamps."""
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def created_at(cls) -> Column:
         """Created at timestamp.
 
@@ -22,7 +26,7 @@ class TimestampMixin:
         """
         return Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def updated_at(cls) -> Column:
         """Updated at timestamp.
 
@@ -40,7 +44,7 @@ class TimestampMixin:
 class SoftDeleteMixin:
     """Mixin for soft delete functionality."""
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def deleted_at(cls) -> Column:
         """Deleted at timestamp.
 
@@ -49,7 +53,7 @@ class SoftDeleteMixin:
         """
         return Column(DateTime, nullable=True)
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def is_deleted(cls) -> Column:
         """Is deleted flag.
 
@@ -58,12 +62,12 @@ class SoftDeleteMixin:
         """
         return Column(Boolean, default=False, nullable=False)
 
-    def soft_delete(self):
+    def soft_delete(self) -> None:
         """Soft delete the record."""
         self.deleted_at = datetime.utcnow()
         self.is_deleted = True
 
-    def restore(self):
+    def restore(self) -> None:
         """Restore a soft deleted record."""
         self.deleted_at = None
         self.is_deleted = False
@@ -72,7 +76,7 @@ class SoftDeleteMixin:
 class AuditMixin(TimestampMixin):
     """Mixin for audit fields."""
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def created_by(cls) -> Column:
         """Created by user ID.
 
@@ -81,7 +85,7 @@ class AuditMixin(TimestampMixin):
         """
         return Column(Integer, nullable=True)
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def updated_by(cls) -> Column:
         """Updated by user ID.
 
@@ -91,7 +95,7 @@ class AuditMixin(TimestampMixin):
         return Column(Integer, nullable=True)
 
 
-class BaseModel(Base, TimestampMixin):
+class BaseModel(Base, TimestampMixin):  # type: ignore[misc]
     """Base model with timestamp fields.
 
     Attributes:
@@ -110,10 +114,7 @@ class BaseModel(Base, TimestampMixin):
         Returns:
             Dictionary representation
         """
-        return {
-            column.name: getattr(self, column.name)
-            for column in self.__table__.columns
-        }
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     def __repr__(self) -> str:
         """String representation.
@@ -121,9 +122,5 @@ class BaseModel(Base, TimestampMixin):
         Returns:
             String representation
         """
-        attrs = ", ".join(
-            f"{k}={v!r}"
-            for k, v in self.to_dict().items()
-            if k != "id"
-        )
+        attrs = ", ".join(f"{k}={v!r}" for k, v in self.to_dict().items() if k != "id")
         return f"{self.__class__.__name__}(id={self.id}, {attrs})"

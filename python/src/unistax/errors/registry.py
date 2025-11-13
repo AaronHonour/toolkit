@@ -1,30 +1,26 @@
-"""
-Error registry for tracking and categorizing errors.
+"""Error registry for tracking and categorizing errors.
 
 Provides utilities for error management and reporting.
 """
 
 from collections import defaultdict
-from typing import Dict, List, Type
 
 from .base import ApplicationError, ErrorCategory, ErrorCode
 
 
 class ErrorRegistry:
-    """
-    Registry for tracking error types and occurrences.
+    """Registry for tracking error types and occurrences.
 
     Useful for monitoring and debugging.
     """
 
     def __init__(self) -> None:
         """Initialize error registry."""
-        self._errors: Dict[ErrorCode, Type[ApplicationError]] = {}
-        self._occurrences: Dict[ErrorCode, int] = defaultdict(int)
+        self._errors: dict[ErrorCode, type[ApplicationError]] = {}
+        self._occurrences: dict[ErrorCode, int] = defaultdict(int)
 
-    def register(self, error_class: Type[ApplicationError]) -> None:
-        """
-        Register error class.
+    def register(self, error_class: type[ApplicationError]) -> None:
+        """Register error class.
 
         Args:
             error_class: Error class to register
@@ -32,17 +28,15 @@ class ErrorRegistry:
         self._errors[error_class.code] = error_class
 
     def record_occurrence(self, error: ApplicationError) -> None:
-        """
-        Record error occurrence.
+        """Record error occurrence.
 
         Args:
             error: Error instance
         """
         self._occurrences[error.code] += 1
 
-    def get_error_class(self, code: ErrorCode) -> Type[ApplicationError]:
-        """
-        Get error class by code.
+    def get_error_class(self, code: ErrorCode) -> type[ApplicationError]:
+        """Get error class by code.
 
         Args:
             code: Error code
@@ -56,8 +50,7 @@ class ErrorRegistry:
         return self._errors[code]
 
     def get_occurrences(self, code: ErrorCode) -> int:
-        """
-        Get occurrence count for error code.
+        """Get occurrence count for error code.
 
         Args:
             code: Error code
@@ -67,9 +60,8 @@ class ErrorRegistry:
         """
         return self._occurrences[code]
 
-    def get_errors_by_category(self, category: ErrorCategory) -> List[Type[ApplicationError]]:
-        """
-        Get all errors in a category.
+    def get_errors_by_category(self, category: ErrorCategory) -> list[type[ApplicationError]]:
+        """Get all errors in a category.
 
         Args:
             category: Error category
@@ -78,14 +70,11 @@ class ErrorRegistry:
             List of error classes
         """
         return [
-            error_class
-            for error_class in self._errors.values()
-            if error_class.category == category
+            error_class for error_class in self._errors.values() if error_class.category == category
         ]
 
-    def get_statistics(self) -> Dict[str, int]:
-        """
-        Get error statistics.
+    def get_statistics(self) -> dict[str, int]:
+        """Get error statistics.
 
         Returns:
             Dictionary mapping error codes to counts

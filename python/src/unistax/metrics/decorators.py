@@ -1,18 +1,17 @@
-"""
-Decorators for automatic metrics collection.
+"""Decorators for automatic metrics collection.
 
 Provides convenient decorators for instrumenting functions.
 """
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional, Dict
+from typing import Any
 
 from .manager import get_metrics
 
 
-def timer(name: str, labels: Optional[Dict[str, str]] = None) -> Callable:
-    """
-    Decorator to time function execution.
+def timer(name: str, labels: dict[str, str] | None = None) -> Callable[..., Any]:  # noqa: E501
+    """Decorator to time function execution.
 
     Args:
         name: Metric name
@@ -24,7 +23,7 @@ def timer(name: str, labels: Optional[Dict[str, str]] = None) -> Callable:
         ...     return db.query(...)
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             metrics = get_metrics()
@@ -36,11 +35,8 @@ def timer(name: str, labels: Optional[Dict[str, str]] = None) -> Callable:
     return decorator
 
 
-def counter(
-    name: str, value: float = 1.0, labels: Optional[Dict[str, str]] = None
-) -> Callable:
-    """
-    Decorator to increment counter on function call.
+def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> Callable[..., Any]:  # noqa: E501
+    """Decorator to increment counter on function call.
 
     Args:
         name: Metric name
@@ -53,7 +49,7 @@ def counter(
         ...     pass
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             metrics = get_metrics()
@@ -65,9 +61,8 @@ def counter(
     return decorator
 
 
-def gauge(name: str, value_func: Optional[Callable] = None) -> Callable:
-    """
-    Decorator to set gauge value based on function result.
+def gauge(name: str, value_func: Callable[..., Any]| None = None) -> Callable[..., Any]:
+    """Decorator to set gauge value based on function result.
 
     Args:
         name: Metric name
@@ -79,7 +74,7 @@ def gauge(name: str, value_func: Optional[Callable] = None) -> Callable:
         ...     return queue.get_all()
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             result = func(*args, **kwargs)

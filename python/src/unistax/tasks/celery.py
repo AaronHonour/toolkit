@@ -1,8 +1,11 @@
 """Celery integration for distributed task processing."""
 
-from typing import Any, Callable, Dict, Optional
-from celery import Celery, Task
-from celery.schedules import crontab
+from collections.abc import Callable
+from typing import Any
+
+from celery import Celery  # type: ignore[import-not-found]
+from celery.schedules import crontab  # type: ignore[import-not-found]
+
 from unistax.config import ConfigManager
 
 
@@ -12,14 +15,14 @@ class CeleryManager:
     def __init__(
         self,
         broker_url: str,
-        result_backend: Optional[str] = None,
+        result_backend: str | None = None,
         task_serializer: str = "json",
         result_serializer: str = "json",
-        accept_content: Optional[list[str]] = None,
+        accept_content: list[str] | None = None,
         timezone: str = "UTC",
         enable_utc: bool = True,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """Initialize Celery manager.
 
         Args:
@@ -46,7 +49,7 @@ class CeleryManager:
             **kwargs,
         )
 
-        self._scheduled_tasks: Dict[str, Dict[str, Any]] = {}
+        self._scheduled_tasks: dict[str, dict[str, Any]] = {}
 
     @classmethod
     def from_yaml(cls, path: str, prefix: str = "tasks") -> "CeleryManager":
@@ -75,12 +78,12 @@ class CeleryManager:
 
     def task(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         bind: bool = False,
         max_retries: int = 3,
         default_retry_delay: int = 60,
-        **options,
-    ) -> Callable:
+        **options: Any,
+    ) -> Callable[..., Any]:
         """Decorator to create a Celery task.
 
         Args:
@@ -99,7 +102,7 @@ class CeleryManager:
                 # Send email logic
                 pass
         """
-        return self.app.task(
+        return self.app.task(  # type: ignore[no-any-return]
             name=name,
             bind=bind,
             max_retries=max_retries,
@@ -111,11 +114,11 @@ class CeleryManager:
         self,
         schedule: Any,
         task: str,
-        args: tuple = (),
-        kwargs: Optional[dict] = None,
-        name: Optional[str] = None,
-        **options,
-    ):
+        args: tuple[Any, ...] = (),
+        kwargs: dict[str, Any] | None = None,
+        name: str | None = None,
+        **options: Any,
+    ) -> None:
         """Add a periodic task.
 
         Args:
@@ -152,10 +155,10 @@ class CeleryManager:
         day_of_week: str = "*",
         day_of_month: str = "*",
         month_of_year: str = "*",
-        args: tuple = (),
-        kwargs: Optional[dict] = None,
-        name: Optional[str] = None,
-    ):
+        args: tuple[Any, ...] = (),
+        kwargs: dict[str, Any] | None = None,
+        name: str | None = None,
+    ) -> None:
         """Schedule task with cron expression.
 
         Args:
@@ -196,11 +199,11 @@ class CeleryManager:
     def send_task(
         self,
         name: str,
-        args: tuple = (),
-        kwargs: Optional[dict] = None,
-        countdown: Optional[int] = None,
-        eta: Optional[Any] = None,
-        **options,
+        args: tuple[Any, ...] = (),
+        kwargs: dict[str, Any] | None = None,
+        countdown: int | None = None,
+        eta: Any | None = None,
+        **options: Any,
     ) -> Any:
         """Send a task for execution.
 
@@ -224,7 +227,7 @@ class CeleryManager:
             **options,
         )
 
-    def get_scheduled_tasks(self) -> Dict[str, Dict[str, Any]]:
+    def get_scheduled_tasks(self) -> dict[str, dict[str, Any]]:
         """Get all scheduled tasks.
 
         Returns:
@@ -234,7 +237,7 @@ class CeleryManager:
 
 
 # Global task decorator (convenience)
-def task(*args, **kwargs) -> Callable:
+def task(*args: Any, **kwargs: Any) -> Callable[..., Any]:
     """Global task decorator.
 
     Returns:
@@ -244,4 +247,4 @@ def task(*args, **kwargs) -> Callable:
     from unistax.tasks.worker import get_celery_app
 
     app = get_celery_app()
-    return app.task(*args, **kwargs)
+    return app.task(*args, **kwargs)  # type: ignore[no-any-return]

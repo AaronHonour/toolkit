@@ -1,10 +1,11 @@
 """Connection pooling optimizations."""
 
-from typing import Any, Callable, Optional, Generic, TypeVar
-from dataclasses import dataclass
-from queue import Queue, Empty, Full
 import threading
 import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from queue import Empty, Full, Queue
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -23,7 +24,7 @@ class PoolConfig:
 class PooledConnection(Generic[T]):
     """Wrapper for pooled connection."""
 
-    def __init__(self, connection: T, pool: "ConnectionPool"):
+    def __init__(self, connection: T, pool: "ConnectionPool[T]") -> None:
         """Initialize pooled connection.
 
         Args:
@@ -38,7 +39,7 @@ class PooledConnection(Generic[T]):
         """Enter context manager."""
         return self.connection
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager and return to pool."""
         self.pool.return_connection(self)
 
@@ -46,11 +47,7 @@ class PooledConnection(Generic[T]):
 class ConnectionPool(Generic[T]):
     """Generic connection pool implementation."""
 
-    def __init__(
-        self,
-        connection_factory: Callable[[], T],
-        config: Optional[PoolConfig] = None
-    ):
+    def __init__(self, connection_factory: Callable[[], T], config: PoolConfig | None = None) -> None:  # noqa: E501
         """Initialize connection pool.
 
         Args:
@@ -69,7 +66,7 @@ class ConnectionPool(Generic[T]):
         self.connection_factory = connection_factory
         self.config = config or PoolConfig()
 
-        self.pool: Queue = Queue(maxsize=self.config.max_size)
+        self.pool: Queue[PooledConnection[T]] = Queue(maxsize=self.config.max_size)
         self.size = 0
         self.lock = threading.Lock()
 
@@ -91,7 +88,7 @@ class ConnectionPool(Generic[T]):
             self.size += 1
             return PooledConnection(conn, self)
 
-    def get_connection(self, timeout: Optional[float] = None) -> PooledConnection[T]:
+    def get_connection(self, timeout: float | None = None) -> PooledConnection[T]:
         """Get connection from pool.
 
         Args:
@@ -122,7 +119,7 @@ class ConnectionPool(Generic[T]):
             # No available connections, try to create new one
             return self._create_connection()
 
-    def return_connection(self, connection: PooledConnection[T]):
+    def return_connection(self, connection: PooledConnection[T]) -> None:
         """Return connection to pool.
 
         Args:
@@ -136,7 +133,7 @@ class ConnectionPool(Generic[T]):
             # Pool full, close connection
             self._close_connection(connection)
 
-    def _close_connection(self, connection: PooledConnection[T]):
+    def _close_connection(self, connection: PooledConnection[T]) -> None:
         """Close connection.
 
         Args:
@@ -151,7 +148,7 @@ class ConnectionPool(Generic[T]):
             with self.lock:
                 self.size -= 1
 
-    def close_all(self):
+    def close_all(self) -> None:
         """Close all connections in pool."""
         while not self.pool.empty():
             try:
@@ -160,7 +157,7 @@ class ConnectionPool(Generic[T]):
             except Empty:
                 break
 
-    def stats(self) -> dict:
+    def stats(self) -> dict[str, Any]:
         """Get pool statistics.
 
         Returns:

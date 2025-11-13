@@ -1,5 +1,4 @@
-"""
-HTTP Client Module.
+"""HTTP Client Module.
 
 Provides enterprise HTTP client with:
 - Automatic retries with exponential backoff
@@ -9,9 +8,9 @@ Provides enterprise HTTP client with:
 - Connection pooling
 """
 
-from .client import HTTPClient, Request, Response
-from .retry import RetryStrategy, ExponentialBackoff
 from .circuit_breaker import CircuitBreaker, CircuitState
+from .client import HTTPClient, Request, Response
+from .retry import ExponentialBackoff, RetryStrategy
 
 __all__ = [
     "HTTPClient",

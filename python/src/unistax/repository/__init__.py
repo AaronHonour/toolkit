@@ -1,5 +1,4 @@
-"""
-Repository & Unit of Work Module.
+"""Repository & Unit of Work Module.
 
 Provides repository pattern and unit of work for data access:
 - Generic repository base
@@ -7,7 +6,7 @@ Provides repository pattern and unit of work for data access:
 - Query builder support
 """
 
-from .repository import Repository, IRepository
+from .repository import IRepository, Repository
 from .unit_of_work import UnitOfWork
 
 __all__ = ["Repository", "IRepository", "UnitOfWork"]

@@ -1,19 +1,18 @@
 """Trace context management."""
 
-from typing import Optional
-from opentelemetry import trace
-from opentelemetry.trace import SpanContext
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+from opentelemetry import trace  # type: ignore[import-not-found]
+from opentelemetry.trace import SpanContext  # type: ignore[import-not-found]
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator  # type: ignore[import-not-found]
 
 
 class TraceContext:
     """Manage trace context propagation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize trace context."""
         self.propagator = TraceContextTextMapPropagator()
 
-    def inject(self, carrier: dict):
+    def inject(self, carrier: dict[str, str]) -> None:
         """Inject trace context into carrier.
 
         Args:
@@ -26,7 +25,7 @@ class TraceContext:
         """
         self.propagator.inject(carrier)
 
-    def extract(self, carrier: dict) -> SpanContext:
+    def extract(self, carrier: dict[str, str]) -> SpanContext:
         """Extract trace context from carrier.
 
         Args:
@@ -42,7 +41,7 @@ class TraceContext:
         return trace.get_current_span(ctx).get_span_context()
 
     @staticmethod
-    def get_current_trace_id() -> Optional[str]:
+    def get_current_trace_id() -> str | None:
         """Get current trace ID.
 
         Returns:
@@ -54,7 +53,7 @@ class TraceContext:
         return None
 
     @staticmethod
-    def get_current_span_id() -> Optional[str]:
+    def get_current_span_id() -> str | None:
         """Get current span ID.
 
         Returns:
@@ -70,7 +69,7 @@ class TraceContext:
 _trace_context = TraceContext()
 
 
-def get_trace_id() -> Optional[str]:
+def get_trace_id() -> str | None:
     """Get current trace ID.
 
     Returns:
@@ -79,7 +78,7 @@ def get_trace_id() -> Optional[str]:
     return TraceContext.get_current_trace_id()
 
 
-def get_span_id() -> Optional[str]:
+def get_span_id() -> str | None:
     """Get current span ID.
 
     Returns:
@@ -88,7 +87,7 @@ def get_span_id() -> Optional[str]:
     return TraceContext.get_current_span_id()
 
 
-def inject_context(carrier: dict):
+def inject_context(carrier: dict[str, str]) -> None:
     """Inject trace context into carrier.
 
     Args:
@@ -97,7 +96,7 @@ def inject_context(carrier: dict):
     _trace_context.inject(carrier)
 
 
-def extract_context(carrier: dict) -> SpanContext:
+def extract_context(carrier: dict[str, str]) -> SpanContext:
     """Extract trace context from carrier.
 
     Args:

@@ -1,13 +1,14 @@
 """DTO validation utilities."""
 
-from typing import Any, Type
-from pydantic import ValidationError as PydanticValidationError
+from typing import Any
+
+from pydantic import ValidationError as PydanticValidationError  # type: ignore[import-not-found]
 
 # Re-export Pydantic ValidationError
 ValidationError = PydanticValidationError
 
 
-def validate_dto(dto_class: Type, data: Any) -> Any:
+def validate_dto(dto_class: type, data: Any) -> Any:
     """Validate data against DTO class.
 
     Args:
@@ -23,6 +24,6 @@ def validate_dto(dto_class: Type, data: Any) -> Any:
     if isinstance(data, dict):
         return dto_class(**data)
     elif isinstance(data, str):
-        return dto_class.model_validate_json(data)
+        return dto_class.model_validate_json(data)  # type: ignore[attr-defined]
     else:
-        return dto_class.model_validate(data)
+        return dto_class.model_validate(data)  # type: ignore[attr-defined]

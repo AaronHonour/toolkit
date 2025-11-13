@@ -1,5 +1,4 @@
-"""
-Log formatters for structured and JSON output.
+"""Log formatters for structured and JSON output.
 
 Provides formatters that support structured logging with extra fields.
 """
@@ -8,12 +7,11 @@ import json
 import logging
 import traceback
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 
 class StructuredFormatter(logging.Formatter):
-    """
-    Structured log formatter.
+    """Structured log formatter.
 
     Outputs logs in a human-readable format with structured fields.
 
@@ -21,8 +19,7 @@ class StructuredFormatter(logging.Formatter):
     """
 
     def __init__(self, include_extra: bool = True) -> None:
-        """
-        Initialize formatter.
+        """Initialize formatter.
 
         Args:
             include_extra: Whether to include extra fields
@@ -53,7 +50,7 @@ class StructuredFormatter(logging.Formatter):
 
         return " | ".join(str(p) for p in parts)
 
-    def _get_extra_fields(self, record: logging.LogRecord) -> Dict[str, Any]:
+    def _get_extra_fields(self, record: logging.LogRecord) -> dict[str, Any]:
         """Extract extra fields from record."""
         # Standard fields to exclude
         standard_fields = {
@@ -88,15 +85,13 @@ class StructuredFormatter(logging.Formatter):
 
 
 class JSONFormatter(logging.Formatter):
-    """
-    JSON log formatter.
+    """JSON log formatter.
 
     Outputs logs as JSON objects for machine parsing.
     """
 
     def __init__(self, include_exc_info: bool = True) -> None:
-        """
-        Initialize formatter.
+        """Initialize formatter.
 
         Args:
             include_exc_info: Whether to include exception info
@@ -106,7 +101,7 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON."""
-        log_data: Dict[str, Any] = {
+        log_data: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(record.created).isoformat(),
             "level": record.levelname,
             "logger": record.name,
@@ -131,7 +126,7 @@ class JSONFormatter(logging.Formatter):
 
         return json.dumps(log_data, default=str)
 
-    def _get_extra_fields(self, record: logging.LogRecord) -> Dict[str, Any]:
+    def _get_extra_fields(self, record: logging.LogRecord) -> dict[str, Any]:
         """Extract extra fields from record."""
         standard_fields = {
             "name",

@@ -1,6 +1,6 @@
 # create-composable-app
 
-**Zero-to-production scaffolding tool** for the Composable Toolkit.
+**Zero-to-production scaffolding tool** for the Unistax.
 
 Generate production-ready applications in less than 5 minutes with best practices built-in.
 

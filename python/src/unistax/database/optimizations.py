@@ -4,21 +4,22 @@ Optimized for low-latency database operations with caching, batching, and poolin
 Target: p99 < 100ms for database queries.
 """
 
-import time
 import hashlib
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
-from functools import wraps
-from dataclasses import dataclass
-from collections import OrderedDict
 import threading
+import time
+from collections import OrderedDict
+from collections.abc import Callable
+from dataclasses import dataclass
+from functools import wraps
+from typing import Any, TypeVar
 
-from sqlalchemy import text
-from sqlalchemy.orm import Session
-from sqlalchemy.engine import Result
+from sqlalchemy import text  # type: ignore[import-not-found]
+from sqlalchemy.engine import Result  # type: ignore[import-not-found]
+from sqlalchemy.orm import Session  # type: ignore[import-not-found]
 
-from unistax.algorithms import LRUCache, serialize_for_cache, deserialize_from_cache
+from unistax.algorithms import LRUCache
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
@@ -42,9 +43,9 @@ class QueryCache:
     - Handles 10K+ unique queries efficiently
     """
 
-    __slots__ = ('_cache', '_config', '_stats', '_lock')
+    __slots__ = ("_cache", "_config", "_stats", "_lock")
 
-    def __init__(self, config: Optional[QueryCacheConfig] = None):
+    def __init__(self, config: QueryCacheConfig | None = None) -> None:
         """Initialize query cache.
 
         Args:
@@ -61,16 +62,16 @@ class QueryCache:
             )
         """
         self._config = config or QueryCacheConfig()
-        self._cache = LRUCache(capacity=self._config.max_size)
+        self._cache: Any = LRUCache(capacity=self._config.max_size)
         self._stats = {
-            'hits': 0,
-            'misses': 0,
-            'sets': 0,
-            'evictions': 0,
+            "hits": 0,
+            "misses": 0,
+            "sets": 0,
+            "evictions": 0,
         }
         self._lock = threading.RLock()
 
-    def _make_key(self, query: str, params: Optional[Dict] = None) -> str:
+    def _make_key(self, query: str, params: dict[str, Any]| None = None) -> str:
         """Create cache key from query and params.
 
         Args:
@@ -83,7 +84,7 @@ class QueryCache:
         key_data = f"{query}:{params}" if params else query
         return hashlib.sha256(key_data.encode()).hexdigest()[:16]
 
-    def get(self, query: str, params: Optional[Dict] = None) -> Optional[Any]:
+    def get(self, query: str, params: dict[str, Any]| None = None) -> Any | None:
         """Get cached query result.
 
         Args:
@@ -102,13 +103,13 @@ class QueryCache:
             result = self._cache.get(key)
 
             if result is not None:
-                self._stats['hits'] += 1
+                self._stats["hits"] += 1
                 return result
             else:
-                self._stats['misses'] += 1
+                self._stats["misses"] += 1
                 return None
 
-    def set(self, query: str, result: Any, params: Optional[Dict] = None, ttl: Optional[int] = None):
+    def set(self, query: str, result: Any, params: dict[str, Any]| None = None, ttl: int | None = None) -> None:  # noqa: E501
         """Cache query result.
 
         Args:
@@ -124,14 +125,9 @@ class QueryCache:
 
         with self._lock:
             self._cache.put(key, result)
-            self._stats['sets'] += 1
+            self._stats["sets"] += 1
 
-    def get_or_compute(
-        self,
-        key: str,
-        compute_fn: Callable[[], T],
-        ttl: Optional[int] = None
-    ) -> T:
+    def get_or_compute(self, key: str, compute_fn: Callable[[], T], ttl: int | None = None) -> T:
         """Get from cache or compute and cache.
 
         Args:
@@ -147,10 +143,10 @@ class QueryCache:
             result = self._cache.get(key)
 
             if result is not None:
-                self._stats['hits'] += 1
-                return result
+                self._stats["hits"] += 1
+                return result  # type: ignore[no-any-return]
 
-            self._stats['misses'] += 1
+            self._stats["misses"] += 1
 
         # Compute result
         result = compute_fn()
@@ -158,42 +154,42 @@ class QueryCache:
         # Cache it
         with self._lock:
             self._cache.put(key, result)
-            self._stats['sets'] += 1
+            self._stats["sets"] += 1
 
         return result
 
-    def invalidate(self, query: str, params: Optional[Dict] = None):
+    def invalidate(self, query: str, params: dict[str, Any]| None = None) -> None:  # noqa: E501
         """Invalidate cached query.
 
         Args:
             query: SQL query
             params: Query parameters
         """
-        key = self._make_key(query, params)
+        self._make_key(query, params)
 
         with self._lock:
             # LRUCache doesn't have delete, so we just let it expire
             pass
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all cached queries."""
         with self._lock:
             self._cache = LRUCache(capacity=self._config.max_size)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
             Statistics dictionary
         """
         with self._lock:
-            total_requests = self._stats['hits'] + self._stats['misses']
-            hit_rate = self._stats['hits'] / total_requests if total_requests > 0 else 0
+            total_requests = self._stats["hits"] + self._stats["misses"]
+            hit_rate = self._stats["hits"] / total_requests if total_requests > 0 else 0
 
             return {
                 **self._stats,
-                'hit_rate': hit_rate,
-                'size': self._config.max_size,
+                "hit_rate": hit_rate,
+                "size": self._config.max_size,
             }
 
 
@@ -204,9 +200,9 @@ class PreparedStatementCache:
     Achieves 10-20% query performance improvement.
     """
 
-    __slots__ = ('_cache', '_max_size', '_stats', '_lock')
+    __slots__ = ("_cache", "_max_size", "_stats", "_lock")
 
-    def __init__(self, max_size: int = 1000):
+    def __init__(self, max_size: int = 1000) -> None:
         """Initialize prepared statement cache.
 
         Args:
@@ -214,7 +210,7 @@ class PreparedStatementCache:
         """
         self._cache: OrderedDict[str, Any] = OrderedDict()
         self._max_size = max_size
-        self._stats = {'hits': 0, 'misses': 0}
+        self._stats = {"hits": 0, "misses": 0}
         self._lock = threading.Lock()
 
     def get_or_prepare(self, session: Session, query: str) -> Any:
@@ -233,12 +229,12 @@ class PreparedStatementCache:
             # Check cache
             if key in self._cache:
                 self._cache.move_to_end(key)  # LRU behavior
-                self._stats['hits'] += 1
+                self._stats["hits"] += 1
                 return self._cache[key]
 
             # Prepare statement
             stmt = text(query)
-            self._stats['misses'] += 1
+            self._stats["misses"] += 1
 
             # Add to cache
             self._cache[key] = stmt
@@ -247,18 +243,18 @@ class PreparedStatementCache:
 
             return stmt
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
             Statistics
         """
         with self._lock:
-            total = self._stats['hits'] + self._stats['misses']
+            total = self._stats["hits"] + self._stats["misses"]
             return {
                 **self._stats,
-                'hit_rate': self._stats['hits'] / total if total > 0 else 0,
-                'size': len(self._cache),
+                "hit_rate": self._stats["hits"] / total if total > 0 else 0,
+                "size": len(self._cache),
             }
 
 
@@ -269,9 +265,9 @@ class QueryBatcher:
     Achieves 5-10x throughput improvement for bulk operations.
     """
 
-    __slots__ = ('_session', '_queries', '_params', '_results')
+    __slots__ = ("_session", "_queries", "_params", "_results")
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize query batcher.
 
         Args:
@@ -284,11 +280,11 @@ class QueryBatcher:
                 results = batcher.execute()
         """
         self._session = session
-        self._queries: List[str] = []
-        self._params: List[Dict] = []
-        self._results: List[Any] = []
+        self._queries: list[str] = []
+        self._params: list[dict[str, Any]] = []
+        self._results: list[Any] = []
 
-    def add(self, query: str, params: Optional[Dict] = None):
+    def add(self, query: str, params: dict[str, Any]| None = None) -> None:  # noqa: E501
         """Add query to batch.
 
         Args:
@@ -298,7 +294,7 @@ class QueryBatcher:
         self._queries.append(query)
         self._params.append(params or {})
 
-    def execute(self) -> List[Any]:
+    def execute(self) -> list[Any]:
         """Execute all batched queries.
 
         Returns:
@@ -306,18 +302,18 @@ class QueryBatcher:
         """
         results = []
 
-        for query, params in zip(self._queries, self._params):
+        for query, params in zip(self._queries, self._params, strict=False):
             stmt = text(query)
             result = self._session.execute(stmt, params)
             results.append(result.fetchall() if result.returns_rows else None)
 
         return results
 
-    def __enter__(self):
+    def __enter__(self) -> "QueryBatcher":
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager."""
         pass
 
@@ -329,7 +325,7 @@ class ReadWriteSplitter:
     Reduces master load by 70-90% in read-heavy workloads.
     """
 
-    def __init__(self, master_session: Session, replica_sessions: List[Session]):
+    def __init__(self, master_session: Session, replica_sessions: list[Session]) -> None:
         """Initialize read/write splitter.
 
         Args:
@@ -361,7 +357,7 @@ class ReadWriteSplitter:
             self._current_replica = (self._current_replica + 1) % len(self._replicas)
             return replica
 
-    def execute_read(self, query: str, params: Optional[Dict] = None) -> Result:
+    def execute_read(self, query: str, params: dict[str, Any]| None = None) -> Result:
         """Execute read query on replica.
 
         Args:
@@ -375,7 +371,7 @@ class ReadWriteSplitter:
         stmt = text(query)
         return replica.execute(stmt, params or {})
 
-    def execute_write(self, query: str, params: Optional[Dict] = None) -> Result:
+    def execute_write(self, query: str, params: dict[str, Any]| None = None) -> Result:
         """Execute write query on master.
 
         Args:
@@ -389,7 +385,7 @@ class ReadWriteSplitter:
         return self._master.execute(stmt, params or {})
 
 
-def cached_query(ttl: int = 300):
+def cached_query(ttl: int = 300) -> Any:
     """Decorator for caching query results.
 
     Args:
@@ -402,9 +398,9 @@ def cached_query(ttl: int = 300):
     """
     _cache = QueryCache()
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Create cache key from function name and args
             key_parts = [func.__name__]
             key_parts.extend(str(arg) for arg in args)
@@ -413,9 +409,7 @@ def cached_query(ttl: int = 300):
 
             # Try cache
             result = _cache.get_or_compute(
-                key=cache_key,
-                compute_fn=lambda: func(*args, **kwargs),
-                ttl=ttl
+                key=cache_key, compute_fn=lambda: func(*args, **kwargs), ttl=ttl
             )
 
             return result
@@ -431,9 +425,9 @@ class ConnectionPoolMonitor:
     Tracks connection pool metrics for optimization.
     """
 
-    __slots__ = ('_engine', '_stats', '_lock')
+    __slots__ = ("_engine", "_stats", "_lock")
 
-    def __init__(self, engine):
+    def __init__(self, engine: Any) -> None:
         """Initialize pool monitor.
 
         Args:
@@ -441,14 +435,14 @@ class ConnectionPoolMonitor:
         """
         self._engine = engine
         self._stats = {
-            'checkouts': 0,
-            'connects': 0,
-            'disconnects': 0,
-            'checkins': 0,
+            "checkouts": 0,
+            "connects": 0,
+            "disconnects": 0,
+            "checkins": 0,
         }
         self._lock = threading.Lock()
 
-    def get_pool_stats(self) -> Dict[str, Any]:
+    def get_pool_stats(self) -> dict[str, Any]:
         """Get connection pool statistics.
 
         Returns:
@@ -458,23 +452,23 @@ class ConnectionPoolMonitor:
 
         with self._lock:
             return {
-                'size': pool.size(),
-                'checked_in': pool.checkedin(),
-                'checked_out': pool.checkedout(),
-                'overflow': pool.overflow(),
-                'utilization': pool.checkedout() / pool.size() if pool.size() > 0 else 0,
+                "size": pool.size(),
+                "checked_in": pool.checkedin(),
+                "checked_out": pool.checkedout(),
+                "overflow": pool.overflow(),
+                "utilization": pool.checkedout() / pool.size() if pool.size() > 0 else 0,
                 **self._stats,
             }
 
-    def on_checkout(self):
+    def on_checkout(self) -> None:
         """Record connection checkout."""
         with self._lock:
-            self._stats['checkouts'] += 1
+            self._stats["checkouts"] += 1
 
-    def on_checkin(self):
+    def on_checkin(self) -> None:
         """Record connection checkin."""
         with self._lock:
-            self._stats['checkins'] += 1
+            self._stats["checkins"] += 1
 
 
 class QueryProfiler:
@@ -483,14 +477,14 @@ class QueryProfiler:
     Identifies slow queries and optimization opportunities.
     """
 
-    __slots__ = ('_queries', '_lock')
+    __slots__ = ("_queries", "_lock")
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize query profiler."""
-        self._queries: List[Dict[str, Any]] = []
+        self._queries: list[dict[str, Any]] = []
         self._lock = threading.Lock()
 
-    def profile_query(self, query: str, duration: float, params: Optional[Dict] = None):
+    def profile_query(self, query: str, duration: float, params: dict[str, Any]| None = None) -> None:  # noqa: E501
         """Record query execution.
 
         Args:
@@ -499,14 +493,16 @@ class QueryProfiler:
             params: Query parameters
         """
         with self._lock:
-            self._queries.append({
-                'query': query,
-                'duration': duration,
-                'params': params,
-                'timestamp': time.time(),
-            })
+            self._queries.append(
+                {
+                    "query": query,
+                    "duration": duration,
+                    "params": params,
+                    "timestamp": time.time(),
+                }
+            )
 
-    def get_slow_queries(self, threshold: float = 0.1) -> List[Dict[str, Any]]:
+    def get_slow_queries(self, threshold: float = 0.1) -> list[dict[str, Any]]:
         """Get slow queries above threshold.
 
         Args:
@@ -516,9 +512,9 @@ class QueryProfiler:
             List of slow queries
         """
         with self._lock:
-            return [q for q in self._queries if q['duration'] > threshold]
+            return [q for q in self._queries if q["duration"] > threshold]
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get query statistics.
 
         Returns:
@@ -527,23 +523,23 @@ class QueryProfiler:
         with self._lock:
             if not self._queries:
                 return {
-                    'total': 0,
-                    'avg_duration': 0,
-                    'p95_duration': 0,
-                    'p99_duration': 0,
+                    "total": 0,
+                    "avg_duration": 0,
+                    "p95_duration": 0,
+                    "p99_duration": 0,
                 }
 
-            durations = sorted(q['duration'] for q in self._queries)
+            durations = sorted(q["duration"] for q in self._queries)
             total = len(durations)
 
             return {
-                'total': total,
-                'avg_duration': sum(durations) / total,
-                'p50_duration': durations[int(total * 0.5)],
-                'p95_duration': durations[int(total * 0.95)],
-                'p99_duration': durations[int(total * 0.99)],
-                'min_duration': durations[0],
-                'max_duration': durations[-1],
+                "total": total,
+                "avg_duration": sum(durations) / total,
+                "p50_duration": durations[int(total * 0.5)],
+                "p95_duration": durations[int(total * 0.95)],
+                "p99_duration": durations[int(total * 0.99)],
+                "min_duration": durations[0],
+                "max_duration": durations[-1],
             }
 
 

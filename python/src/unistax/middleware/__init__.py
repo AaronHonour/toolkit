@@ -1,5 +1,4 @@
-"""
-Middleware Module.
+"""Middleware Module.
 
 Provides request/response middleware pipeline with:
 - Middleware chain execution
@@ -7,13 +6,13 @@ Provides request/response middleware pipeline with:
 - Built-in middleware (logging, metrics, auth, etc.)
 """
 
-from .pipeline import MiddlewarePipeline, Middleware, Request, Response, NextHandler
 from .builtin import (
+    CORSMiddleware,
+    ErrorHandlerMiddleware,
     LoggingMiddleware,
     MetricsMiddleware,
-    ErrorHandlerMiddleware,
-    CORSMiddleware,
 )
+from .pipeline import Middleware, MiddlewarePipeline, NextHandler, Request, Response
 
 __all__ = [
     "MiddlewarePipeline",

@@ -2,12 +2,11 @@
 
 import json
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class JWT:
-    """
-    JWT token encoder/decoder.
+    """JWT token encoder/decoder.
 
     Examples:
         >>> jwt = JWT(secret="my-secret")
@@ -15,14 +14,20 @@ class JWT:
         >>> claims = jwt.decode(token)
     """
 
-    def __init__(self, secret: str, algorithm: str = "HS256", expiration: int = 3600):
+    def __init__(self, secret: str, algorithm: str = "HS256", expiration: int = 3600) -> None:
+        """Initialize JWT.
+
+        Args:
+            secret: Secret key for signing tokens
+            algorithm: Signing algorithm (default: HS256)
+            expiration: Default expiration time in seconds
+        """
         self.secret = secret
         self.algorithm = algorithm
         self.expiration = expiration
 
-    def encode(self, payload: Dict[str, Any], exp: Optional[int] = None) -> str:
-        """
-        Encode payload to JWT token.
+    def encode(self, payload: dict[str, Any], exp: int | None = None) -> str:
+        """Encode payload to JWT token.
 
         Args:
             payload: Data to encode
@@ -52,16 +57,13 @@ class JWT:
 
         # Create signature
         message = f"{header_b64}.{payload_b64}"
-        signature = hmac.new(
-            self.secret.encode(), message.encode(), hashlib.sha256
-        ).digest()
+        signature = hmac.new(self.secret.encode(), message.encode(), hashlib.sha256).digest()
         signature_b64 = base64.urlsafe_b64encode(signature).decode().rstrip("=")
 
         return f"{message}.{signature_b64}"
 
-    def decode(self, token: str, verify: bool = True) -> Dict[str, Any]:
-        """
-        Decode JWT token.
+    def decode(self, token: str, verify: bool = True) -> dict[str, Any]:
+        """Decode JWT token.
 
         Args:
             token: JWT token string
@@ -104,4 +106,4 @@ class JWT:
         if "exp" in payload and payload["exp"] < time.time():
             raise ValueError("Token expired")
 
-        return payload
+        return payload  # type: ignore[no-any-return]

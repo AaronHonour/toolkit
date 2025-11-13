@@ -1,5 +1,4 @@
-"""
-Resilience Module.
+"""Resilience Module.
 
 Provides resilience patterns: circuit breaker, bulkhead, fallback.
 """

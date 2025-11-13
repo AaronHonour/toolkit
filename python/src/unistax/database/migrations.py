@@ -1,10 +1,11 @@
 """Database migration management using Alembic."""
 
 import os
-from typing import Optional
 from pathlib import Path
-from alembic import command
-from alembic.config import Config
+
+from alembic import command  # type: ignore[import-not-found]
+from alembic.config import Config  # type: ignore[import-not-found]
+
 from unistax.database.connection import DatabaseManager
 
 
@@ -15,8 +16,8 @@ class MigrationManager:
         self,
         database_manager: DatabaseManager,
         migrations_dir: str = "migrations",
-        script_location: Optional[str] = None,
-    ):
+        script_location: str | None = None,
+    ) -> None:
         """Initialize migration manager.
 
         Args:
@@ -44,13 +45,11 @@ class MigrationManager:
 
         config = Config(alembic_ini)
         config.set_main_option("script_location", self.script_location)
-        config.set_main_option(
-            "sqlalchemy.url", self.database_manager.config.url
-        )
+        config.set_main_option("sqlalchemy.url", self.database_manager.config.url)
 
         return config
 
-    def _create_alembic_ini(self, path: str):
+    def _create_alembic_ini(self, path: str) -> None:
         """Create default alembic.ini file.
 
         Args:
@@ -100,7 +99,7 @@ datefmt = %H:%M:%S
         with open(path, "w") as f:
             f.write(content)
 
-    def init(self):
+    def init(self) -> None:
         """Initialize Alembic in the migrations directory."""
         config = self._get_alembic_config()
         command.init(config, self.script_location)
@@ -111,7 +110,7 @@ datefmt = %H:%M:%S
         autogenerate: bool = False,
         sql: bool = False,
         head: str = "head",
-    ):
+    ) -> None:
         """Create a new migration revision.
 
         Args:
@@ -129,7 +128,7 @@ datefmt = %H:%M:%S
             head=head,
         )
 
-    def upgrade(self, revision: str = "head"):
+    def upgrade(self, revision: str = "head") -> None:
         """Upgrade to a specific revision.
 
         Args:
@@ -138,7 +137,7 @@ datefmt = %H:%M:%S
         config = self._get_alembic_config()
         command.upgrade(config, revision)
 
-    def downgrade(self, revision: str):
+    def downgrade(self, revision: str) -> None:
         """Downgrade to a specific revision.
 
         Args:
@@ -147,12 +146,12 @@ datefmt = %H:%M:%S
         config = self._get_alembic_config()
         command.downgrade(config, revision)
 
-    def current(self):
+    def current(self) -> None:
         """Display current revision."""
         config = self._get_alembic_config()
         command.current(config)
 
-    def history(self, verbose: bool = False):
+    def history(self, verbose: bool = False) -> None:
         """Display migration history.
 
         Args:
@@ -161,7 +160,7 @@ datefmt = %H:%M:%S
         config = self._get_alembic_config()
         command.history(config, verbose=verbose)
 
-    def stamp(self, revision: str):
+    def stamp(self, revision: str) -> None:
         """Stamp database with a specific revision.
 
         Args:
@@ -170,7 +169,7 @@ datefmt = %H:%M:%S
         config = self._get_alembic_config()
         command.stamp(config, revision)
 
-    def merge(self, revisions: str, message: Optional[str] = None):
+    def merge(self, revisions: str, message: str | None = None) -> None:
         """Merge multiple revisions.
 
         Args:

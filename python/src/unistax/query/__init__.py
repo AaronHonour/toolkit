@@ -1,7 +1,12 @@
 """Query builder and specification pattern module."""
 
-from unistax.query.builder import QueryBuilder, Query
-from unistax.query.specification import Specification, AndSpecification, OrSpecification, NotSpecification
+from unistax.query.builder import Query, QueryBuilder
+from unistax.query.specification import (
+    AndSpecification,
+    NotSpecification,
+    OrSpecification,
+    Specification,
+)
 
 __all__ = [
     "QueryBuilder",

@@ -1,8 +1,9 @@
 """Pagination utilities."""
 
-from typing import Generic, List, TypeVar, Optional
 from dataclasses import dataclass
-from pydantic import BaseModel
+from typing import Any, Generic, TypeVar
+
+from pydantic import BaseModel  # type: ignore[import-not-found]
 
 T = TypeVar("T")
 
@@ -13,7 +14,7 @@ class PaginationParams:
 
     page: int = 1
     page_size: int = 20
-    offset: Optional[int] = None
+    offset: int | None = None
 
     def get_offset(self) -> int:
         """Calculate offset from page and page_size."""
@@ -26,10 +27,10 @@ class PaginationParams:
         return self.page_size
 
 
-class Page(BaseModel, Generic[T]):
+class Page(BaseModel, Generic[T]):  # type: ignore[misc]
     """Paginated response."""
 
-    items: List[T]
+    items: list[T]
     page: int
     page_size: int
     total: int
@@ -52,12 +53,12 @@ class Page(BaseModel, Generic[T]):
         return self.page > 1
 
     @property
-    def next_page(self) -> Optional[int]:
+    def next_page(self) -> int | None:
         """Get next page number."""
         return self.page + 1 if self.has_next else None
 
     @property
-    def prev_page(self) -> Optional[int]:
+    def prev_page(self) -> int | None:
         """Get previous page number."""
         return self.page - 1 if self.has_prev else None
 
@@ -67,9 +68,9 @@ class Paginator:
 
     @staticmethod
     def paginate(
-        items: List[T],
+        items: list[T],
         params: PaginationParams,
-        total: Optional[int] = None,
+        total: int | None = None,
     ) -> Page[T]:
         """Paginate items.
 
@@ -92,7 +93,7 @@ class Paginator:
         )
 
     @staticmethod
-    def paginate_query(query: any, params: PaginationParams) -> tuple[any, int]:
+    def paginate_query(query: Any, params: PaginationParams) -> tuple[Any, int]:
         """Paginate SQLAlchemy query.
 
         Args:

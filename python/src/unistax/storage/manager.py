@@ -1,7 +1,7 @@
 """Storage manager."""
 
-from typing import Optional
 from dataclasses import dataclass
+
 from unistax.storage.backends import StorageBackend
 
 
@@ -11,16 +11,16 @@ class StorageConfig:
 
     backend: str  # local, s3, azure, gcs
     base_path: str = "/"
-    bucket: Optional[str] = None
-    region: Optional[str] = None
-    access_key: Optional[str] = None
-    secret_key: Optional[str] = None
+    bucket: str | None = None
+    region: str | None = None
+    access_key: str | None = None
+    secret_key: str | None = None
 
 
 class StorageManager:
     """Manage file storage."""
 
-    def __init__(self, backend: StorageBackend):
+    def __init__(self, backend: StorageBackend) -> None:
         """Initialize storage manager.
 
         Args:
@@ -40,7 +40,7 @@ class StorageManager:
         """
         return self.backend.upload(source_path, dest_path)
 
-    def download(self, source_path: str, dest_path: str):
+    def download(self, source_path: str, dest_path: str) -> None:
         """Download file.
 
         Args:
@@ -49,7 +49,7 @@ class StorageManager:
         """
         self.backend.download(source_path, dest_path)
 
-    def delete(self, path: str):
+    def delete(self, path: str) -> None:
         """Delete file.
 
         Args:

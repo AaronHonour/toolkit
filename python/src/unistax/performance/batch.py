@@ -1,11 +1,12 @@
 """Batch processing for improved performance."""
 
 import asyncio
-from typing import Any, Callable, List, Optional, TypeVar
-from dataclasses import dataclass
 import threading
 import time
-from queue import Queue, Empty
+from collections.abc import Callable
+from dataclasses import dataclass
+from queue import Empty, Queue
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -24,10 +25,8 @@ class BatchProcessor:
     """Batch multiple operations for efficiency."""
 
     def __init__(
-        self,
-        processor_func: Callable[[List[T]], List[R]],
-        config: Optional[BatchConfig] = None
-    ):
+        self, processor_func: Callable[[list[T]], list[R]], config: BatchConfig | None = None
+    ) -> None:
         """Initialize batch processor.
 
         Args:
@@ -44,13 +43,13 @@ class BatchProcessor:
         self.processor_func = processor_func
         self.config = config or BatchConfig()
 
-        self.queue: Queue = Queue()
-        self.results: dict = {}
+        self.queue: Queue[tuple[Any, Any, threading.Event]] = Queue()
+        self.results: dict[int, Any] = {}
         self.lock = threading.Lock()
-        self.worker_thread: Optional[threading.Thread] = None
+        self.worker_thread: threading.Thread | None = None
         self.running = False
 
-    def start(self):
+    def start(self) -> None:
         """Start batch worker."""
         if self.running:
             return
@@ -59,13 +58,13 @@ class BatchProcessor:
         self.worker_thread = threading.Thread(target=self._worker, daemon=True)
         self.worker_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop batch worker."""
         self.running = False
         if self.worker_thread:
             self.worker_thread.join(timeout=5.0)
 
-    def add(self, item: T, timeout: float = 5.0) -> R:
+    def add(self, item: T, timeout: float = 5.0) -> Any:
         """Add item to batch queue.
 
         Args:
@@ -101,7 +100,7 @@ class BatchProcessor:
 
         return result
 
-    def _worker(self):
+    def _worker(self) -> None:
         """Worker thread for batch processing."""
         while self.running:
             batch = self._collect_batch()
@@ -112,13 +111,13 @@ class BatchProcessor:
 
             self._process_batch(batch)
 
-    def _collect_batch(self) -> List[tuple]:
+    def _collect_batch(self) -> list[tuple[Any, ...]]:
         """Collect items for batch.
 
         Returns:
             List of (item_id, item, result_event) tuples
         """
-        batch = []
+        batch: list[tuple[Any, ...]] = []
         deadline = time.time() + self.config.max_wait_time
 
         while len(batch) < self.config.max_batch_size and time.time() < deadline:
@@ -132,7 +131,7 @@ class BatchProcessor:
 
         return batch
 
-    def _process_batch(self, batch: List[tuple]):
+    def _process_batch(self, batch: list[tuple[Any, ...]]) -> None:
         """Process batch of items.
 
         Args:
@@ -148,7 +147,7 @@ class BatchProcessor:
 
             # Store results
             with self.lock:
-                for item_id, result in zip(item_ids, results):
+                for item_id, result in zip(item_ids, results, strict=False):
                     self.results[item_id] = result
 
         except Exception as e:
@@ -168,9 +167,9 @@ class AsyncBatchProcessor:
 
     def __init__(
         self,
-        processor_func: Callable[[List[T]], asyncio.Future[List[R]]],
-        config: Optional[BatchConfig] = None
-    ):
+        processor_func: Callable[[list[T]], asyncio.Future[list[R]]],
+        config: BatchConfig | None = None,
+    ) -> None:
         """Initialize async batch processor.
 
         Args:
@@ -180,13 +179,13 @@ class AsyncBatchProcessor:
         self.processor_func = processor_func
         self.config = config or BatchConfig()
 
-        self.queue: asyncio.Queue = asyncio.Queue()
-        self.results: dict = {}
+        self.queue: asyncio.Queue[tuple[Any, Any, asyncio.Future[Any]]] = asyncio.Queue()
+        self.results: dict[int, Any] = {}
         self.lock = asyncio.Lock()
-        self.worker_task: Optional[asyncio.Task] = None
+        self.worker_task: asyncio.Task[None] | None = None
         self.running = False
 
-    async def start(self):
+    async def start(self) -> None:
         """Start batch worker."""
         if self.running:
             return
@@ -194,13 +193,13 @@ class AsyncBatchProcessor:
         self.running = True
         self.worker_task = asyncio.create_task(self._worker())
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop batch worker."""
         self.running = False
         if self.worker_task:
             await self.worker_task
 
-    async def add(self, item: T, timeout: float = 5.0) -> R:
+    async def add(self, item: T, timeout: float = 5.0) -> Any:
         """Add item to batch queue.
 
         Args:
@@ -214,22 +213,22 @@ class AsyncBatchProcessor:
             await self.start()
 
         item_id = id(item)
-        result_future = asyncio.Future()
+        result_future: asyncio.Future[Any] = asyncio.Future()
 
         await self.queue.put((item_id, item, result_future))
 
         # Wait for result
         try:
             result = await asyncio.wait_for(result_future, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise TimeoutError(f"Batch processing timeout after {timeout}s")
+        except asyncio.TimeoutError as e:
+            raise TimeoutError(f"Batch processing timeout after {timeout}s") from e
 
         if isinstance(result, Exception):
             raise result
 
         return result
 
-    async def _worker(self):
+    async def _worker(self) -> None:
         """Worker for batch processing."""
         while self.running:
             batch = await self._collect_batch()
@@ -240,21 +239,18 @@ class AsyncBatchProcessor:
 
             await self._process_batch(batch)
 
-    async def _collect_batch(self) -> List[tuple]:
+    async def _collect_batch(self) -> list[tuple[Any, ...]]:
         """Collect items for batch.
 
         Returns:
             List of (item_id, item, result_future) tuples
         """
-        batch = []
+        batch: list[tuple[Any, ...]] = []
         deadline = time.time() + self.config.max_wait_time
 
         while len(batch) < self.config.max_batch_size and time.time() < deadline:
             try:
-                item = await asyncio.wait_for(
-                    self.queue.get(),
-                    timeout=0.01
-                )
+                item = await asyncio.wait_for(self.queue.get(), timeout=0.01)
                 batch.append(item)
             except asyncio.TimeoutError:
                 if batch:
@@ -263,13 +259,13 @@ class AsyncBatchProcessor:
 
         return batch
 
-    async def _process_batch(self, batch: List[tuple]):
+    async def _process_batch(self, batch: list[tuple[Any, ...]]) -> None:
         """Process batch of items.
 
         Args:
             batch: List of (item_id, item, result_future) tuples
         """
-        item_ids = [item_id for item_id, _, _ in batch]
+        [item_id for item_id, _, _ in batch]
         items = [item for _, item, _ in batch]
         futures = [future for _, _, future in batch]
 
@@ -278,7 +274,7 @@ class AsyncBatchProcessor:
             results = await self.processor_func(items)
 
             # Set results
-            for future, result in zip(futures, results):
+            for future, result in zip(futures, results, strict=False):
                 if not future.done():
                     future.set_result(result)
 
@@ -289,7 +285,7 @@ class AsyncBatchProcessor:
                     future.set_exception(e)
 
 
-def batch_calls(batch_size: int = 100):
+def batch_calls(batch_size: int = 100) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to batch function calls.
 
     Example:
@@ -301,14 +297,15 @@ def batch_calls(batch_size: int = 100):
         for item in items:
             result = process_items(item)
     """
-    def decorator(func: Callable) -> Callable:
+
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         processor = BatchProcessor(func, BatchConfig(max_batch_size=batch_size))
         processor.start()
 
-        def wrapper(item):
+        def wrapper(item: Any) -> Any:
             return processor.add(item)
 
-        wrapper._batch_processor = processor  # Store reference
+        wrapper._batch_processor = processor  # type: ignore[attr-defined]
         return wrapper
 
     return decorator

@@ -1,5 +1,4 @@
-"""
-Core logging implementation.
+"""Core logging implementation.
 
 Provides Logger class and factory for creating loggers with
 enterprise features.
@@ -8,7 +7,7 @@ enterprise features.
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from .context import log_context
 from .filters import ContextFilter, SensitiveDataFilter
@@ -17,8 +16,7 @@ from .handlers import RotatingFileHandlerWithCompression
 
 
 class Logger:
-    """
-    Enterprise logger wrapper with structured logging support.
+    """Enterprise logger wrapper with structured logging support.
 
     Provides additional functionality over standard logging:
     - Structured logging with extra fields
@@ -28,8 +26,7 @@ class Logger:
     """
 
     def __init__(self, logger: logging.Logger) -> None:
-        """
-        Initialize logger wrapper.
+        """Initialize logger wrapper.
 
         Args:
             logger: Underlying Python logger
@@ -50,7 +47,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log debug message."""
@@ -60,7 +57,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log info message."""
@@ -70,7 +67,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log warning message."""
@@ -80,7 +77,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         exc_info: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -91,7 +88,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         exc_info: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -102,7 +99,7 @@ class Logger:
         self,
         message: str,
         *args: Any,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log exception with traceback."""
@@ -112,12 +109,11 @@ class Logger:
         self,
         level: int,
         message: str,
-        args: tuple,
-        extra: Optional[Dict[str, Any]],
+        args: tuple[Any, ...],
+        extra: dict[str, Any] | None,
         **kwargs: Any,
     ) -> None:
-        """
-        Internal logging method with context support.
+        """Internal logging method with context support.
 
         Args:
             level: Log level
@@ -130,13 +126,14 @@ class Logger:
             return
 
         # Merge context with extra fields
-        merged_extra = {**log_context.get(), **(extra or {})}
+        context_data = log_context.get()
+        extra_data = extra or {}
+        merged_extra = {**context_data, **extra_data}  # type: ignore[dict-item]
 
         self._logger.log(level, message, *args, extra=merged_extra, **kwargs)
 
-    def set_level(self, level: Union[int, str]) -> None:
-        """
-        Set logger level.
+    def set_level(self, level: int | str) -> None:
+        """Set logger level.
 
         Args:
             level: Log level (int or string)
@@ -154,8 +151,7 @@ class Logger:
         self._logger.removeHandler(handler)
 
     def set_context(self, **kwargs: Any) -> None:
-        """
-        Set logging context.
+        """Set logging context.
 
         Context is included in all log messages.
 
@@ -163,7 +159,8 @@ class Logger:
             **kwargs: Context key-value pairs
         """
         current = log_context.get()
-        log_context.set({**current, **kwargs})
+        updated = {**current, **kwargs}  # type: ignore[dict-item]
+        log_context.set(updated)
 
     def clear_context(self) -> None:
         """Clear logging context."""
@@ -171,8 +168,7 @@ class Logger:
 
 
 class LoggerFactory:
-    """
-    Factory for creating configured loggers.
+    """Factory for creating configured loggers.
 
     Supports YAML-based configuration.
     """
@@ -181,11 +177,10 @@ class LoggerFactory:
     def create(
         name: str,
         level: str = "INFO",
-        handlers: Optional[list] = None,
-        filters: Optional[list] = None,
+        handlers: list[Any]| None = None,
+        filters: list[Any]| None = None,
     ) -> Logger:
-        """
-        Create configured logger.
+        """Create configured logger.
 
         Args:
             name: Logger name
@@ -218,9 +213,8 @@ class LoggerFactory:
         return Logger(logger)
 
     @staticmethod
-    def from_yaml(path: Union[str, Path]) -> Logger:
-        """
-        Create logger from YAML configuration.
+    def from_yaml(path: str | Path) -> Logger:
+        """Create logger from YAML configuration.
 
         Args:
             path: Path to YAML config file
@@ -235,8 +229,7 @@ class LoggerFactory:
 
     @staticmethod
     def from_config(config: Any) -> Logger:
-        """
-        Create logger from configuration.
+        """Create logger from configuration.
 
         Args:
             config: Configuration object
@@ -264,14 +257,14 @@ class LoggerFactory:
         return LoggerFactory.create(name, level, handlers, filters)
 
     @staticmethod
-    def _create_handler(config: Dict[str, Any]) -> Optional[logging.Handler]:
+    def _create_handler(config: dict[str, Any]) -> logging.Handler | None:
         """Create handler from configuration."""
         handler_type = config.get("type", "console")
         level = config.get("level", "INFO")
         formatter_type = config.get("formatter", "structured")
 
         # Create handler
-        handler: Optional[logging.Handler] = None
+        handler: logging.Handler | None = None
 
         if handler_type == "console":
             stream = sys.stdout if config.get("stream") == "stdout" else sys.stderr
@@ -304,14 +297,14 @@ class LoggerFactory:
         if formatter_type == "json":
             formatter = JSONFormatter()
         else:
-            formatter = StructuredFormatter()
+            formatter = StructuredFormatter()  # type: ignore[assignment]
 
         handler.setFormatter(formatter)
 
         return handler
 
     @staticmethod
-    def _create_filter(config: Dict[str, Any]) -> Optional[logging.Filter]:
+    def _create_filter(config: dict[str, Any]) -> logging.Filter | None:
         """Create filter from configuration."""
         filter_type = config.get("type")
 
@@ -326,8 +319,7 @@ class LoggerFactory:
 
 
 def get_logger(name: str) -> Logger:
-    """
-    Get logger by name.
+    """Get logger by name.
 
     Convenience function for getting loggers.
 

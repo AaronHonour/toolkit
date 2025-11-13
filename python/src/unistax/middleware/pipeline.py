@@ -1,8 +1,9 @@
 """Middleware pipeline implementation."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Awaitable
+from typing import Any
 
 
 @dataclass
@@ -11,10 +12,10 @@ class Request:
 
     method: str
     path: str
-    headers: Dict[str, str] = field(default_factory=dict)
-    query_params: Dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict[str, Any])
+    query_params: dict[str, str] = field(default_factory=dict[str, Any])
     body: Any = None
-    context: Dict[str, Any] = field(default_factory=dict)  # For passing data between middleware
+    context: dict[str, Any] = field(default_factory=dict[str, Any])  # For passing data between middleware  # noqa: E501
 
 
 @dataclass
@@ -22,7 +23,7 @@ class Response:
     """Response context."""
 
     status_code: int = 200
-    headers: Dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict[str, Any])
     body: Any = None
 
 
@@ -31,16 +32,14 @@ NextHandler = Callable[[Request], Awaitable[Response]]
 
 
 class Middleware(ABC):
-    """
-    Base middleware class.
+    """Base middleware class.
 
     Subclass and implement process() method.
     """
 
     @abstractmethod
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
-        """
-        Process request through middleware.
+        """Process request through middleware.
 
         Args:
             request: Request context
@@ -53,8 +52,7 @@ class Middleware(ABC):
 
 
 class MiddlewarePipeline:
-    """
-    Middleware pipeline for request/response processing.
+    """Middleware pipeline for request/response processing.
 
     Examples:
         >>> pipeline = MiddlewarePipeline()
@@ -63,12 +61,12 @@ class MiddlewarePipeline:
         >>> response = await pipeline.execute(request)
     """
 
-    def __init__(self):
-        self._middleware: List[Middleware] = []
+    def __init__(self) -> None:
+        """Initialize MiddlewarePipeline."""
+        self._middleware: list[Middleware] = []
 
     def use(self, middleware: Middleware) -> "MiddlewarePipeline":
-        """
-        Add middleware to pipeline.
+        """Add middleware to pipeline.
 
         Args:
             middleware: Middleware instance
@@ -79,11 +77,8 @@ class MiddlewarePipeline:
         self._middleware.append(middleware)
         return self
 
-    async def execute(
-        self, request: Request, final_handler: Optional[NextHandler] = None
-    ) -> Response:
-        """
-        Execute middleware pipeline.
+    async def execute(self, request: Request, final_handler: NextHandler | None = None) -> Response:
+        """Execute middleware pipeline.
 
         Args:
             request: Request to process
@@ -115,4 +110,5 @@ class MiddlewarePipeline:
         return await build_chain(0)
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"MiddlewarePipeline(middleware={len(self._middleware)})"

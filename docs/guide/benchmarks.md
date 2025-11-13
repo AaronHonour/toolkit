@@ -1,6 +1,6 @@
 # Performance Benchmarks
 
-Comprehensive performance benchmarking system for the Composable Toolkit, designed to validate the **100K+ requests/second** capability and track performance over time.
+Comprehensive performance benchmarking system for the Unistax, designed to validate the **100K+ requests/second** capability and track performance over time.
 
 ## Quick Start
 

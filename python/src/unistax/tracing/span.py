@@ -1,9 +1,11 @@
 """Span management utilities."""
 
-from typing import Any, Dict, Optional
 from enum import Enum
-from opentelemetry import trace
-from opentelemetry.trace import SpanKind as OTelSpanKind, Status, StatusCode
+from typing import Any
+
+from opentelemetry import trace  # type: ignore[import-not-found]
+from opentelemetry.trace import SpanKind as OTelSpanKind  # type: ignore[import-not-found]
+from opentelemetry.trace import Status, StatusCode  # type: ignore[import-not-found,unused-ignore]
 
 
 class SpanKind(str, Enum):
@@ -38,7 +40,7 @@ def _get_otel_span_kind(kind: SpanKind) -> OTelSpanKind:
 class SpanManager:
     """Manage span creation and manipulation."""
 
-    def __init__(self, tracer: trace.Tracer):
+    def __init__(self, tracer: trace.Tracer) -> None:
         """Initialize span manager.
 
         Args:
@@ -50,8 +52,8 @@ class SpanManager:
         self,
         name: str,
         kind: SpanKind = SpanKind.INTERNAL,
-        attributes: Optional[Dict[str, Any]] = None,
-        links: Optional[list] = None,
+        attributes: dict[str, Any] | None = None,
+        links: list[Any] | None = None,
     ) -> trace.Span:
         """Start a new span.
 
@@ -75,8 +77,8 @@ class SpanManager:
         self,
         span: trace.Span,
         name: str,
-        attributes: Optional[Dict[str, Any]] = None,
-    ):
+        attributes: dict[str, Any] | None = None,
+    ) -> None:
         """Add event to span.
 
         Args:
@@ -86,7 +88,7 @@ class SpanManager:
         """
         span.add_event(name, attributes=attributes or {})
 
-    def set_attribute(self, span: trace.Span, key: str, value: Any):
+    def set_attribute(self, span: trace.Span, key: str, value: Any) -> None:
         """Set span attribute.
 
         Args:
@@ -96,7 +98,7 @@ class SpanManager:
         """
         span.set_attribute(key, value)
 
-    def set_attributes(self, span: trace.Span, attributes: Dict[str, Any]):
+    def set_attributes(self, span: trace.Span, attributes: dict[str, Any]) -> None:
         """Set multiple span attributes.
 
         Args:
@@ -109,8 +111,8 @@ class SpanManager:
         self,
         span: trace.Span,
         status_code: StatusCode,
-        description: Optional[str] = None,
-    ):
+        description: str | None = None,
+    ) -> None:
         """Set span status.
 
         Args:
@@ -124,8 +126,8 @@ class SpanManager:
         self,
         span: trace.Span,
         exception: Exception,
-        attributes: Optional[Dict[str, Any]] = None,
-    ):
+        attributes: dict[str, Any] | None = None,
+    ) -> None:
         """Record exception in span.
 
         Args:
@@ -135,7 +137,7 @@ class SpanManager:
         """
         span.record_exception(exception, attributes=attributes or {})
 
-    def end_span(self, span: trace.Span):
+    def end_span(self, span: trace.Span) -> None:
         """End a span.
 
         Args:
@@ -160,4 +162,4 @@ def is_recording() -> bool:
         True if recording
     """
     span = get_current_span()
-    return span.is_recording()
+    return span.is_recording()  # type: ignore[no-any-return]

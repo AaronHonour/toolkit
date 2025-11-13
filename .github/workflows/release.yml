@@ -55,13 +55,13 @@ jobs:
 
       - name: Build package
         run: |
-          cd backend
+          cd python
           python -m build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: backend/dist/
+          packages-dir: python/dist/
           # For trusted publishing, configure at https://pypi.org/manage/account/publishing/
           # For token-based publishing, add PYPI_API_TOKEN to repository secrets
           # password: ${{ secrets.PYPI_API_TOKEN }}

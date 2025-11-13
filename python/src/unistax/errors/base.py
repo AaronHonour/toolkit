@@ -1,12 +1,11 @@
-"""
-Base exception classes and error codes.
+"""Base exception classes and error codes.
 
 Provides a typed exception hierarchy with error codes, categories,
 and context preservation.
 """
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ErrorCategory(str, Enum):
@@ -26,8 +25,7 @@ class ErrorCategory(str, Enum):
 
 
 class ErrorCode(str, Enum):
-    """
-    Standardized error codes.
+    """Standardized error codes.
 
     Follow pattern: CATEGORY_SPECIFIC_ERROR
     """
@@ -78,8 +76,7 @@ class ErrorCode(str, Enum):
 
 
 class ApplicationError(Exception):
-    """
-    Base application error with enhanced context.
+    """Base application error with enhanced context.
 
     Attributes:
         code: Error code for identification
@@ -95,13 +92,12 @@ class ApplicationError(Exception):
     def __init__(
         self,
         message: str,
-        code: Optional[ErrorCode] = None,
-        category: Optional[ErrorCategory] = None,
-        details: Optional[Dict[str, Any]] = None,
-        cause: Optional[Exception] = None,
+        code: ErrorCode | None = None,
+        category: ErrorCategory | None = None,
+        details: dict[str, Any] | None = None,
+        cause: Exception | None = None,
     ) -> None:
-        """
-        Initialize application error.
+        """Initialize application error.
 
         Args:
             message: Error message
@@ -117,14 +113,13 @@ class ApplicationError(Exception):
         self.details = details or {}
         self.cause = cause
 
-    def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert error to dictionary for serialization.
+    def to_dict(self) -> dict[str, Any]:
+        """Convert error to dictionary for serialization.
 
         Returns:
             Dictionary representation of error
         """
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "error": self.__class__.__name__,
             "code": self.code.value,
             "category": self.category.value,

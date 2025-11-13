@@ -1,14 +1,13 @@
-"""
-HTTP client implementation with enterprise features.
-"""
+"""HTTP client implementation with enterprise features."""
 
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
 from pathlib import Path
+from typing import Any
 
 try:
-    import requests
+    import requests  # type: ignore[import-untyped]
+
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
@@ -17,36 +16,38 @@ except ImportError:
 @dataclass
 class Response:
     """HTTP response wrapper."""
+
     status_code: int
-    headers: Dict[str, str]
+    headers: dict[str, str]
     body: bytes
     elapsed: float
 
     def json(self) -> Any:
         """Parse response as JSON."""
         import json
-        return json.loads(self.body.decode('utf-8'))
+
+        return json.loads(self.body.decode("utf-8"))
 
     def text(self) -> str:
         """Get response as text."""
-        return self.body.decode('utf-8')
+        return self.body.decode("utf-8")
 
 
 @dataclass
 class Request:
     """HTTP request."""
+
     method: str
     url: str
-    headers: Optional[Dict[str, str]] = None
-    params: Optional[Dict[str, Any]] = None
-    data: Optional[Any] = None
-    json: Optional[Any] = None
+    headers: dict[str, str] | None = None
+    params: dict[str, Any] | None = None
+    data: Any | None = None
+    json: Any | None = None
     timeout: float = 10.0
 
 
 class HTTPClient:
-    """
-    Enterprise HTTP client with retry, circuit breaker, and logging.
+    """Enterprise HTTP client with retry, circuit breaker, and logging.
 
     Examples:
         >>> client = HTTPClient()
@@ -59,10 +60,9 @@ class HTTPClient:
         base_url: str = "",
         timeout: float = 10.0,
         max_retries: int = 3,
-        headers: Optional[Dict[str, str]] = None,
-    ):
-        """
-        Initialize HTTP client.
+        headers: dict[str, str] | None = None,
+    ) -> None:
+        """Initialize HTTP client.
 
         Args:
             base_url: Base URL for all requests
@@ -80,7 +80,7 @@ class HTTPClient:
         self._session = requests.Session()
 
     @classmethod
-    def from_yaml(cls, path: Union[str, Path]) -> "HTTPClient":
+    def from_yaml(cls, path: str | Path) -> "HTTPClient":
         """Create client from YAML configuration."""
         from ..config import ConfigManager
 
@@ -98,7 +98,7 @@ class HTTPClient:
             return url
         return f"{self._base_url}/{url.lstrip('/')}"
 
-    def _merge_headers(self, headers: Optional[Dict[str, str]]) -> Dict[str, str]:
+    def _merge_headers(self, headers: dict[str, str] | None) -> dict[str, str]:
         """Merge headers with defaults."""
         merged = dict(self._default_headers)
         if headers:
@@ -109,15 +109,14 @@ class HTTPClient:
         self,
         method: str,
         url: str,
-        headers: Optional[Dict[str, str]] = None,
-        params: Optional[Dict[str, Any]] = None,
-        data: Optional[Any] = None,
-        json_data: Optional[Any] = None,
-        timeout: Optional[float] = None,
+        headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
+        data: Any | None = None,
+        json_data: Any | None = None,
+        timeout: float | None = None,
         retry: bool = True,
     ) -> Response:
-        """
-        Make HTTP request.
+        """Make HTTP request.
 
         Args:
             method: HTTP method
@@ -166,12 +165,14 @@ class HTTPClient:
                 last_error = e
                 if attempt < attempts - 1:
                     # Exponential backoff
-                    time.sleep(2 ** attempt)
+                    time.sleep(2**attempt)
                     continue
                 raise
 
         if last_error:
             raise last_error
+
+        raise RuntimeError("Request failed with no error recorded")
 
     def get(self, url: str, **kwargs: Any) -> Response:
         """GET request."""
@@ -198,7 +199,9 @@ class HTTPClient:
         self._session.close()
 
     def __enter__(self) -> "HTTPClient":
+        """Enter context manager."""
         return self
 
     def __exit__(self, *args: Any) -> None:
+        """Exit context manager."""
         self.close()

@@ -5,17 +5,19 @@ Target: GB/s compression speed, 2-3x size reduction.
 """
 
 import zlib
-from typing import Optional, Union
 from enum import Enum
+from typing import Any
 
 try:
-    import lz4.frame
+    import lz4.frame  # type: ignore[import-not-found]
+
     HAS_LZ4 = True
 except ImportError:
     HAS_LZ4 = False
 
 try:
-    import snappy
+    import snappy  # type: ignore[import-not-found]
+
     HAS_SNAPPY = True
 except ImportError:
     HAS_SNAPPY = False
@@ -40,7 +42,7 @@ class CompressionAlgorithm(Enum):
 def fast_compress(
     data: bytes,
     algorithm: CompressionAlgorithm = CompressionAlgorithm.LZ4,
-    level: CompressionLevel = CompressionLevel.FAST
+    level: CompressionLevel = CompressionLevel.FAST,
 ) -> bytes:
     """Ultra-fast compression.
 
@@ -75,15 +77,15 @@ def fast_compress(
             CompressionLevel.BEST: 9,
         }[level]
 
-        return lz4.frame.compress(
+        return lz4.frame.compress(  # type: ignore[no-any-return]
             data,
             compression_level=compression_level,
-            block_size=lz4.frame.BLOCKSIZE_MAX1MB  # Optimize for large data
+            block_size=lz4.frame.BLOCKSIZE_MAX1MB,  # Optimize for large data
         )
 
     elif algorithm == CompressionAlgorithm.SNAPPY and HAS_SNAPPY:
         # Snappy is very fast and used by Google, Cassandra, etc.
-        return snappy.compress(data)
+        return snappy.compress(data)  # type: ignore[no-any-return]
 
     else:
         # Fallback to zlib (standard library)
@@ -97,8 +99,7 @@ def fast_compress(
 
 
 def fast_decompress(
-    data: bytes,
-    algorithm: CompressionAlgorithm = CompressionAlgorithm.LZ4
+    data: bytes, algorithm: CompressionAlgorithm = CompressionAlgorithm.LZ4
 ) -> bytes:
     """Ultra-fast decompression.
 
@@ -110,10 +111,10 @@ def fast_decompress(
         Decompressed bytes
     """
     if algorithm == CompressionAlgorithm.LZ4 and HAS_LZ4:
-        return lz4.frame.decompress(data)
+        return lz4.frame.decompress(data)  # type: ignore[no-any-return]
 
     elif algorithm == CompressionAlgorithm.SNAPPY and HAS_SNAPPY:
-        return snappy.decompress(data)
+        return snappy.decompress(data)  # type: ignore[no-any-return]
 
     else:
         return zlib.decompress(data)
@@ -125,13 +126,13 @@ class FastCompressor:
     Maintains compression settings and provides streaming compression.
     """
 
-    __slots__ = ('_algorithm', '_level', '_stats')
+    __slots__ = ("_algorithm", "_level", "_stats")
 
     def __init__(
         self,
         algorithm: CompressionAlgorithm = CompressionAlgorithm.LZ4,
-        level: CompressionLevel = CompressionLevel.FAST
-    ):
+        level: CompressionLevel = CompressionLevel.FAST,
+    ) -> None:
         """Initialize compressor.
 
         Args:
@@ -141,9 +142,9 @@ class FastCompressor:
         self._algorithm = algorithm
         self._level = level
         self._stats = {
-            'compressed_bytes': 0,
-            'original_bytes': 0,
-            'operations': 0,
+            "compressed_bytes": 0,
+            "original_bytes": 0,
+            "operations": 0,
         }
 
     def compress(self, data: bytes) -> bytes:
@@ -158,9 +159,9 @@ class FastCompressor:
         compressed = fast_compress(data, self._algorithm, self._level)
 
         # Update stats
-        self._stats['original_bytes'] += len(data)
-        self._stats['compressed_bytes'] += len(compressed)
-        self._stats['operations'] += 1
+        self._stats["original_bytes"] += len(data)
+        self._stats["compressed_bytes"] += len(compressed)
+        self._stats["operations"] += 1
 
         return compressed
 
@@ -181,12 +182,12 @@ class FastCompressor:
         Returns:
             Compression ratio (compressed/original)
         """
-        if self._stats['original_bytes'] == 0:
+        if self._stats["original_bytes"] == 0:
             return 0.0
 
-        return self._stats['compressed_bytes'] / self._stats['original_bytes']
+        return self._stats["compressed_bytes"] / self._stats["original_bytes"]
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Get compression statistics.
 
         Returns:
@@ -194,8 +195,8 @@ class FastCompressor:
         """
         return {
             **self._stats,
-            'compression_ratio': self.get_compression_ratio(),
-            'space_saved_percent': (1 - self.get_compression_ratio()) * 100,
+            "compression_ratio": self.get_compression_ratio(),
+            "space_saved_percent": (1 - self.get_compression_ratio()) * 100,
         }
 
 
@@ -275,9 +276,9 @@ class AdaptiveCompressor:
     Automatically switches between compression algorithms based on data patterns.
     """
 
-    __slots__ = ('_compressor', '_min_size', '_stats')
+    __slots__ = ("_compressor", "_min_size", "_stats")
 
-    def __init__(self, min_size: int = 1024):
+    def __init__(self, min_size: int = 1024) -> None:
         """Initialize adaptive compressor.
 
         Args:
@@ -286,9 +287,9 @@ class AdaptiveCompressor:
         self._compressor = FastCompressor()
         self._min_size = min_size
         self._stats = {
-            'compressed': 0,
-            'skipped': 0,
-            'total_saved': 0,
+            "compressed": 0,
+            "skipped": 0,
+            "total_saved": 0,
         }
 
     def compress(self, data: bytes) -> tuple[bytes, bool]:
@@ -302,18 +303,18 @@ class AdaptiveCompressor:
         """
         if len(data) < self._min_size:
             # Too small to benefit from compression
-            self._stats['skipped'] += 1
+            self._stats["skipped"] += 1
             return data, False
 
         compressed = self._compressor.compress(data)
 
         if len(compressed) >= len(data) * 0.9:
             # Compression not effective (< 10% reduction)
-            self._stats['skipped'] += 1
+            self._stats["skipped"] += 1
             return data, False
 
-        self._stats['compressed'] += 1
-        self._stats['total_saved'] += len(data) - len(compressed)
+        self._stats["compressed"] += 1
+        self._stats["total_saved"] += len(data) - len(compressed)
         return compressed, True
 
     def decompress(self, data: bytes, was_compressed: bool) -> bytes:
@@ -331,21 +332,21 @@ class AdaptiveCompressor:
 
         return self._compressor.decompress(data)
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Get adaptive compression statistics.
 
         Returns:
             Statistics dictionary
         """
-        total = self._stats['compressed'] + self._stats['skipped']
+        total = self._stats["compressed"] + self._stats["skipped"]
         return {
             **self._stats,
-            'total_operations': total,
-            'compression_rate': self._stats['compressed'] / total if total > 0 else 0,
+            "total_operations": total,
+            "compression_rate": self._stats["compressed"] / total if total > 0 else 0,
         }
 
 
-def get_compression_stats() -> dict:
+def get_compression_stats() -> dict[str, Any]:
     """Get compression library availability and performance info.
 
     Returns:
@@ -363,5 +364,5 @@ def get_compression_stats() -> dict:
             "api_responses": "lz4 (fast)" if HAS_LZ4 else "zlib",
             "file_storage": "lz4 (balanced)" if HAS_LZ4 else "zlib",
             "database_blobs": "snappy" if HAS_SNAPPY else "lz4",
-        }
+        },
     }

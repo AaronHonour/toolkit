@@ -1,5 +1,4 @@
-"""
-Event System Module.
+"""Event System Module.
 
 Provides pub/sub event bus with:
 - Event definition and typing
@@ -8,7 +7,7 @@ Provides pub/sub event bus with:
 - Event filtering
 """
 
-from .bus import EventBus, Event, event_handler
+from .bus import Event, EventBus, event_handler
 from .dispatcher import EventDispatcher
 
 __all__ = ["EventBus", "Event", "event_handler", "EventDispatcher"]

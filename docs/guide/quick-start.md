@@ -1,6 +1,6 @@
 # Quick Start
 
-Get up and running with Composable Toolkit in 5 minutes.
+Get up and running with Unistax in 5 minutes.
 
 ## Prerequisites
 
@@ -14,11 +14,11 @@ Get up and running with Composable Toolkit in 5 minutes.
 
 ```bash
 # Install from PyPI (when published)
-pip install composable-toolkit
+pip install unistax
 
 # Or install from source
-git clone https://github.com/yourusername/toolkit
-cd toolkit
+git clone https://github.com/AaronHonour/unistax
+cd unistax/python
 pip install -e ".[dev]"
 ```
 
@@ -26,36 +26,36 @@ pip install -e ".[dev]"
 
 ```bash
 # Install packages
-npm install @composable/atoms @composable/performance @composable/design-tokens
+npm install @unistax/atoms @unistax/performance @unistax/design-tokens
 
 # Or clone and build from source
-git clone https://github.com/yourusername/toolkit
-cd toolkit/frontend
+git clone https://github.com/AaronHonour/unistax
+cd unistax/frontend
 npm install
 npm run build
 ```
 
-### Full Stack (All 19 Apps)
+### Full Stack (All 20 Apps)
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/toolkit
-cd toolkit
+git clone https://github.com/AaronHonour/unistax
+cd unistax
 
 # Start everything with Docker
 docker-compose up
 ```
 
 Access the applications:
-- **Backend APIs**: http://localhost:8000-8019
-- **Frontend Apps**: http://localhost:3001-3019
+- **Backend APIs**: http://localhost:8000-8020
+- **Frontend Apps**: http://localhost:3001-3020
 
 ## Your First Backend Module
 
 ### 1. Simple Cache Usage
 
 ```python
-from toolkit.cache import CacheManager
+from unistax.cache import CacheManager
 
 # Create cache instance
 cache = CacheManager(backend="memory")
@@ -78,7 +78,7 @@ cache.delete("user:123")
 ### 2. Rate Limiting
 
 ```python
-from toolkit.ratelimit import RateLimiter
+from unistax.ratelimit import RateLimiter
 
 # 100 requests per minute per user
 limiter = RateLimiter(rate=100, period=60)
@@ -97,7 +97,7 @@ else:
 ### 3. Configuration Management
 
 ```python
-from toolkit.config import ConfigManager
+from unistax.config import ConfigManager
 
 # Load configuration from YAML
 config = ConfigManager.from_file("config.yaml")
@@ -114,7 +114,7 @@ if config.get("environment") == "production":
 ### 4. Structured Logging
 
 ```python
-from toolkit.logging import LogManager
+from unistax.logging import LogManager
 
 # Create logger
 logger = LogManager.get_logger(__name__)
@@ -138,7 +138,7 @@ with logger.timer("database_query"):
 ### 1. Using Atomic Components
 
 ```tsx
-import { Button } from '@composable/atoms'
+import { Button } from '@unistax/atoms'
 import { useState } from 'react'
 
 function MyComponent() {
@@ -168,7 +168,7 @@ function MyComponent() {
 ### 2. Using Performance Hooks
 
 ```tsx
-import { useDebounce } from '@composable/performance'
+import { useDebounce } from '@unistax/performance'
 import { useState, useEffect } from 'react'
 
 function SearchComponent() {
@@ -195,7 +195,7 @@ function SearchComponent() {
 ### 3. Using Virtual Scroll for Large Lists
 
 ```tsx
-import { useVirtualScroll } from '@composable/performance'
+import { useVirtualScroll } from '@unistax/performance'
 
 function LargeList({ items }) {
   const {
@@ -228,7 +228,7 @@ function LargeList({ items }) {
 ### 4. Using LRU Memoization
 
 ```tsx
-import { useLRUMemo } from '@composable/performance'
+import { useLRUMemo } from '@unistax/performance'
 
 function ExpensiveComponent({ data }) {
   // Cache last 100 computation results
@@ -251,8 +251,8 @@ Let's build a simple user profile cache with rate limiting:
 ```python
 # backend/api.py
 from fastapi import FastAPI, HTTPException, Request
-from toolkit.cache import CacheManager
-from toolkit.ratelimit import RateLimiter
+from unistax.cache import CacheManager
+from unistax.ratelimit import RateLimiter
 
 app = FastAPI()
 cache = CacheManager(backend="redis", host="localhost")
@@ -284,8 +284,8 @@ async def get_user(user_id: str, request: Request):
 ```tsx
 // frontend/UserProfile.tsx
 import { useState, useEffect } from 'react'
-import { Button, Spinner, Badge } from '@composable/atoms'
-import { useDebounce } from '@composable/performance'
+import { Button, Spinner, Badge } from '@unistax/atoms'
+import { useDebounce } from '@unistax/performance'
 
 interface User {
   id: string
@@ -363,7 +363,7 @@ export function UserProfile({ userId }: { userId: string }) {
 ### Option 1: Docker (Recommended)
 
 ```bash
-# Start all 19 apps
+# Start all 20 apps
 docker-compose up
 
 # Start specific app
@@ -377,11 +377,11 @@ docker-compose logs -f app01-inventory
 
 ```bash
 # Backend (in separate terminals)
-cd backend/examples/01-inventory
+cd examples/backends/01_inventory
 python main.py
 
 # Frontend
-cd frontend/apps/01-inventory
+cd examples/frontends/01-inventory
 npm run dev
 ```
 
@@ -397,14 +397,14 @@ pip install -e ".[dev]"
 pytest
 
 # Run with coverage
-pytest --cov=src/toolkit --cov-report=html
+pytest --cov=unistax --cov-report=html
 
 # Run linting
-ruff check src/
-black --check src/
+ruff check src/unistax tests
+black --check src/unistax tests
 
 # Run type checking
-mypy src/
+mypy src/unistax
 ```
 
 ### Frontend Development
@@ -495,7 +495,7 @@ VITE_CACHE_SIZE=1000
 
 Now that you have the basics:
 
-1. **Explore the 19 Example Apps** - See real-world implementations
+1. **Explore the 20 Example Apps** - See real-world implementations
 2. **Read the Architecture Guide** - Understand design patterns
 3. **Check API Documentation** - Detailed module references
 4. **Read Pattern Deep-Dives** - Learn when and how to use each pattern
@@ -530,8 +530,8 @@ npm install
 ## Getting Help
 
 - **Documentation**: [Read the full docs](/guide/introduction)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/toolkit/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/toolkit/discussions)
+- **Issues**: [GitHub Issues](https://github.com/AaronHonour/unistax/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/AaronHonour/unistax/discussions)
 
 ---
 

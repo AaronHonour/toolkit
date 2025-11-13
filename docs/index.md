@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: Composable Toolkit
+  name: Unistax
   text: Enterprise-Grade Building Blocks
   tagline: Build scalable, composable applications with battle-tested patterns and high-quality abstractions
   actions:
@@ -11,15 +11,15 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: View on GitHub
-      link: https://github.com/yourusername/toolkit
+      link: https://github.com/AaronHonour/unistax
   image:
     src: /logo.svg
-    alt: Composable Toolkit
+    alt: Unistax
 
 features:
   - icon: 🧩
     title: Composable by Design
-    details: 19 independent modules that work together seamlessly. Adopt what you need, when you need it.
+    details: 20 independent modules that work together seamlessly. Adopt what you need, when you need it.
 
   - icon: ⚡
     title: Performance First
@@ -48,8 +48,8 @@ features:
 ::: code-group
 
 ```python [Backend]
-from toolkit.cache import CacheManager
-from toolkit.ratelimit import RateLimiter
+from unistax.cache import CacheManager
+from unistax.ratelimit import RateLimiter
 
 # Blazing fast cache
 cache = CacheManager(backend="memory")
@@ -63,8 +63,8 @@ if limiter.is_allowed("user:123"):
 ```
 
 ```typescript [Frontend]
-import { Button } from '@composable/atoms'
-import { useDebounce, useLRUMemo } from '@composable/performance'
+import { Button } from '@unistax/atoms'
+import { useDebounce, useLRUMemo } from '@unistax/performance'
 
 function SearchComponent() {
   const [query, setQuery] = useState('')
@@ -99,13 +99,13 @@ function SearchComponent() {
 - **Design Tokens**: Complete design system
 - **Performance Hooks**: useLRUMemo, useDebounce, useVirtualScroll
 
-### 19 Full-Stack Example Apps
+### 20 Full-Stack Example Apps
 
 Each backend pattern has a corresponding frontend UI:
 - E-Commerce Inventory Management
 - Real-Time Analytics Dashboard
-- Distributed Cache Browser
-- And 16 more...
+- Service Dependency Graph Builder
+- And 17 more...
 
 ## Performance Benchmarks
 
@@ -117,7 +117,7 @@ Each backend pattern has a corresponding frontend UI:
 | Frontend Button | Render time | < 1ms |
 | Virtual Scroll | FPS with 1M items | 60fps |
 
-## Why Toolkit?
+## Why Unistax?
 
 **Built for senior engineers** making strategic architecture decisions:
 
@@ -136,7 +136,7 @@ Each backend pattern has a corresponding frontend UI:
 
 ## Community
 
-- **GitHub**: [Star the repo](https://github.com/yourusername/toolkit)
+- **GitHub**: [Star the repo](https://github.com/AaronHonour/unistax)
 - **Discussions**: Ask questions, share projects
 - **Discord** (coming soon): Real-time community chat
 
@@ -144,7 +144,7 @@ Each backend pattern has a corresponding frontend UI:
 
 <div class="footer-stats">
   <div class="stat">
-    <div class="stat-value">19</div>
+    <div class="stat-value">20</div>
     <div class="stat-label">Modules</div>
   </div>
   <div class="stat">

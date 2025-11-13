@@ -1,31 +1,33 @@
 """Queue backends."""
 
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List
-from unistax.queue.manager import Message
 import uuid
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+from typing import Any
+
+from unistax.queue.manager import Message
 
 
 class QueueBackend(ABC):
     """Base queue backend."""
 
     @abstractmethod
-    def send(self, queue_name: str, message: Any, attributes: Dict[str, Any]) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any]) -> str:
         """Send message."""
         pass
 
     @abstractmethod
-    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> List[Message]:
+    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> list[Message]:
         """Receive messages."""
         pass
 
     @abstractmethod
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete message."""
         pass
 
     @abstractmethod
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to queue."""
         pass
 
@@ -33,25 +35,25 @@ class QueueBackend(ABC):
 class RedisQueue(QueueBackend):
     """Redis queue backend."""
 
-    def __init__(self, redis_client: Any):
+    def __init__(self, redis_client: Any) -> None:
         """Initialize Redis queue."""
         self.redis = redis_client
 
-    def send(self, queue_name: str, message: Any, attributes: Dict[str, Any]) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any]) -> str:
         """Send to Redis queue."""
         message_id = str(uuid.uuid4())
         # Implementation requires redis client
         return message_id
 
-    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> List[Message]:
+    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> list[Message]:
         """Receive from Redis queue."""
         return []
 
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete from Redis queue."""
         pass
 
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to Redis queue."""
         pass
 
@@ -59,24 +61,24 @@ class RedisQueue(QueueBackend):
 class RabbitMQQueue(QueueBackend):
     """RabbitMQ queue backend."""
 
-    def __init__(self, connection_string: str):
+    def __init__(self, connection_string: str) -> None:
         """Initialize RabbitMQ queue."""
         self.connection_string = connection_string
 
-    def send(self, queue_name: str, message: Any, attributes: Dict[str, Any]) -> str:
+    def send(self, queue_name: str, message: Any, attributes: dict[str, Any]) -> str:
         """Send to RabbitMQ."""
         message_id = str(uuid.uuid4())
         # Implementation requires pika
         return message_id
 
-    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> List[Message]:
+    def receive(self, queue_name: str, max_messages: int, wait_time: int) -> list[Message]:
         """Receive from RabbitMQ."""
         return []
 
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete from RabbitMQ."""
         pass
 
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to RabbitMQ."""
         pass

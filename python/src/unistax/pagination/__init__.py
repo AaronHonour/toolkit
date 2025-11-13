@@ -1,7 +1,7 @@
 """Pagination, filtering, and sorting module."""
 
-from unistax.pagination.paginator import Paginator, Page, PaginationParams
-from unistax.pagination.filters import FilterSet, Filter, FilterOperator
+from unistax.pagination.filters import Filter, FilterOperator, FilterSet
+from unistax.pagination.paginator import Page, PaginationParams, Paginator
 from unistax.pagination.sorter import Sorter, SortField, SortOrder
 
 __all__ = [

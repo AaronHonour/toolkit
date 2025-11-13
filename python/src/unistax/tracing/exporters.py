@@ -1,12 +1,15 @@
 """Trace exporters configuration."""
 
-from enum import Enum
 from dataclasses import dataclass
-from typing import Optional
-from opentelemetry.sdk.trace.export import SpanExporter, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.zipkin.json import ZipkinExporter
+from enum import Enum
+
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter  # type: ignore[import-not-found]
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter  # type: ignore[import-not-found]
+from opentelemetry.exporter.zipkin.json import ZipkinExporter  # type: ignore[import-not-found]
+from opentelemetry.sdk.trace.export import (  # type: ignore[import-not-found]
+    ConsoleSpanExporter,
+    SpanExporter,
+)
 
 
 class ExporterType(str, Enum):
@@ -23,11 +26,11 @@ class ExporterConfig:
     """Exporter configuration."""
 
     type: ExporterType
-    endpoint: Optional[str] = None
-    service_name: Optional[str] = None
-    agent_host: Optional[str] = None
-    agent_port: Optional[int] = None
-    max_tag_value_length: Optional[int] = None
+    endpoint: str | None = None
+    service_name: str | None = None
+    agent_host: str | None = None
+    agent_port: int | None = None
+    max_tag_value_length: int | None = None
     insecure: bool = False
 
 
@@ -47,7 +50,7 @@ def create_exporter(config: ExporterConfig) -> SpanExporter:
         return ConsoleSpanExporter()
 
     elif config.type == ExporterType.JAEGER:
-        kwargs = {}
+        kwargs: dict[str, int | str] = {}
         if config.agent_host:
             kwargs["agent_host_name"] = config.agent_host
         if config.agent_port:
@@ -58,22 +61,22 @@ def create_exporter(config: ExporterConfig) -> SpanExporter:
         return JaegerExporter(**kwargs)
 
     elif config.type == ExporterType.ZIPKIN:
-        kwargs = {}
+        zipkin_kwargs: dict[str, int | str] = {}
         if config.endpoint:
-            kwargs["endpoint"] = config.endpoint
+            zipkin_kwargs["endpoint"] = config.endpoint
         if config.max_tag_value_length:
-            kwargs["max_tag_value_length"] = config.max_tag_value_length
+            zipkin_kwargs["max_tag_value_length"] = config.max_tag_value_length
 
-        return ZipkinExporter(**kwargs)
+        return ZipkinExporter(**zipkin_kwargs)
 
     elif config.type == ExporterType.OTLP:
-        kwargs = {}
+        otlp_kwargs: dict[str, bool | str] = {}
         if config.endpoint:
-            kwargs["endpoint"] = config.endpoint
+            otlp_kwargs["endpoint"] = config.endpoint
         if config.insecure:
-            kwargs["insecure"] = config.insecure
+            otlp_kwargs["insecure"] = config.insecure
 
-        return OTLPSpanExporter(**kwargs)
+        return OTLPSpanExporter(**otlp_kwargs)
 
     else:
         raise ValueError(f"Unknown exporter type: {config.type}")

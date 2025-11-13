@@ -3,8 +3,9 @@
 import asyncio
 import signal
 import sys
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from .health import HealthCheck, HealthCheckRegistry
 from .hooks import LifecycleHook
@@ -19,8 +20,7 @@ class LifecycleEvent(str, Enum):
 
 
 class Application:
-    """
-    Application lifecycle manager.
+    """Application lifecycle manager.
 
     Manages startup, shutdown, and health checks.
 
@@ -42,9 +42,8 @@ class Application:
         >>> await app.start()
     """
 
-    def __init__(self, name: str = "app", shutdown_timeout: float = 30.0):
-        """
-        Initialize application.
+    def __init__(self, name: str = "app", shutdown_timeout: float = 30.0) -> None:
+        """Initialize application.
 
         Args:
             name: Application name
@@ -52,15 +51,14 @@ class Application:
         """
         self.name = name
         self.shutdown_timeout = shutdown_timeout
-        self._startup_hooks: List[LifecycleHook] = []
-        self._shutdown_hooks: List[LifecycleHook] = []
+        self._startup_hooks: list[LifecycleHook] = []
+        self._shutdown_hooks: list[LifecycleHook] = []
         self._health_registry = HealthCheckRegistry()
         self._is_running = False
         self._signal_handlers_installed = False
 
-    def on_startup(self, func: Callable) -> Callable:
-        """
-        Register startup hook.
+    def on_startup(self, func: Callable[..., Any]) -> Callable[..., Any]:
+        """Register startup hook.
 
         Args:
             func: Startup function (can be sync or async)
@@ -72,9 +70,8 @@ class Application:
         self._startup_hooks.append(hook)
         return func
 
-    def on_shutdown(self, func: Callable) -> Callable:
-        """
-        Register shutdown hook.
+    def on_shutdown(self, func: Callable[..., Any]) -> Callable[..., Any]:
+        """Register shutdown hook.
 
         Args:
             func: Shutdown function (can be sync or async)
@@ -86,11 +83,8 @@ class Application:
         self._shutdown_hooks.append(hook)
         return func
 
-    def health_check(
-        self, name: Optional[str] = None, check_type: str = "readiness"
-    ) -> Callable:
-        """
-        Register health check.
+    def health_check(self, name: str | None = None, check_type: str = "readiness") -> Callable[..., Any]:  # noqa: E501
+        """Register health check.
 
         Args:
             name: Health check name (defaults to function name)
@@ -100,7 +94,7 @@ class Application:
             Decorator function
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             check_name = name or func.__name__
             health_check = HealthCheck(check_name, func, check_type)
             self._health_registry.register(health_check)
@@ -109,8 +103,7 @@ class Application:
         return decorator
 
     async def start(self) -> None:
-        """
-        Start the application.
+        """Start the application.
 
         Runs all startup hooks and installs signal handlers.
         """
@@ -135,8 +128,7 @@ class Application:
         print(f"✓ Application started: {self.name}")
 
     async def stop(self) -> None:
-        """
-        Stop the application.
+        """Stop the application.
 
         Runs all shutdown hooks with timeout.
         """
@@ -148,9 +140,7 @@ class Application:
 
         # Run shutdown hooks with timeout
         try:
-            await asyncio.wait_for(
-                self._run_shutdown_hooks(), timeout=self.shutdown_timeout
-            )
+            await asyncio.wait_for(self._run_shutdown_hooks(), timeout=self.shutdown_timeout)
             print(f"✓ Application stopped gracefully: {self.name}")
         except asyncio.TimeoutError:
             print(f"⚠ Shutdown timeout exceeded: {self.name}")
@@ -170,7 +160,7 @@ class Application:
         if self._signal_handlers_installed:
             return
 
-        def signal_handler(sig, frame):
+        def signal_handler(sig: Any, frame: Any) -> None:
             print(f"\nReceived signal {sig}, initiating graceful shutdown...")
             asyncio.create_task(self.stop())
 
@@ -181,9 +171,8 @@ class Application:
 
         self._signal_handlers_installed = True
 
-    def get_health_status(self) -> Dict[str, Any]:
-        """
-        Get application health status.
+    def get_health_status(self) -> dict[str, Any]:
+        """Get application health status.
 
         Returns:
             Dictionary with health check results
@@ -191,8 +180,7 @@ class Application:
         return self._health_registry.check_all()
 
     def is_healthy(self) -> bool:
-        """
-        Check if application is healthy.
+        """Check if application is healthy.
 
         Returns:
             True if all health checks pass
@@ -201,8 +189,7 @@ class Application:
         return status.get("status") == "healthy"
 
     def is_ready(self) -> bool:
-        """
-        Check if application is ready to serve requests.
+        """Check if application is ready to serve requests.
 
         Returns:
             True if running and readiness checks pass
@@ -213,8 +200,7 @@ class Application:
         return self._health_registry.check_readiness()
 
     def is_alive(self) -> bool:
-        """
-        Check if application is alive (liveness check).
+        """Check if application is alive (liveness check).
 
         Returns:
             True if running and liveness checks pass
@@ -225,4 +211,5 @@ class Application:
         return self._health_registry.check_liveness()
 
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"Application(name={self.name}, running={self._is_running})"

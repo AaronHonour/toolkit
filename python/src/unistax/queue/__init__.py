@@ -1,7 +1,7 @@
 """Message queue integration module."""
 
-from unistax.queue.manager import QueueManager, Message
-from unistax.queue.backends import QueueBackend, RedisQueue, RabbitMQQueue
+from unistax.queue.backends import QueueBackend, RabbitMQQueue, RedisQueue
+from unistax.queue.manager import Message, QueueManager
 
 __all__ = [
     "QueueManager",

@@ -1,20 +1,16 @@
-"""
-Custom log handlers.
+"""Custom log handlers.
 
 Provides specialized handlers for enterprise logging needs.
 """
 
 import gzip
-import logging
 import shutil
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
 
 
 class RotatingFileHandlerWithCompression(RotatingFileHandler):
-    """
-    Rotating file handler with gzip compression.
+    """Rotating file handler with gzip compression.
 
     Automatically compresses rotated log files to save disk space.
     """
@@ -25,12 +21,11 @@ class RotatingFileHandlerWithCompression(RotatingFileHandler):
         mode: str = "a",
         maxBytes: int = 0,
         backupCount: int = 0,
-        encoding: Optional[str] = None,
+        encoding: str | None = None,
         delay: bool = False,
         compress: bool = True,
     ) -> None:
-        """
-        Initialize rotating file handler with compression.
+        """Initialize rotating file handler with compression.
 
         Args:
             filename: Log file name
@@ -45,8 +40,7 @@ class RotatingFileHandlerWithCompression(RotatingFileHandler):
         self.compress = compress
 
     def doRollover(self) -> None:
-        """
-        Perform log rotation with optional compression.
+        """Perform log rotation with optional compression.
 
         Overrides parent method to add compression.
         """
@@ -83,8 +77,7 @@ class RotatingFileHandlerWithCompression(RotatingFileHandler):
             self.stream = self._open()
 
     def _compress_file(self, filename: str) -> None:
-        """
-        Compress a log file using gzip.
+        """Compress a log file using gzip.
 
         Args:
             filename: File to compress

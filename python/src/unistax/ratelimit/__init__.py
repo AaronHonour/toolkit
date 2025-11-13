@@ -1,10 +1,9 @@
-"""
-Rate Limiting Module.
+"""Rate Limiting Module.
 
 Provides rate limiting with multiple algorithms.
 """
 
-from .limiter import RateLimiter, RateLimit
-from .algorithms import TokenBucket, SlidingWindow
+from .algorithms import SlidingWindow, TokenBucket
+from .limiter import RateLimit, RateLimiter
 
 __all__ = ["RateLimiter", "RateLimit", "TokenBucket", "SlidingWindow"]
