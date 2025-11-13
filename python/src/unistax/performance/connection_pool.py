@@ -47,7 +47,7 @@ class PooledConnection(Generic[T]):
 class ConnectionPool(Generic[T]):
     """Generic connection pool implementation."""
 
-    def __init__(self, connection_factory: Callable[[], T], config: PoolConfig | None = None) -> None:
+    def __init__(self, connection_factory: Callable[[], T], config: PoolConfig | None = None) -> None:  # noqa: E501
         """Initialize connection pool.
 
         Args:

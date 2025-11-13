@@ -53,7 +53,7 @@ class Validator:
         self.rules: dict[str, list[tuple[Callable[..., Any], str]]] = {}
         self.errors: dict[str, list[str]] = {}
 
-    def add_rule(self, field: str, rule: Callable[..., Any], error_message: str = "Validation failed") -> None:
+    def add_rule(self, field: str, rule: Callable[..., Any], error_message: str = "Validation failed") -> None:  # noqa: E501
         """Add validation rule for field."""
         if field not in self.rules:
             self.rules[field] = []

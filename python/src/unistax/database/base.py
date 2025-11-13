@@ -4,7 +4,10 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Boolean, Column, DateTime, Integer  # type: ignore[import-not-found]
-from sqlalchemy.ext.declarative import declarative_base, declared_attr  # type: ignore[import-not-found]
+from sqlalchemy.ext.declarative import (  # type: ignore[import-not-found]
+    declarative_base,
+    declared_attr,
+)
 from sqlalchemy.orm import DeclarativeMeta  # type: ignore[import-not-found]
 
 # Base class for all models

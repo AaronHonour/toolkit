@@ -6,7 +6,7 @@ Target: 90% reduction in allocations for reusable objects.
 
 import threading
 import time
-from collections.abc import Callable, Generator, Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from queue import Empty, Full, Queue

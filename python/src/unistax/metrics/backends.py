@@ -205,9 +205,9 @@ class PrometheusBackend(MetricsBackend):
             return self._fallback.get_metrics()
 
         # Return Prometheus metrics in text format
-        return prometheus_client.Summary(*args, **kwargs)  # type: ignore
+        import prometheus_client
 
-        import prometheus_client; return prometheus_client.generate_latest(self._registry)
+        return prometheus_client.generate_latest(self._registry)  # type: ignore[no-any-return]
 
     def reset(self) -> None:
         """Reset all metrics."""

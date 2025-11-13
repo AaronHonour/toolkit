@@ -83,7 +83,7 @@ class Application:
         self._shutdown_hooks.append(hook)
         return func
 
-    def health_check(self, name: str | None = None, check_type: str = "readiness") -> Callable[..., Any]:
+    def health_check(self, name: str | None = None, check_type: str = "readiness") -> Callable[..., Any]:  # noqa: E501
         """Register health check.
 
         Args:

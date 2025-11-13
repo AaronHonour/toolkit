@@ -10,7 +10,7 @@ from typing import Any
 from .manager import get_metrics
 
 
-def timer(name: str, labels: dict[str, str] | None = None) -> Callable[..., Any]:
+def timer(name: str, labels: dict[str, str] | None = None) -> Callable[..., Any]:  # noqa: E501
     """Decorator to time function execution.
 
     Args:
@@ -35,7 +35,7 @@ def timer(name: str, labels: dict[str, str] | None = None) -> Callable[..., Any]
     return decorator
 
 
-def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> Callable[..., Any]:
+def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> Callable[..., Any]:  # noqa: E501
     """Decorator to increment counter on function call.
 
     Args:

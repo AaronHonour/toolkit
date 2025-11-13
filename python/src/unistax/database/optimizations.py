@@ -109,7 +109,7 @@ class QueryCache:
                 self._stats["misses"] += 1
                 return None
 
-    def set(self, query: str, result: Any, params: dict[str, Any]| None = None, ttl: int | None = None) -> None:
+    def set(self, query: str, result: Any, params: dict[str, Any]| None = None, ttl: int | None = None) -> None:  # noqa: E501
         """Cache query result.
 
         Args:
@@ -158,7 +158,7 @@ class QueryCache:
 
         return result
 
-    def invalidate(self, query: str, params: dict[str, Any]| None = None) -> None:
+    def invalidate(self, query: str, params: dict[str, Any]| None = None) -> None:  # noqa: E501
         """Invalidate cached query.
 
         Args:
@@ -284,7 +284,7 @@ class QueryBatcher:
         self._params: list[dict[str, Any]] = []
         self._results: list[Any] = []
 
-    def add(self, query: str, params: dict[str, Any]| None = None) -> None:
+    def add(self, query: str, params: dict[str, Any]| None = None) -> None:  # noqa: E501
         """Add query to batch.
 
         Args:
@@ -484,7 +484,7 @@ class QueryProfiler:
         self._queries: list[dict[str, Any]] = []
         self._lock = threading.Lock()
 
-    def profile_query(self, query: str, duration: float, params: dict[str, Any]| None = None) -> None:
+    def profile_query(self, query: str, duration: float, params: dict[str, Any]| None = None) -> None:  # noqa: E501
         """Record query execution.
 
         Args:

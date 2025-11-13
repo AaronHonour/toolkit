@@ -39,7 +39,7 @@ class NotificationManager:
         """Initialize notification manager."""
         self.channels: dict[NotificationChannel, ChannelBackend] = {}
 
-    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend") -> None:
+    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend") -> None:  # noqa: E501
         """Register channel backend.
 
         Args:
