@@ -1328,6 +1328,198 @@ If you discover a security vulnerability:
 
 ---
 
+## Testing
+
+Comprehensive test suites have been implemented for all security features to ensure reliability and prevent regressions.
+
+### Test Coverage
+
+**Test Files:**
+- `tests/security/test_jwt.py` - JWT implementation tests (25+ tests)
+- `tests/security/test_csrf.py` - CSRF protection tests (20+ tests)
+- `tests/security/test_ratelimit.py` - Rate limiting tests (15+ tests)
+- `tests/security/test_secrets.py` - Secrets management tests (30+ tests)
+
+**Total:** 90+ comprehensive security tests
+
+### Running Tests
+
+**Install test dependencies:**
+```bash
+pip install -r requirements-dev.txt
+```
+
+**Run all tests:**
+```bash
+pytest
+```
+
+**Run specific test file:**
+```bash
+pytest tests/security/test_jwt.py
+pytest tests/security/test_csrf.py
+pytest tests/security/test_ratelimit.py
+pytest tests/security/test_secrets.py
+```
+
+**Run tests by marker:**
+```bash
+pytest -m jwt          # Run JWT tests only
+pytest -m csrf         # Run CSRF tests only
+pytest -m ratelimit    # Run rate limiting tests only
+pytest -m secrets      # Run secrets management tests only
+pytest -m unit         # Run unit tests only
+pytest -m integration  # Run integration tests only
+```
+
+**Run with coverage:**
+```bash
+pytest --cov=src/unistax --cov-report=html --cov-report=term-missing
+```
+
+**Run in parallel (faster):**
+```bash
+pytest -n auto  # Requires pytest-xdist
+```
+
+### Test Categories
+
+**JWT Tests** (`test_jwt.py`):
+- ✅ Basic token generation and validation
+- ✅ Token expiration and not-before claims
+- ✅ Invalid signature detection
+- ✅ Audience and issuer validation
+- ✅ Multiple algorithm support (HS256, HS384, HS512)
+- ✅ Custom claims handling
+- ✅ Clock skew handling with leeway
+- ✅ Weak secret warnings
+
+**CSRF Tests** (`test_csrf.py`):
+- ✅ Token generation and validation
+- ✅ Double-submit pattern verification
+- ✅ Token mismatch detection
+- ✅ Token expiration
+- ✅ User-specific token binding
+- ✅ Invalid signature detection
+- ✅ Token format validation
+- ✅ Multiple tokens with same secret
+
+**Rate Limiting Tests** (`test_ratelimit.py`):
+- ✅ Basic rate limiting enforcement
+- ✅ Rate limit info tracking
+- ✅ Independent keys
+- ✅ Window reset after expiration
+- ✅ Manual reset functionality
+- ✅ Clear all limits
+- ✅ Multi-token consumption
+- ✅ Concurrent requests simulation
+- ✅ In-memory storage backend
+
+**Secrets Management Tests** (`test_secrets.py`):
+- ✅ Environment backend (get, set, delete, list)
+- ✅ File backend with secure permissions
+- ✅ .env file loading
+- ✅ Type conversion (int, bool, float, JSON, list)
+- ✅ Caching with TTL
+- ✅ Multiple backend fallback
+- ✅ Required secrets validation
+- ✅ Read-only mode
+- ✅ Insecure permissions warnings
+- ✅ Invalid JSON handling
+
+### Test Best Practices
+
+1. **Run tests before committing:**
+   ```bash
+   pytest tests/security/
+   ```
+
+2. **Ensure all tests pass:**
+   ```bash
+   pytest --tb=short -v
+   ```
+
+3. **Check test coverage:**
+   ```bash
+   pytest --cov=src/unistax/security --cov-report=term-missing
+   ```
+
+4. **Run linting before tests:**
+   ```bash
+   ruff check src/ tests/
+   black --check src/ tests/
+   ```
+
+### Continuous Integration
+
+Add to your CI pipeline:
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check src/ tests/
+      - run: black --check src/ tests/
+      - run: pytest --cov=src/unistax --cov-report=xml
+      - uses: codecov/codecov-action@v3
+```
+
+### Adding New Tests
+
+When implementing new security features:
+
+1. **Create test file** in `tests/security/test_feature.py`
+2. **Add test markers** (`@pytest.mark.unit`, `@pytest.mark.feature`)
+3. **Write comprehensive tests** covering:
+   - Normal operation
+   - Edge cases
+   - Error conditions
+   - Security scenarios
+4. **Run tests** to ensure they pass
+5. **Update this documentation** with new test info
+
+**Example test structure:**
+```python
+import pytest
+from unistax.security import MyFeature
+
+@pytest.mark.unit
+@pytest.mark.myfeature
+class TestMyFeature:
+    """Test my security feature."""
+
+    def test_basic_functionality(self):
+        """Test basic feature operation."""
+        feature = MyFeature(config="value")
+        result = feature.process("input")
+        assert result == "expected"
+
+    def test_error_handling(self):
+        """Test error conditions."""
+        feature = MyFeature(config="value")
+        with pytest.raises(ValueError):
+            feature.process("invalid")
+
+    def test_security_scenario(self):
+        """Test security-specific scenario."""
+        feature = MyFeature(config="value")
+        # Test attack scenario
+        assert feature.is_secure() is True
+```
+
+---
+
 ## Changelog
 
 ### 2024-11-13
@@ -1365,6 +1557,15 @@ If you discover a security vulnerability:
 - ✅ In-memory caching with configurable TTL
 - ✅ Fallback mechanism across multiple backends
 - ✅ Secure file permissions enforcement (0600/0400)
+- ✅ Implemented comprehensive security test suite
+- ✅ Added 90+ unit and integration tests for all security features
+- ✅ JWT tests (25+ tests): token generation, validation, expiration, claims
+- ✅ CSRF tests (20+ tests): double-submit pattern, token validation, expiration
+- ✅ Rate limiting tests (15+ tests): enforcement, window reset, storage backends
+- ✅ Secrets management tests (30+ tests): backends, type conversion, caching
+- ✅ Added pytest configuration and test markers
+- ✅ Added requirements-dev.txt for test dependencies
+- ✅ Documented testing best practices and CI integration
 - ✅ Added secret strength validation
 - ✅ Documented remaining security concerns
 - ✅ Created security best practices guide
