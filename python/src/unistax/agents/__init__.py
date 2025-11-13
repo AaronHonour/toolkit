@@ -33,6 +33,7 @@ from unistax.agents.base import (
     TaskStatus,
     TeamRole,
 )
+from unistax.agents.personas.data_analyst import DataAnalystAgent
 from unistax.agents.personas.data_engineer import DataEngineerAgent
 from unistax.agents.registry import AgentRegistry
 from unistax.agents.team import Team, TeamHierarchy, TeamType
@@ -61,4 +62,5 @@ __all__ = [
     "AgentRegistry",
     # Personas
     "DataEngineerAgent",
+    "DataAnalystAgent",
 ]
