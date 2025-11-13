@@ -405,6 +405,249 @@ limiter.clear_all()
 
 ---
 
+### 5. CSRF Protection Implementation (FEATURE ADDED)
+
+**Feature:** Added Cross-Site Request Forgery (CSRF) protection middleware using double-submit cookie pattern.
+
+**Files:**
+- `python/src/unistax/csrf/protect.py` - Core CSRF protection with token generation/validation
+- `python/src/unistax/csrf/middleware.py` - HTTP middleware integration
+- `python/src/unistax/csrf/exceptions.py` - CSRF-specific exceptions
+- `python/src/unistax/csrf/__init__.py` - Module exports
+
+**Security Features:**
+- **Double-submit cookie pattern** - Stateless CSRF protection (no server-side session required)
+- **Cryptographically secure tokens** - Uses secrets.token_urlsafe() for token generation
+- **HMAC signature validation** - Prevents token forgery with secret-based signatures
+- **Token expiration** - Optional time-based token expiration
+- **User binding** - Optional user-specific tokens for additional security
+- **Constant-time comparison** - Prevents timing attacks during validation
+- **Exempt endpoints** - Configurable patterns for webhooks/health checks
+- **Secure cookie settings** - HttpOnly, Secure, SameSite configuration
+- **Comprehensive logging** - Security event logging for monitoring
+
+**How It Works:**
+The double-submit cookie pattern works as follows:
+1. Server generates a random CSRF token and sends it in a cookie
+2. Server also includes the token in a response header (X-CSRF-Token) for client access
+3. Client includes the token in a header or form field for state-changing requests (POST/PUT/DELETE)
+4. Server validates that the cookie token matches the header/form token
+5. Since attackers can't read cookies from other domains (same-origin policy), they can't include the correct token in forged requests
+
+**Usage Examples:**
+
+**Basic Middleware Configuration:**
+```python
+from unistax.middleware import MiddlewarePipeline
+from unistax.csrf import CSRFProtectMiddleware
+
+# Basic configuration
+csrf = CSRFProtectMiddleware(secret="your-secret-key-here")
+pipeline = MiddlewarePipeline()
+pipeline.use(csrf)
+```
+
+**Production Configuration:**
+```python
+import os
+from unistax.csrf import CSRFProtectMiddleware
+
+csrf = CSRFProtectMiddleware(
+    secret=os.environ["SECRET_KEY"],  # Use environment variable
+    token_expiration=3600,  # 1 hour token lifetime
+    cookie_secure=True,  # HTTPS only (production)
+    cookie_samesite="strict",  # Maximum CSRF protection
+    cookie_httponly=True,  # Prevent JavaScript access
+    exempt_patterns=[
+        r"^/api/webhook/stripe",  # Exempt webhook endpoints
+        r"^/health",  # Exempt health checks
+    ],
+)
+```
+
+**With User Binding (Additional Security):**
+```python
+from unistax.csrf import CSRFProtectMiddleware
+
+def get_user_id(request):
+    """Extract user ID from request context."""
+    return request.context.get("user_id")
+
+csrf = CSRFProtectMiddleware(
+    secret="your-secret-key",
+    user_id_func=get_user_id,  # Bind tokens to users
+    token_expiration=1800,  # 30 minutes
+)
+```
+
+**Standalone Token Generation/Validation:**
+```python
+from unistax.csrf import CSRFProtect, CSRFTokenInvalid
+
+# Create CSRF protect instance
+csrf = CSRFProtect(secret="your-secret-key", token_expiration=3600)
+
+# Generate token
+token = csrf.generate_token()
+
+# Validate token (double-submit pattern)
+try:
+    csrf.validate_token(
+        cookie_token=token,  # From cookie
+        header_token=token,  # From header/form
+    )
+    # Token valid - process request
+except CSRFTokenInvalid:
+    # Token invalid - reject request
+    return {"error": "CSRF validation failed"}
+```
+
+**Client-Side Integration:**
+
+For JavaScript/SPA applications:
+```javascript
+// 1. Get CSRF token from cookie or response header
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+const csrfToken = getCookie('csrf_token');
+// Or from response header after first request:
+// const csrfToken = response.headers.get('X-CSRF-Token');
+
+// 2. Include token in all state-changing requests
+fetch('/api/update', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken  // Include CSRF token
+    },
+    body: JSON.stringify({ data: 'value' })
+});
+```
+
+For HTML forms:
+```html
+<form method="POST" action="/update">
+    <!-- Include CSRF token as hidden field -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <input type="text" name="username">
+    <button type="submit">Update</button>
+</form>
+```
+
+**Exception Handling:**
+```python
+from unistax.csrf import (
+    CSRFTokenMissing,
+    CSRFTokenInvalid,
+    CSRFTokenExpired,
+)
+
+try:
+    csrf.validate_token(cookie_token, header_token)
+except CSRFTokenMissing as e:
+    # Token not provided in cookie or header
+    return {"error": str(e), "code": "csrf_missing"}
+except CSRFTokenInvalid as e:
+    # Tokens don't match or signature invalid (possible attack!)
+    logger.warning("CSRF attack detected: %s", e)
+    return {"error": str(e), "code": "csrf_invalid"}
+except CSRFTokenExpired as e:
+    # Token expired - generate new token
+    return {"error": str(e), "code": "csrf_expired"}
+```
+
+**Security Configuration Guide:**
+
+| Setting | Development | Production | Notes |
+|---------|-------------|------------|-------|
+| `cookie_secure` | False | True | Require HTTPS for cookie |
+| `cookie_samesite` | "lax" | "strict" | Prevent cross-site requests |
+| `cookie_httponly` | True | True | Prevent JavaScript access |
+| `token_expiration` | None | 1800-3600 | Token lifetime in seconds |
+| `exempt_patterns` | [] | [webhooks] | Exempt only trusted endpoints |
+
+**Security Best Practices:**
+- ✅ Use HTTPS in production (required for cookie_secure=True)
+- ✅ Set cookie_samesite="strict" for maximum protection
+- ✅ Keep cookie_httponly=True to prevent XSS token theft
+- ✅ Use token expiration for sensitive applications
+- ✅ Only exempt trusted endpoints (webhooks, health checks)
+- ✅ Use user_id_func for user-specific token binding
+- ✅ Rotate secret key periodically (requires all sessions to get new tokens)
+- ✅ Log CSRF validation failures for security monitoring
+- ✅ Use the same secret across all server instances
+
+**When to Exempt Endpoints:**
+```python
+# ✅ Good: Exempt public endpoints that don't change state
+exempt_patterns=[
+    r"^/api/webhook/",  # External webhooks (can't include CSRF token)
+    r"^/health",        # Health check endpoints
+    r"^/metrics",       # Monitoring endpoints
+]
+
+# ❌ Bad: Don't exempt state-changing endpoints
+exempt_patterns=[
+    r"^/api/",  # TOO BROAD - exposes all API endpoints!
+    r"^/login", # LOGIN NEEDS PROTECTION!
+    r"^/update", # STATE-CHANGING - NEEDS PROTECTION!
+]
+```
+
+**Testing CSRF Protection:**
+```python
+from unistax.csrf import CSRFProtect, CSRFTokenInvalid
+
+csrf = CSRFProtect(secret="test-secret")
+
+# Test valid token
+token = csrf.generate_token()
+csrf.validate_token(token, token)  # Should succeed
+
+# Test token mismatch (simulated attack)
+token1 = csrf.generate_token()
+token2 = csrf.generate_token()
+try:
+    csrf.validate_token(token1, token2)  # Should fail
+except CSRFTokenInvalid:
+    print("Attack detected and blocked!")
+
+# Test expiration
+csrf_exp = CSRFProtect(secret="test-secret", token_expiration=1)
+token = csrf_exp.generate_token()
+import time; time.sleep(2)
+try:
+    csrf_exp.validate_token(token, token)  # Should fail
+except CSRFTokenExpired:
+    print("Expired token rejected!")
+```
+
+**Monitoring and Logging:**
+
+The CSRF middleware logs security events:
+```python
+# INFO: Middleware initialization
+# "CSRFProtectMiddleware initialized: cookie=csrf_token, header=X-CSRF-Token, ..."
+
+# DEBUG: Successful validation
+# "CSRF validation successful for POST /api/update"
+
+# WARNING: Validation failures
+# "CSRF validation failed for POST /api/update: CSRF tokens don't match (possible attack!)"
+```
+
+Monitor CSRF failures for potential attacks:
+- Multiple failures from same IP → Possible attack
+- Sudden spike in failures → Configuration issue or attack
+- Failures on sensitive endpoints → Priority investigation
+
+---
+
 ## Remaining Security Concerns
 
 ### HIGH PRIORITY (Requires Immediate Action)
@@ -544,16 +787,33 @@ See documentation above for complete usage examples and recommended limits.
 
 ### MEDIUM PRIORITY
 
-#### 1. No CSRF Protection
-Add CSRF tokens for state-changing operations:
-```python
-from fastapi_csrf_protect import CsrfProtect
+#### 1. No CSRF Protection ✅ FIXED
 
-@app.post("/api/update")
-async def update(csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
-    # Process update
+**Status:** IMPLEMENTED - See "Recent Security Fixes" section #5 above.
+
+Comprehensive CSRF protection has been implemented with:
+- CSRFProtectMiddleware for HTTP requests
+- Double-submit cookie pattern (stateless)
+- Cryptographically secure token generation
+- HMAC signature validation
+- Token expiration support
+- User-specific token binding (optional)
+- Exempt endpoint patterns
+- Comprehensive logging and monitoring
+
+Usage:
+```python
+from unistax.csrf import CSRFProtectMiddleware
+
+csrf = CSRFProtectMiddleware(
+    secret="your-secret-key",
+    token_expiration=3600,  # 1 hour
+    cookie_secure=True,  # HTTPS only
+    cookie_samesite="strict",  # Maximum protection
+)
 ```
+
+See documentation above for complete usage examples and configuration options.
 
 #### 2. Missing Security Headers ✅ FIXED
 
@@ -739,6 +999,12 @@ If you discover a security vulnerability:
 - ✅ Added algorithm verification (prevents algorithm confusion attacks)
 - ✅ Added support for RS256, ES256, and other secure algorithms
 - ✅ Added specific JWT exception types for better error handling
+- ✅ Implemented CSRF protection middleware
+- ✅ Added CSRFProtectMiddleware using double-submit cookie pattern
+- ✅ Cryptographically secure token generation with HMAC validation
+- ✅ Support for token expiration and user-specific binding
+- ✅ Configurable exempt endpoints and secure cookie settings
+- ✅ Protection against Cross-Site Request Forgery attacks
 - ✅ Added secret strength validation
 - ✅ Documented remaining security concerns
 - ✅ Created security best practices guide
