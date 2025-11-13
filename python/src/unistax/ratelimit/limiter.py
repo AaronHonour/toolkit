@@ -45,7 +45,7 @@ class RateLimiter:
         bucket = self._get_bucket(key)
         return bucket.consume()
 
-    def limit(self, key_func: Callable[..., Any]| None = None) -> Callable[..., Any]:
+    def limit(self, key_func: Callable[..., Any] | None = None) -> Callable[..., Any]:
         """Decorator for rate limiting functions.
 
         Args:

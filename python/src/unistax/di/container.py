@@ -33,7 +33,7 @@ class ServiceDescriptor:
         self,
         service_type: type,
         implementation_type: type | None = None,
-        factory: Callable[..., Any]| None = None,
+        factory: Callable[..., Any] | None = None,
         instance: Any | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
     ) -> None:

@@ -177,8 +177,8 @@ class LoggerFactory:
     def create(
         name: str,
         level: str = "INFO",
-        handlers: list[Any]| None = None,
-        filters: list[Any]| None = None,
+        handlers: list[Any] | None = None,
+        filters: list[Any] | None = None,
     ) -> Logger:
         """Create configured logger.
 
