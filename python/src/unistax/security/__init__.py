@@ -17,12 +17,26 @@ from .context import (
     is_authenticated,
     set_current_user,
 )
-from .jwt import JWT
+from .jwt import (
+    JWT,
+    JWTDecodeError,
+    JWTError,
+    JWTExpiredError,
+    JWTInvalidAudienceError,
+    JWTInvalidIssuerError,
+    JWTInvalidSignatureError,
+)
 from .password import PasswordHasher
 from .rbac import RBAC, Permission, Role
 
 __all__ = [
     "JWT",
+    "JWTError",
+    "JWTDecodeError",
+    "JWTExpiredError",
+    "JWTInvalidSignatureError",
+    "JWTInvalidAudienceError",
+    "JWTInvalidIssuerError",
     "PasswordHasher",
     "RBAC",
     "Permission",

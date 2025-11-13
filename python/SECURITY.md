@@ -237,77 +237,109 @@ security = SecurityHeadersMiddleware(
 
 ### HIGH PRIORITY (Requires Immediate Action)
 
-#### 1. Custom JWT Implementation
+#### 1. Custom JWT Implementation ✅ FIXED
+
+**Status:** IMPLEMENTED - Using industry-standard PyJWT library.
+
 **File:** `python/src/unistax/security/jwt.py`
 
-**Issues:**
-- No algorithm verification
-- Timing attack vulnerabilities
-- Missing "nbf", "iss", "aud" validation
-- No token revocation support
+The JWT implementation has been completely rewritten to use PyJWT, addressing all security concerns:
 
-**Recommendation:**
-```bash
-# Use PyJWT library (already in dependencies)
-pip install pyjwt
+**Security Improvements:**
+- ✅ Industry-standard PyJWT library (battle-tested, actively maintained)
+- ✅ Support for multiple algorithms (HS256/384/512, RS256/384/512, ES256/384/512)
+- ✅ Algorithm verification (prevents algorithm confusion attacks)
+- ✅ Expiration (exp) claim validation
+- ✅ Not-before (nbf) claim validation
+- ✅ Issued-at (iat) claim validation
+- ✅ Audience (aud) claim validation
+- ✅ Issuer (iss) claim validation
+- ✅ Proper error handling with specific exception types
+- ✅ Secret strength validation (warns if too weak)
+- ✅ Clock skew handling (configurable leeway)
+- ✅ Comprehensive logging for security events
 
-# Replace custom implementation
-import jwt
+**New Exception Types:**
+- `JWTError` - Base exception
+- `JWTDecodeError` - Invalid token format
+- `JWTExpiredError` - Token expired
+- `JWTInvalidSignatureError` - Signature verification failed
+- `JWTInvalidAudienceError` - Audience validation failed
+- `JWTInvalidIssuerError` - Issuer validation failed
 
-# Encode
-token = jwt.encode({"user_id": 123}, "secret", algorithm="HS256")
-
-# Decode with validation
-try:
-    payload = jwt.decode(token, "secret", algorithms=["HS256"])
-except jwt.InvalidTokenError:
-    # Handle invalid token
-    pass
-```
-
-#### 2. Authorization Bypass
-**File:** `python/src/unistax/security/rbac.py:85-91`
-
-**Issue:** RBAC decorator is commented out - ALL requests pass through!
-
+**Usage:**
 ```python
-# CURRENT CODE (INSECURE!)
-async def wrapper(*args: Any, **kwargs: Any) -> Any:
-    # In production, get user role from context/request
-    # user_role = get_current_user_role()
-    # if not self.has_permission(user_role, permission):
-    #     raise PermissionDenied()
+from unistax.security import JWT, JWTExpiredError, JWTInvalidSignatureError
 
-    return await func(*args, **kwargs)  # Always allows!
-```
-
-**Fix Required:**
-```python
-async def wrapper(*args: Any, **kwargs: Any) -> Any:
-    user_role = get_current_user_role()  # Implement this!
-    if not self.has_permission(user_role, permission):
-        raise PermissionDenied(f"Role {user_role} lacks permission {permission}")
-    return await func(*args, **kwargs)
-```
-
-#### 3. Insecure CORS Configuration
-**Files:**
-- `python/src/unistax/api/app.py:118`
-- `python/src/unistax/middleware/builtin.py:184`
-
-**Issue:** Default CORS allows all origins (`["*"]`)
-
-**Fix:**
-```python
-# In production, specify exact origins
-app = create_app(
-    cors_origins=[
-        "https://yourdomain.com",
-        "https://app.yourdomain.com"
-    ],
-    cors_allow_credentials=True
+# Basic usage with HS256
+jwt_manager = JWT(
+    secret="your-strong-256-bit-secret-key-here",
+    algorithm="HS256",
+    expiration=3600  # 1 hour
 )
+
+# Encode token
+token = jwt_manager.encode({"user_id": 123, "role": "admin"})
+
+# Decode and verify token
+try:
+    claims = jwt_manager.decode(token)
+    user_id = claims["user_id"]
+except JWTExpiredError:
+    # Handle expired token - require re-authentication
+    pass
+except JWTInvalidSignatureError:
+    # Handle forged token - log security incident!
+    pass
+
+# With audience and issuer validation (recommended)
+jwt_manager = JWT(
+    secret="your-secret",
+    algorithm="HS256",
+    audience="myapp",
+    issuer="auth-service",
+    expiration=1800  # 30 minutes
+)
+token = jwt_manager.encode({"user_id": 123})
+claims = jwt_manager.decode(token)  # Validates aud and iss
+
+# Using RS256 with public/private keys (recommended for distributed systems)
+with open("private_key.pem") as f:
+    private_key = f.read()
+with open("public_key.pem") as f:
+    public_key = f.read()
+
+jwt_manager = JWT(
+    secret=private_key,
+    public_key=public_key,
+    algorithm="RS256"
+)
+token = jwt_manager.encode({"user_id": 123})
+claims = jwt_manager.decode(token)
 ```
+
+**Security Best Practices:**
+- Use secrets of at least 256 bits (32 characters) for HS256
+- Use RS256 or ES256 for public/private key scenarios
+- Set expiration times as short as practical (15-60 minutes)
+- Always validate audience and issuer in production
+- Never disable signature verification
+- Implement token refresh mechanism for long-lived sessions
+- Consider token revocation for sensitive operations (use Redis/database)
+
+See documentation in `python/src/unistax/security/jwt.py` for more details.
+
+#### 2. Authorization Bypass ✅ FIXED
+
+**Status:** FIXED - See "Recent Security Fixes" section above.
+
+RBAC authorization is now properly enforced. See commit "security: implement RBAC, fix CORS, and improve error handling" for details.
+
+#### 3. Insecure CORS Configuration ✅ FIXED
+
+**Status:** FIXED - See "Recent Security Fixes" section above.
+
+CORS now requires explicit origin configuration. See commit "security: implement RBAC, fix CORS, and improve error handling" for details.
 
 #### 4. No Rate Limiting on Auth Endpoints
 **Impact:** Brute force attacks possible
@@ -514,5 +546,11 @@ If you discover a security vulnerability:
 - ✅ Improved error handling with proper logging
 - ✅ Implemented SecurityHeadersMiddleware with OWASP headers
 - ✅ Added CSP, HSTS, X-Frame-Options, and other security headers
+- ✅ Replaced custom JWT with industry-standard PyJWT library
+- ✅ Added comprehensive JWT claim validation (exp, nbf, iat, aud, iss)
+- ✅ Added algorithm verification (prevents algorithm confusion attacks)
+- ✅ Added support for RS256, ES256, and other secure algorithms
+- ✅ Added specific JWT exception types for better error handling
+- ✅ Added secret strength validation
 - ✅ Documented remaining security concerns
 - ✅ Created security best practices guide
