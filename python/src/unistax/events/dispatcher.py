@@ -1,6 +1,7 @@
 """Event dispatcher for routing events."""
 
 from collections.abc import Callable
+from typing import Any
 
 from .bus import Event
 
@@ -11,11 +12,11 @@ class EventDispatcher:
     Extends EventBus with additional features.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize EventDispatcher."""
-        self._handlers: dict[type[Event], list[tuple[int, Callable]]] = {}
+        self._handlers: dict[type[Event], list[tuple[int, Callable[..., Any]]]] = {}
 
-    def register(self, event_type: type[Event], handler: Callable, priority: int = 0) -> None:
+    def register(self, event_type: type[Event], handler: Callable[..., Any], priority: int = 0) -> None:
         """Register event handler with priority.
 
         Args:

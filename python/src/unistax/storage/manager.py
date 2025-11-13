@@ -20,7 +20,7 @@ class StorageConfig:
 class StorageManager:
     """Manage file storage."""
 
-    def __init__(self, backend: StorageBackend):
+    def __init__(self, backend: StorageBackend) -> None:
         """Initialize storage manager.
 
         Args:
@@ -40,7 +40,7 @@ class StorageManager:
         """
         return self.backend.upload(source_path, dest_path)
 
-    def download(self, source_path: str, dest_path: str):
+    def download(self, source_path: str, dest_path: str) -> None:
         """Download file.
 
         Args:
@@ -49,7 +49,7 @@ class StorageManager:
         """
         self.backend.download(source_path, dest_path)
 
-    def delete(self, path: str):
+    def delete(self, path: str) -> None:
         """Delete file.
 
         Args:

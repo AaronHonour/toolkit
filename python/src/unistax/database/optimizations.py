@@ -13,9 +13,9 @@ from dataclasses import dataclass
 from functools import wraps
 from typing import Any, TypeVar
 
-from sqlalchemy import text
-from sqlalchemy.engine import Result
-from sqlalchemy.orm import Session
+from sqlalchemy import text  # type: ignore[import-not-found]
+from sqlalchemy.engine import Result  # type: ignore[import-not-found]
+from sqlalchemy.orm import Session  # type: ignore[import-not-found]
 
 from unistax.algorithms import LRUCache
 
@@ -45,7 +45,7 @@ class QueryCache:
 
     __slots__ = ("_cache", "_config", "_stats", "_lock")
 
-    def __init__(self, config: QueryCacheConfig | None = None):
+    def __init__(self, config: QueryCacheConfig | None = None) -> None:
         """Initialize query cache.
 
         Args:
@@ -62,7 +62,7 @@ class QueryCache:
             )
         """
         self._config = config or QueryCacheConfig()
-        self._cache = LRUCache(capacity=self._config.max_size)
+        self._cache: Any = LRUCache(capacity=self._config.max_size)
         self._stats = {
             "hits": 0,
             "misses": 0,
@@ -71,7 +71,7 @@ class QueryCache:
         }
         self._lock = threading.RLock()
 
-    def _make_key(self, query: str, params: dict | None = None) -> str:
+    def _make_key(self, query: str, params: dict[str, Any]| None = None) -> str:
         """Create cache key from query and params.
 
         Args:
@@ -84,7 +84,7 @@ class QueryCache:
         key_data = f"{query}:{params}" if params else query
         return hashlib.sha256(key_data.encode()).hexdigest()[:16]
 
-    def get(self, query: str, params: dict | None = None) -> Any | None:
+    def get(self, query: str, params: dict[str, Any]| None = None) -> Any | None:
         """Get cached query result.
 
         Args:
@@ -109,7 +109,7 @@ class QueryCache:
                 self._stats["misses"] += 1
                 return None
 
-    def set(self, query: str, result: Any, params: dict | None = None, ttl: int | None = None):
+    def set(self, query: str, result: Any, params: dict[str, Any]| None = None, ttl: int | None = None) -> None:
         """Cache query result.
 
         Args:
@@ -144,7 +144,7 @@ class QueryCache:
 
             if result is not None:
                 self._stats["hits"] += 1
-                return result
+                return result  # type: ignore[no-any-return]
 
             self._stats["misses"] += 1
 
@@ -158,7 +158,7 @@ class QueryCache:
 
         return result
 
-    def invalidate(self, query: str, params: dict | None = None):
+    def invalidate(self, query: str, params: dict[str, Any]| None = None) -> None:
         """Invalidate cached query.
 
         Args:
@@ -171,7 +171,7 @@ class QueryCache:
             # LRUCache doesn't have delete, so we just let it expire
             pass
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all cached queries."""
         with self._lock:
             self._cache = LRUCache(capacity=self._config.max_size)
@@ -202,7 +202,7 @@ class PreparedStatementCache:
 
     __slots__ = ("_cache", "_max_size", "_stats", "_lock")
 
-    def __init__(self, max_size: int = 1000):
+    def __init__(self, max_size: int = 1000) -> None:
         """Initialize prepared statement cache.
 
         Args:
@@ -267,7 +267,7 @@ class QueryBatcher:
 
     __slots__ = ("_session", "_queries", "_params", "_results")
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         """Initialize query batcher.
 
         Args:
@@ -281,10 +281,10 @@ class QueryBatcher:
         """
         self._session = session
         self._queries: list[str] = []
-        self._params: list[dict] = []
+        self._params: list[dict[str, Any]] = []
         self._results: list[Any] = []
 
-    def add(self, query: str, params: dict | None = None):
+    def add(self, query: str, params: dict[str, Any]| None = None) -> None:
         """Add query to batch.
 
         Args:
@@ -309,11 +309,11 @@ class QueryBatcher:
 
         return results
 
-    def __enter__(self):
+    def __enter__(self) -> "QueryBatcher":
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager."""
         pass
 
@@ -325,7 +325,7 @@ class ReadWriteSplitter:
     Reduces master load by 70-90% in read-heavy workloads.
     """
 
-    def __init__(self, master_session: Session, replica_sessions: list[Session]):
+    def __init__(self, master_session: Session, replica_sessions: list[Session]) -> None:
         """Initialize read/write splitter.
 
         Args:
@@ -357,7 +357,7 @@ class ReadWriteSplitter:
             self._current_replica = (self._current_replica + 1) % len(self._replicas)
             return replica
 
-    def execute_read(self, query: str, params: dict | None = None) -> Result:
+    def execute_read(self, query: str, params: dict[str, Any]| None = None) -> Result:
         """Execute read query on replica.
 
         Args:
@@ -371,7 +371,7 @@ class ReadWriteSplitter:
         stmt = text(query)
         return replica.execute(stmt, params or {})
 
-    def execute_write(self, query: str, params: dict | None = None) -> Result:
+    def execute_write(self, query: str, params: dict[str, Any]| None = None) -> Result:
         """Execute write query on master.
 
         Args:
@@ -385,7 +385,7 @@ class ReadWriteSplitter:
         return self._master.execute(stmt, params or {})
 
 
-def cached_query(ttl: int = 300):
+def cached_query(ttl: int = 300) -> Any:
     """Decorator for caching query results.
 
     Args:
@@ -398,9 +398,9 @@ def cached_query(ttl: int = 300):
     """
     _cache = QueryCache()
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Create cache key from function name and args
             key_parts = [func.__name__]
             key_parts.extend(str(arg) for arg in args)
@@ -427,7 +427,7 @@ class ConnectionPoolMonitor:
 
     __slots__ = ("_engine", "_stats", "_lock")
 
-    def __init__(self, engine):
+    def __init__(self, engine: Any) -> None:
         """Initialize pool monitor.
 
         Args:
@@ -460,12 +460,12 @@ class ConnectionPoolMonitor:
                 **self._stats,
             }
 
-    def on_checkout(self):
+    def on_checkout(self) -> None:
         """Record connection checkout."""
         with self._lock:
             self._stats["checkouts"] += 1
 
-    def on_checkin(self):
+    def on_checkin(self) -> None:
         """Record connection checkin."""
         with self._lock:
             self._stats["checkins"] += 1
@@ -479,12 +479,12 @@ class QueryProfiler:
 
     __slots__ = ("_queries", "_lock")
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize query profiler."""
         self._queries: list[dict[str, Any]] = []
         self._lock = threading.Lock()
 
-    def profile_query(self, query: str, duration: float, params: dict | None = None):
+    def profile_query(self, query: str, duration: float, params: dict[str, Any]| None = None) -> None:
         """Record query execution.
 
         Args:

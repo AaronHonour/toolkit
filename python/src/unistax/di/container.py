@@ -33,10 +33,10 @@ class ServiceDescriptor:
         self,
         service_type: type,
         implementation_type: type | None = None,
-        factory: Callable | None = None,
+        factory: Callable[..., Any]| None = None,
         instance: Any | None = None,
         lifetime: Lifetime = Lifetime.TRANSIENT,
-    ):
+    ) -> None:
         """Initialize ServiceDescriptor.
 
         Args:
@@ -70,11 +70,11 @@ class Container:
         >>> container.register(IUserRepository, SQLUserRepository)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Container."""
         self._services: dict[type, ServiceDescriptor] = {}
         self._lock = threading.RLock()
-        self._resolving: set = set()  # For circular dependency detection
+        self._resolving: set[type] = set()  # For circular dependency detection
 
     def register(
         self,
@@ -186,13 +186,13 @@ class Container:
 
             # Return existing instance for singleton
             if descriptor.lifetime == Lifetime.SINGLETON and descriptor.instance is not None:
-                return descriptor.instance
+                return descriptor.instance  # type: ignore[no-any-return]
 
             # Check scoped context
             if descriptor.lifetime == Lifetime.SCOPED:
                 scoped_instances = _scoped_context.get()
-                if service_type in scoped_instances:
-                    return scoped_instances[service_type]
+                if scoped_instances is not None and service_type in scoped_instances:
+                    return scoped_instances[service_type]  # type: ignore[no-any-return]
 
             # Create new instance
             instance = self._create_instance(descriptor)
@@ -204,10 +204,11 @@ class Container:
             # Store for scoped
             if descriptor.lifetime == Lifetime.SCOPED:
                 scoped_instances = _scoped_context.get()
-                scoped_instances[service_type] = instance
-                _scoped_context.set(scoped_instances)
+                if scoped_instances is not None:
+                    scoped_instances[service_type] = instance
+                    _scoped_context.set(scoped_instances)
 
-            return instance
+            return instance  # type: ignore[no-any-return]
 
     def _create_instance(self, descriptor: ServiceDescriptor) -> Any:
         """Create an instance from descriptor."""
@@ -220,8 +221,8 @@ class Container:
 
         try:
             # Get constructor parameters
-            sig = inspect.signature(implementation.__init__)
-            type_hints = get_type_hints(implementation.__init__)
+            sig = inspect.signature(implementation.__init__)  # type: ignore[misc]
+            type_hints = get_type_hints(implementation.__init__)  # type: ignore[misc]
 
             # Build arguments
             kwargs = {}
@@ -301,12 +302,12 @@ def injectable(cls: type[T]) -> type[T]:
 
     This is optional - the container can auto-wire classes with type hints.
     """
-    cls.__injectable__ = True
+    cls.__injectable__ = True  # type: ignore[attr-defined]
     return cls
 
 
 # Decorator for injecting dependencies
-def inject(func: Callable) -> Callable:
+def inject(func: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to inject dependencies into a function.
 
     Example:
@@ -317,7 +318,7 @@ def inject(func: Callable) -> Callable:
     from functools import wraps
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         # Get container from somewhere (could be passed, or use global)
         # This is a simplified implementation
         container = kwargs.pop("_container", None)

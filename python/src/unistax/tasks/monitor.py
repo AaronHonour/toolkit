@@ -3,8 +3,8 @@
 from enum import Enum
 from typing import Any
 
-from celery import Celery
-from celery.result import AsyncResult
+from celery import Celery  # type: ignore[import-not-found]
+from celery.result import AsyncResult  # type: ignore[import-not-found]
 
 
 class TaskStatus(str, Enum):
@@ -21,7 +21,7 @@ class TaskStatus(str, Enum):
 class TaskMonitor:
     """Monitor task execution and status."""
 
-    def __init__(self, app: Celery):
+    def __init__(self, app: Celery) -> None:
         """Initialize task monitor.
 
         Args:
@@ -94,7 +94,7 @@ class TaskMonitor:
             True if complete
         """
         result = AsyncResult(task_id, app=self.app)
-        return result.ready()
+        return bool(result.ready())
 
     def is_task_successful(self, task_id: str) -> bool:
         """Check if task completed successfully.
@@ -106,7 +106,7 @@ class TaskMonitor:
             True if successful
         """
         result = AsyncResult(task_id, app=self.app)
-        return result.successful()
+        return bool(result.successful())
 
     def wait_for_task(
         self,
@@ -136,7 +136,7 @@ class TaskMonitor:
         task_id: str,
         terminate: bool = False,
         signal: str = "SIGTERM",
-    ):
+    ) -> None:
         """Revoke a task.
 
         Args:
@@ -147,7 +147,7 @@ class TaskMonitor:
         result = AsyncResult(task_id, app=self.app)
         result.revoke(terminate=terminate, signal=signal)
 
-    def get_active_tasks(self) -> dict[str, list]:
+    def get_active_tasks(self) -> dict[str, list[Any]]:
         """Get active tasks on all workers.
 
         Returns:
@@ -156,7 +156,7 @@ class TaskMonitor:
         inspector = self.app.control.inspect()
         return inspector.active() or {}
 
-    def get_scheduled_tasks(self) -> dict[str, list]:
+    def get_scheduled_tasks(self) -> dict[str, list[Any]]:
         """Get scheduled tasks on all workers.
 
         Returns:
@@ -165,7 +165,7 @@ class TaskMonitor:
         inspector = self.app.control.inspect()
         return inspector.scheduled() or {}
 
-    def get_reserved_tasks(self) -> dict[str, list]:
+    def get_reserved_tasks(self) -> dict[str, list[Any]]:
         """Get reserved tasks on all workers.
 
         Returns:
@@ -183,7 +183,7 @@ class TaskMonitor:
         inspector = self.app.control.inspect()
         return inspector.stats() or {}
 
-    def get_registered_tasks(self) -> dict[str, list]:
+    def get_registered_tasks(self) -> dict[str, list[str]]:
         """Get registered tasks on all workers.
 
         Returns:

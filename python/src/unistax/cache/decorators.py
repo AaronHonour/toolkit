@@ -13,8 +13,8 @@ from .manager import get_cache
 def memoize(
     ttl: int | None = None,
     key_prefix: str = "",
-    key_func: Callable | None = None,
-) -> Callable:
+    key_func: Callable[..., Any]| None = None,
+) -> Callable[..., Any]:
     """Decorator for memoizing function results.
 
     Args:
@@ -31,7 +31,7 @@ def memoize(
     return cache.memoize(ttl=ttl, key_prefix=key_prefix, key_func=key_func)
 
 
-def cache_result(ttl: int | None = None, key: str | None = None) -> Callable:
+def cache_result(ttl: int | None = None, key: str | None = None) -> Callable[..., Any]:
     """Decorator to cache function result with fixed key.
 
     Args:
@@ -44,7 +44,7 @@ def cache_result(ttl: int | None = None, key: str | None = None) -> Callable:
         ...     return db.query("SELECT * FROM users ORDER BY created_at DESC LIMIT 10")
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         cache = get_cache()
         cache_key = key or func.__name__
 
@@ -61,8 +61,8 @@ def cache_result(ttl: int | None = None, key: str | None = None) -> Callable:
             return result
 
         # Add cache control
-        wrapper.cache_clear = lambda: cache.delete(cache_key)
-        wrapper.cache_key = cache_key
+        wrapper.cache_clear = lambda: cache.delete(cache_key)  # type: ignore[attr-defined]
+        wrapper.cache_key = cache_key  # type: ignore[attr-defined]
 
         return wrapper
 

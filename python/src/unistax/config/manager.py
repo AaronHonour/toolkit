@@ -204,7 +204,7 @@ class ConfigManager:
 
         for k in keys:
             if isinstance(value, dict):
-                value = value.get(k)
+                value = value.get(k)  # type: ignore[assignment]
                 if value is None:
                     return None
             else:

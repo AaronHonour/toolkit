@@ -1,6 +1,7 @@
 """Testing fixtures and utilities."""
 
 from collections.abc import Callable
+from typing import Any
 
 
 class TestCase:
@@ -15,16 +16,16 @@ class TestCase:
         ...         assert user.id is not None
     """
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Setup method called before each test."""
         pass
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Teardown method called after each test."""
         pass
 
 
-def fixture(func: Callable) -> Callable:
+def fixture(func: Callable[..., Any]) -> Callable[..., Any]:
     """Mark function as a test fixture.
 
     Args:
@@ -33,11 +34,11 @@ def fixture(func: Callable) -> Callable:
     Returns:
         Decorated function
     """
-    func.__test_fixture__ = True
+    func.__test_fixture__ = True  # type: ignore[attr-defined]
     return func
 
 
-def use_test_db(func: Callable) -> Callable:
+def use_test_db(func: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to use test database.
 
     Sets up and tears down test database for test.
@@ -51,7 +52,7 @@ def use_test_db(func: Callable) -> Callable:
     from functools import wraps
 
     @wraps(func)
-    async def wrapper(*args, **kwargs):
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
         # Setup test database
         print("Setting up test database...")
 

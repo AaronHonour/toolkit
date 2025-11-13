@@ -8,8 +8,8 @@ from typing import Any
 class Query:
     """Query representation."""
 
-    filters: list[dict] = field(default_factory=list)
-    sorts: list[dict] = field(default_factory=list)
+    filters: list[dict[str, Any]] = field(default_factory=list[Any])
+    sorts: list[dict[str, Any]] = field(default_factory=list[Any])
     limit: int | None = None
     offset: int | None = None
     select_fields: list[str] | None = None
@@ -18,7 +18,7 @@ class Query:
 class QueryBuilder:
     """Fluent query builder."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize query builder."""
         self._query = Query()
 

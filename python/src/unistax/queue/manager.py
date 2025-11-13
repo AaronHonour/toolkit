@@ -16,9 +16,9 @@ class Message:
     id: str
     body: Any
     attributes: dict[str, Any]
-    timestamp: datetime = None
+    timestamp: datetime | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize timestamp."""
         if self.timestamp is None:
             self.timestamp = datetime.utcnow()
@@ -27,7 +27,7 @@ class Message:
 class QueueManager:
     """Message queue manager."""
 
-    def __init__(self, backend: "QueueBackend"):
+    def __init__(self, backend: "QueueBackend") -> None:
         """Initialize queue manager.
 
         Args:
@@ -61,7 +61,7 @@ class QueueManager:
         """
         return self.backend.receive(queue_name, max_messages, wait_time)
 
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete message from queue.
 
         Args:
@@ -70,7 +70,7 @@ class QueueManager:
         """
         self.backend.delete(queue_name, message_id)
 
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to queue with handler.
 
         Args:

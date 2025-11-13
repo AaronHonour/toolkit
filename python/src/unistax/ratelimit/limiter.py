@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from functools import wraps
+from typing import Any
 
 from .algorithms import TokenBucket
 
@@ -15,7 +16,7 @@ class RateLimiter:
         ...     process_request()
     """
 
-    def __init__(self, rate: int = 100, period: int = 60):
+    def __init__(self, rate: int = 100, period: int = 60) -> None:
         """Initialize rate limiter.
 
         Args:
@@ -44,7 +45,7 @@ class RateLimiter:
         bucket = self._get_bucket(key)
         return bucket.consume()
 
-    def limit(self, key_func: Callable | None = None):
+    def limit(self, key_func: Callable[..., Any]| None = None) -> Callable[..., Any]:
         """Decorator for rate limiting functions.
 
         Args:
@@ -56,9 +57,9 @@ class RateLimiter:
             ...     pass
         """
 
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Extract key
                 if key_func:
                     key = key_func(*args, **kwargs)

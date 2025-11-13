@@ -9,14 +9,14 @@ from enum import Enum
 from typing import Any
 
 try:
-    import orjson
+    import orjson  # type: ignore[import-not-found]
 
     HAS_ORJSON = True
 except ImportError:
     HAS_ORJSON = False
 
 try:
-    import msgpack
+    import msgpack  # type: ignore[import-not-found]
 
     HAS_MSGPACK = True
 except ImportError:
@@ -54,11 +54,11 @@ def fast_serialize(data: Any, format: SerializationFormat = SerializationFormat.
     if format == SerializationFormat.ORJSON and HAS_ORJSON:
         # orjson is 2-3x faster than json
         # Automatically handles datetime, UUID, dataclasses
-        return orjson.dumps(data)
+        return orjson.dumps(data)  # type: ignore[no-any-return]
 
     elif format == SerializationFormat.MSGPACK and HAS_MSGPACK:
         # msgpack is binary format, ~30% smaller and 5x faster
-        return msgpack.packb(data, use_bin_type=True)
+        return msgpack.packb(data, use_bin_type=True)  # type: ignore[no-any-return]
 
     else:
         # Fallback to standard json
@@ -96,7 +96,7 @@ class FastSerializer:
 
     def __init__(
         self, format: SerializationFormat = SerializationFormat.ORJSON, cache_size: int = 1000
-    ):
+    ) -> None:
         """Initialize serializer.
 
         Args:
@@ -104,7 +104,7 @@ class FastSerializer:
             cache_size: Schema cache size
         """
         self._format = format
-        self._cache = {}
+        self._cache: dict[type, Any] = {}
         self._cache_size = cache_size
 
     def serialize(self, data: Any) -> bytes:
@@ -129,7 +129,7 @@ class FastSerializer:
         """
         return fast_deserialize(data, self._format)
 
-    def serialize_batch(self, items: list) -> list[bytes]:
+    def serialize_batch(self, items: list[Any]) -> list[bytes]:
         """Serialize multiple items efficiently.
 
         Args:
@@ -208,7 +208,7 @@ def serialize_for_api(data: Any) -> bytes:
     return fast_serialize(data, SerializationFormat.ORJSON)
 
 
-def get_serialization_stats() -> dict:
+def get_serialization_stats() -> dict[str, Any]:
     """Get serialization library availability and performance info.
 
     Returns:

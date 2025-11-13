@@ -40,7 +40,7 @@ class AuditEntry:
 class AuditLogger:
     """Audit logger for tracking changes."""
 
-    def __init__(self, storage: AuditStorage):
+    def __init__(self, storage: AuditStorage) -> None:
         """Initialize audit logger.
 
         Args:

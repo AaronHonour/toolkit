@@ -5,12 +5,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from apscheduler.job import Job as APJob
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.date import DateTrigger
-from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.job import Job as APJob  # type: ignore[import-not-found]
+from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-not-found]
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-not-found]
+from apscheduler.triggers.cron import CronTrigger  # type: ignore[import-not-found]
+from apscheduler.triggers.date import DateTrigger  # type: ignore[import-not-found]
+from apscheduler.triggers.interval import IntervalTrigger  # type: ignore[import-not-found]
 
 
 @dataclass
@@ -18,10 +18,10 @@ class Job:
     """Job configuration."""
 
     id: str
-    func: Callable
+    func: Callable[..., Any]
     trigger: str  # "cron", "interval", "date"
     trigger_args: dict[str, Any]
-    args: tuple = ()
+    args: tuple[Any, ...] = ()
     kwargs: dict[str, Any] | None = None
     name: str | None = None
     misfire_grace_time: int = 60
@@ -37,7 +37,7 @@ class Scheduler:
         timezone: str = "UTC",
         job_defaults: dict[str, Any] | None = None,
         use_async: bool = False,
-    ):
+    ) -> None:
         """Initialize scheduler.
 
         Args:
@@ -61,12 +61,12 @@ class Scheduler:
 
         self._jobs: dict[str, Job] = {}
 
-    def start(self):
+    def start(self) -> None:
         """Start the scheduler."""
         if not self.scheduler.running:
             self.scheduler.start()
 
-    def shutdown(self, wait: bool = True):
+    def shutdown(self, wait: bool = True) -> None:
         """Shutdown the scheduler.
 
         Args:
@@ -77,13 +77,13 @@ class Scheduler:
 
     def add_job(
         self,
-        func: Callable,
+        func: Callable[..., Any],
         trigger: str,
         id: str | None = None,
         name: str | None = None,
-        args: tuple = (),
+        args: tuple[Any, ...] = (),
         kwargs: dict[str, Any] | None = None,
-        **trigger_args,
+        **trigger_args: Any,
     ) -> str:
         """Add a job to the scheduler.
 
@@ -152,14 +152,14 @@ class Scheduler:
 
     def add_cron_job(
         self,
-        func: Callable,
+        func: Callable[..., Any],
         hour: str = "0",
         minute: str = "0",
         second: str = "0",
         day: str = "*",
         month: str = "*",
         day_of_week: str = "*",
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Add a cron-style job.
 
@@ -194,13 +194,13 @@ class Scheduler:
 
     def add_interval_job(
         self,
-        func: Callable,
+        func: Callable[..., Any],
         weeks: int = 0,
         days: int = 0,
         hours: int = 0,
         minutes: int = 0,
         seconds: int = 0,
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Add an interval-based job.
 
@@ -233,9 +233,9 @@ class Scheduler:
 
     def add_date_job(
         self,
-        func: Callable,
+        func: Callable[..., Any],
         run_date: datetime,
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Add a one-time job at specific date/time.
 
@@ -253,7 +253,7 @@ class Scheduler:
         """
         return self.add_job(func, "date", run_date=run_date, **kwargs)
 
-    def remove_job(self, job_id: str):
+    def remove_job(self, job_id: str) -> None:
         """Remove a job.
 
         Args:
@@ -263,7 +263,7 @@ class Scheduler:
         if job_id in self._jobs:
             del self._jobs[job_id]
 
-    def pause_job(self, job_id: str):
+    def pause_job(self, job_id: str) -> None:
         """Pause a job.
 
         Args:
@@ -271,7 +271,7 @@ class Scheduler:
         """
         self.scheduler.pause_job(job_id)
 
-    def resume_job(self, job_id: str):
+    def resume_job(self, job_id: str) -> None:
         """Resume a paused job.
 
         Args:
@@ -296,14 +296,14 @@ class Scheduler:
         Returns:
             List of jobs
         """
-        return self.scheduler.get_jobs()
+        return self.scheduler.get_jobs()  # type: ignore[no-any-return]
 
     def reschedule_job(
         self,
         job_id: str,
         trigger: str,
-        **trigger_args,
-    ):
+        **trigger_args: Any,
+    ) -> None:
         """Reschedule a job.
 
         Args:

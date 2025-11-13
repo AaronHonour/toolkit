@@ -24,7 +24,7 @@ class Factory:
         >>> users = UserFactory.create_batch(10)
     """
 
-    model: type = None
+    model: type | None = None
     _sequence = 0
 
     @classmethod
@@ -36,7 +36,7 @@ class Factory:
         return {}
 
     @classmethod
-    def create(cls, **kwargs) -> Any:
+    def create(cls, **kwargs: Any) -> Any:
         """Create a single instance.
 
         Args:
@@ -53,7 +53,7 @@ class Factory:
         return attrs
 
     @classmethod
-    def create_batch(cls, count: int, **kwargs) -> list:
+    def create_batch(cls, count: int, **kwargs: Any) -> list[Any]:
         """Create multiple instances.
 
         Args:

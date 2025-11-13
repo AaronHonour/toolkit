@@ -67,6 +67,7 @@ class CacheManager:
         # Backend-specific configuration
         backend_config = config.get_dict("cache.backend_config", {})
 
+        backend: CacheBackend
         if backend_type == "redis":
             backend = RedisBackend(**backend_config)
         elif backend_type == "memcached":
@@ -189,8 +190,8 @@ class CacheManager:
         self,
         ttl: int | None = None,
         key_prefix: str = "",
-        key_func: Callable | None = None,
-    ):
+        key_func: Callable[..., Any] | None = None,
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Decorator for memoizing function results.
 
         Args:
@@ -205,9 +206,9 @@ class CacheManager:
         """
         from functools import wraps
 
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Generate cache key
                 if key_func:
                     cache_key = key_func(*args, **kwargs)
@@ -231,14 +232,14 @@ class CacheManager:
                 return result
 
             # Add cache control methods
-            wrapper.cache_clear = lambda: self.delete(f"{key_prefix or func.__name__}:*")
-            wrapper.cache_info = lambda: {"backend": type(self._backend).__name__}
+            wrapper.cache_clear = lambda: self.delete(f"{key_prefix or func.__name__}:*")  # type: ignore[attr-defined]
+            wrapper.cache_info = lambda: {"backend": type(self._backend).__name__}  # type: ignore[attr-defined]
 
             return wrapper
 
         return decorator
 
-    def get_or_set(self, key: str, factory: Callable, ttl: int | None = None) -> Any:
+    def get_or_set(self, key: str, factory: Callable[..., Any], ttl: int | None = None) -> Any:
         """Get value from cache or set it using factory function.
 
         Args:

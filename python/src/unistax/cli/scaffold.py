@@ -12,7 +12,7 @@ class Scaffolder:
         >>> scaffolder.create_repository("UserRepository")
     """
 
-    def __init__(self, base_path: Path | None = None):
+    def __init__(self, base_path: Path | None = None) -> None:
         """Initialize Scaffolder.
 
         Args:
@@ -44,7 +44,7 @@ class {name}:
         >>> result = await service.process()
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     async def process(self):

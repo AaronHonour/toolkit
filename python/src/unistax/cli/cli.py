@@ -8,7 +8,7 @@ from typing import Any
 class Command:
     """CLI command definition."""
 
-    def __init__(self, name: str, func: Callable, description: str = ""):
+    def __init__(self, name: str, func: Callable[..., Any], description: str = "") -> None:
         """Initialize Command.
 
         Args:
@@ -37,7 +37,7 @@ class CLI:
         >>> cli.run()
     """
 
-    def __init__(self, name: str = "cli"):
+    def __init__(self, name: str = "cli") -> None:
         """Initialize CLI.
 
         Args:
@@ -46,7 +46,9 @@ class CLI:
         self.name = name
         self._commands: dict[str, Command] = {}
 
-    def command(self, name: str | None = None, description: str = ""):
+    def command(
+        self, name: str | None = None, description: str = ""
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Register a command.
 
         Args:
@@ -57,13 +59,13 @@ class CLI:
             Decorator function
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             cmd_name = name or func.__name__
             cmd = Command(cmd_name, func, description or func.__doc__ or "")
             self._commands[cmd_name] = cmd
 
             # Store command on function for options/arguments
-            func.__cli_command__ = cmd
+            func.__cli_command__ = cmd  # type: ignore[attr-defined]
             return func
 
         return decorator
@@ -99,7 +101,7 @@ class CLI:
 
     def _parse_args(self, command: Command, args: list[str]) -> dict[str, Any]:
         """Parse command arguments."""
-        kwargs = {}
+        kwargs: dict[str, Any] = {}
         i = 0
 
         while i < len(args):
@@ -139,34 +141,36 @@ class CLI:
             print(f"  {name:<20} {desc}")
 
 
-def command(name: str | None = None):
+def command(name: str | None = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for defining a command."""
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         return func
 
     return decorator
 
 
-def option(name: str, required: bool = False, default: Any = None):
+def option(
+    name: str, required: bool = False, default: Any = None
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for defining a command option."""
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         if not hasattr(func, "__cli_options__"):
-            func.__cli_options__ = {}
-        func.__cli_options__[name] = {"required": required, "default": default}
+            func.__cli_options__ = {}  # type: ignore[attr-defined]
+        func.__cli_options__[name] = {"required": required, "default": default}  # type: ignore[attr-defined]
         return func
 
     return decorator
 
 
-def argument(name: str):
+def argument(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for defining a command argument."""
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         if not hasattr(func, "__cli_arguments__"):
-            func.__cli_arguments__ = []
-        func.__cli_arguments__.append(name)
+            func.__cli_arguments__ = []  # type: ignore[attr-defined]
+        func.__cli_arguments__.append(name)  # type: ignore[attr-defined]
         return func
 
     return decorator

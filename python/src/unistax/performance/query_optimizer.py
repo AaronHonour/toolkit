@@ -23,7 +23,7 @@ class QueryPlan:
     estimated_cost: float
     estimated_rows: int
     index_used: str | None = None
-    optimizations: list[str] = None
+    optimizations: list[str] | None = None
 
 
 class QueryOptimizer:
@@ -48,7 +48,7 @@ class QueryOptimizer:
         }
 
     @staticmethod
-    def add_eager_loading(query: Any, *relationships) -> Any:
+    def add_eager_loading(query: Any, *relationships: Any) -> Any:
         """Add eager loading for relationships.
 
         Args:
@@ -65,7 +65,7 @@ class QueryOptimizer:
                 User.profile
             )
         """
-        from sqlalchemy.orm import joinedload
+        from sqlalchemy.orm import joinedload  # type: ignore[import-not-found]
 
         for rel in relationships:
             query = query.options(joinedload(rel))

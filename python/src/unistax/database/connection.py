@@ -1,12 +1,13 @@
 """Database connection management."""
 
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, event  # type: ignore[import-not-found]
+from sqlalchemy.engine import Engine  # type: ignore[import-not-found]
+from sqlalchemy.orm import sessionmaker  # type: ignore[import-not-found]
 
 from unistax.config import ConfigManager
 
@@ -28,7 +29,7 @@ class DatabaseConfig:
 class DatabaseManager:
     """Database connection and engine management."""
 
-    def __init__(self, config: DatabaseConfig):
+    def __init__(self, config: DatabaseConfig) -> None:
         """Initialize database manager.
 
         Args:
@@ -72,7 +73,7 @@ class DatabaseManager:
             SQLAlchemy engine
         """
         if self._engine is None:
-            kwargs = {
+            kwargs: dict[str, Any] = {
                 "pool_size": self.config.pool_size,
                 "max_overflow": self.config.max_overflow,
                 "pool_timeout": self.config.pool_timeout,
@@ -104,7 +105,7 @@ class DatabaseManager:
         return self._session_factory
 
     @contextmanager
-    def session(self):
+    def session(self) -> Generator[Any, None, None]:
         """Create a session context.
 
         Yields:
@@ -122,19 +123,19 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def dispose(self):
+    def dispose(self) -> None:
         """Dispose of database connections."""
         if self._engine:
             self._engine.dispose()
             self._engine = None
             self._session_factory = None
 
-    def _on_connect(self, dbapi_conn, connection_record):
+    def _on_connect(self, dbapi_conn: Any, connection_record: Any) -> None:
         """Handle connection event."""
         # Can add custom connection setup here
         pass
 
-    def _on_checkout(self, dbapi_conn, connection_record, connection_proxy):
+    def _on_checkout(self, dbapi_conn: Any, connection_record: Any, connection_proxy: Any) -> None:
         """Handle checkout event."""
         # Can add connection checkout tracking here
         pass

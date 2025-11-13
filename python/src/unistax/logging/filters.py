@@ -95,9 +95,10 @@ class ContextFilter(logging.Filter):
         """
         # Add context to record
         context = log_context.get()
-        for key, value in context.items():
-            if not hasattr(record, key):
-                setattr(record, key, value)
+        if context:
+            for key, value in context.items():
+                if not hasattr(record, key):
+                    setattr(record, key, value)
 
         return True
 

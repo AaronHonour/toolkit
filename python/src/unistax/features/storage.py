@@ -14,12 +14,12 @@ class FeatureStorage(ABC):
         pass
 
     @abstractmethod
-    def save(self, feature: Feature):
+    def save(self, feature: Feature) -> None:
         """Save feature."""
         pass
 
     @abstractmethod
-    def delete(self, name: str):
+    def delete(self, name: str) -> None:
         """Delete feature."""
         pass
 
@@ -32,7 +32,7 @@ class FeatureStorage(ABC):
 class InMemoryFeatureStorage(FeatureStorage):
     """In-memory feature storage."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize storage."""
         self.features: dict[str, Feature] = {}
 
@@ -40,11 +40,11 @@ class InMemoryFeatureStorage(FeatureStorage):
         """Get feature from memory."""
         return self.features.get(name)
 
-    def save(self, feature: Feature):
+    def save(self, feature: Feature) -> None:
         """Save feature to memory."""
         self.features[feature.name] = feature
 
-    def delete(self, name: str):
+    def delete(self, name: str) -> None:
         """Delete feature from memory."""
         if name in self.features:
             del self.features[name]

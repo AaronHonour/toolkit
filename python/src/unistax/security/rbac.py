@@ -1,6 +1,7 @@
 """Role-Based Access Control."""
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -41,7 +42,7 @@ class RBAC:
         ...     pass
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize RBAC."""
         self._roles: dict[str, Role] = {}
 
@@ -67,7 +68,7 @@ class RBAC:
         role = self._roles.get(role_name)
         return role.has_permission(permission) if role else False
 
-    def requires(self, permission: str):
+    def requires(self, permission: str) -> Any:
         """Decorator to require permission.
 
         Args:
@@ -77,11 +78,11 @@ class RBAC:
             Decorator function
         """
 
-        def decorator(func):
+        def decorator(func: Any) -> Any:
             from functools import wraps
 
             @wraps(func)
-            async def wrapper(*args, **kwargs):
+            async def wrapper(*args: Any, **kwargs: Any) -> Any:
                 # In production, get user role from context/request
                 # user_role = get_current_user_role()
                 # if not self.has_permission(user_role, permission):

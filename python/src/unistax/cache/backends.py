@@ -156,7 +156,7 @@ class RedisBackend(CacheBackend):
         self._fallback = InMemoryCache()
 
         try:
-            import redis
+            import redis  # type: ignore[import-not-found]
 
             self._client = redis.Redis(
                 host=host, port=port, db=db, password=password, decode_responses=False
@@ -173,7 +173,7 @@ class RedisBackend(CacheBackend):
             return self._fallback.get(key)
 
         try:
-            return self._client.get(key)
+            return self._client.get(key)  # type: ignore[no-any-return]
         except Exception:
             return None
 
@@ -245,7 +245,7 @@ class MemcachedBackend(CacheBackend):
         self._fallback = InMemoryCache()
 
         try:
-            from pymemcache.client import base
+            from pymemcache.client import base  # type: ignore[import-not-found]
 
             self._client = base.Client((host, port))
             self._memcached_available = True
@@ -258,7 +258,7 @@ class MemcachedBackend(CacheBackend):
             return self._fallback.get(key)
 
         try:
-            return self._client.get(key)
+            return self._client.get(key)  # type: ignore[no-any-return]
         except Exception:
             return None
 

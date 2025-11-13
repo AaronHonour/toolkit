@@ -18,7 +18,7 @@ class ChannelBackend(ABC):
 class EmailChannel(ChannelBackend):
     """Email channel."""
 
-    def __init__(self, smtp_host: str, smtp_port: int, username: str, password: str):
+    def __init__(self, smtp_host: str, smtp_port: int, username: str, password: str) -> None:
         """Initialize email channel."""
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port
@@ -34,7 +34,7 @@ class EmailChannel(ChannelBackend):
 class SMSChannel(ChannelBackend):
     """SMS channel."""
 
-    def __init__(self, api_key: str, api_secret: str):
+    def __init__(self, api_key: str, api_secret: str) -> None:
         """Initialize SMS channel."""
         self.api_key = api_key
         self.api_secret = api_secret
@@ -48,7 +48,7 @@ class SMSChannel(ChannelBackend):
 class PushChannel(ChannelBackend):
     """Push notification channel."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         """Initialize push channel."""
         self.api_key = api_key
 

@@ -20,7 +20,7 @@ class RetryStrategy(ABC):
 class ExponentialBackoff(RetryStrategy):
     """Exponential backoff retry strategy."""
 
-    def __init__(self, max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 60.0):
+    def __init__(self, max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 60.0) -> None:
         """Initialize ExponentialBackoff.
 
         Args:
@@ -54,4 +54,4 @@ class ExponentialBackoff(RetryStrategy):
             Delay in seconds
         """
         delay = min(self.base_delay * (2**attempt), self.max_delay)
-        return delay
+        return delay  # type: ignore[no-any-return]

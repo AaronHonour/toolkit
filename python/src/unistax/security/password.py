@@ -14,7 +14,7 @@ class PasswordHasher:
         True
     """
 
-    def __init__(self, algorithm: str = "sha256", salt_length: int = 32):
+    def __init__(self, algorithm: str = "sha256", salt_length: int = 32) -> None:
         """Initialize PasswordHasher.
 
         Args:

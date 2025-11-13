@@ -3,10 +3,10 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.zipkin.json import ZipkinExporter
-from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SpanExporter
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter  # type: ignore[import-not-found]
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter  # type: ignore[import-not-found]
+from opentelemetry.exporter.zipkin.json import ZipkinExporter  # type: ignore[import-not-found]
+from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SpanExporter  # type: ignore[import-not-found]
 
 
 class ExporterType(str, Enum):
@@ -47,7 +47,7 @@ def create_exporter(config: ExporterConfig) -> SpanExporter:
         return ConsoleSpanExporter()
 
     elif config.type == ExporterType.JAEGER:
-        kwargs = {}
+        kwargs: dict[str, int | str] = {}
         if config.agent_host:
             kwargs["agent_host_name"] = config.agent_host
         if config.agent_port:
@@ -58,22 +58,22 @@ def create_exporter(config: ExporterConfig) -> SpanExporter:
         return JaegerExporter(**kwargs)
 
     elif config.type == ExporterType.ZIPKIN:
-        kwargs = {}
+        zipkin_kwargs: dict[str, int | str] = {}
         if config.endpoint:
-            kwargs["endpoint"] = config.endpoint
+            zipkin_kwargs["endpoint"] = config.endpoint
         if config.max_tag_value_length:
-            kwargs["max_tag_value_length"] = config.max_tag_value_length
+            zipkin_kwargs["max_tag_value_length"] = config.max_tag_value_length
 
-        return ZipkinExporter(**kwargs)
+        return ZipkinExporter(**zipkin_kwargs)
 
     elif config.type == ExporterType.OTLP:
-        kwargs = {}
+        otlp_kwargs: dict[str, bool | str] = {}
         if config.endpoint:
-            kwargs["endpoint"] = config.endpoint
+            otlp_kwargs["endpoint"] = config.endpoint
         if config.insecure:
-            kwargs["insecure"] = config.insecure
+            otlp_kwargs["insecure"] = config.insecure
 
-        return OTLPSpanExporter(**kwargs)
+        return OTLPSpanExporter(**otlp_kwargs)
 
     else:
         raise ValueError(f"Unknown exporter type: {config.type}")

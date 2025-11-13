@@ -29,7 +29,7 @@ class DiscoveryResult:
     dependency_type: str
     source: DiscoverySource
     confidence: float = 1.0  # 0.0 to 1.0
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict[str, Any])
     discovered_at: datetime = field(default_factory=datetime.utcnow)
 
     def __hash__(self) -> int:

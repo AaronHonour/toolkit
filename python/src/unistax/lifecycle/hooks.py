@@ -12,7 +12,7 @@ class LifecycleHook:
     Handles both sync and async functions.
     """
 
-    def __init__(self, event: str, func: Callable):
+    def __init__(self, event: str, func: Callable[..., Any]) -> None:
         """Initialize LifecycleHook.
 
         Args:

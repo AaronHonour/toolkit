@@ -12,10 +12,10 @@ class Request:
 
     method: str
     path: str
-    headers: dict[str, str] = field(default_factory=dict)
-    query_params: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict[str, Any])
+    query_params: dict[str, str] = field(default_factory=dict[str, Any])
     body: Any = None
-    context: dict[str, Any] = field(default_factory=dict)  # For passing data between middleware
+    context: dict[str, Any] = field(default_factory=dict[str, Any])  # For passing data between middleware
 
 
 @dataclass
@@ -23,7 +23,7 @@ class Response:
     """Response context."""
 
     status_code: int = 200
-    headers: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict[str, Any])
     body: Any = None
 
 
@@ -61,7 +61,7 @@ class MiddlewarePipeline:
         >>> response = await pipeline.execute(request)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MiddlewarePipeline."""
         self._middleware: list[Middleware] = []
 

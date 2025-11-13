@@ -42,7 +42,7 @@ class Application:
         >>> await app.start()
     """
 
-    def __init__(self, name: str = "app", shutdown_timeout: float = 30.0):
+    def __init__(self, name: str = "app", shutdown_timeout: float = 30.0) -> None:
         """Initialize application.
 
         Args:
@@ -57,7 +57,7 @@ class Application:
         self._is_running = False
         self._signal_handlers_installed = False
 
-    def on_startup(self, func: Callable) -> Callable:
+    def on_startup(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Register startup hook.
 
         Args:
@@ -70,7 +70,7 @@ class Application:
         self._startup_hooks.append(hook)
         return func
 
-    def on_shutdown(self, func: Callable) -> Callable:
+    def on_shutdown(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Register shutdown hook.
 
         Args:
@@ -83,7 +83,7 @@ class Application:
         self._shutdown_hooks.append(hook)
         return func
 
-    def health_check(self, name: str | None = None, check_type: str = "readiness") -> Callable:
+    def health_check(self, name: str | None = None, check_type: str = "readiness") -> Callable[..., Any]:
         """Register health check.
 
         Args:
@@ -94,7 +94,7 @@ class Application:
             Decorator function
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             check_name = name or func.__name__
             health_check = HealthCheck(check_name, func, check_type)
             self._health_registry.register(health_check)
@@ -160,7 +160,7 @@ class Application:
         if self._signal_handlers_installed:
             return
 
-        def signal_handler(sig, frame):
+        def signal_handler(sig: Any, frame: Any) -> None:
             print(f"\nReceived signal {sig}, initiating graceful shutdown...")
             asyncio.create_task(self.stop())
 

@@ -4,7 +4,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.orm import Session, scoped_session, sessionmaker  # type: ignore[import-not-found]
 
 from unistax.database.connection import DatabaseManager
 
@@ -19,7 +19,7 @@ _scoped_session: scoped_session | None = None
 class SessionManager:
     """Manage database sessions."""
 
-    def __init__(self, database_manager: DatabaseManager):
+    def __init__(self, database_manager: DatabaseManager) -> None:
         """Initialize session manager.
 
         Args:
@@ -28,7 +28,7 @@ class SessionManager:
         self.database_manager = database_manager
         self._setup_session_factory()
 
-    def _setup_session_factory(self):
+    def _setup_session_factory(self) -> None:
         """Setup session factory."""
         global _session_factory, _scoped_session
 
@@ -47,7 +47,7 @@ class SessionManager:
             with session_manager.session() as session:
                 user = session.query(User).first()
         """
-        session = _session_factory()
+        session = _session_factory()  # type: ignore[misc]
 
         # Set in context
         token = _session_context.set(session)
@@ -68,9 +68,9 @@ class SessionManager:
         Returns:
             Scoped database session
         """
-        return _scoped_session()
+        return _scoped_session()  # type: ignore[misc]
 
-    def remove_scoped_session(self):
+    def remove_scoped_session(self) -> None:
         """Remove scoped session."""
         if _scoped_session:
             _scoped_session.remove()

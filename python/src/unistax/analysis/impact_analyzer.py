@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from unistax.algorithms.graph import BlastRadiusResult, calculate_blast_radius
 from unistax.graph.structures import ServiceDependencyGraph
@@ -40,17 +41,17 @@ class ImpactReport:
 
     # Impact results
     total_affected: int = 0
-    direct_impact: list[ChangeImpact] = field(default_factory=list)
-    indirect_impact: list[ChangeImpact] = field(default_factory=list)
-    cascading_impact: list[ChangeImpact] = field(default_factory=list)
+    direct_impact: list[ChangeImpact] = field(default_factory=list[Any])
+    indirect_impact: list[ChangeImpact] = field(default_factory=list[Any])
+    cascading_impact: list[ChangeImpact] = field(default_factory=list[Any])
 
     # Risk assessment
     risk_level: str = "LOW"  # LOW, MEDIUM, HIGH, CRITICAL
     blast_radius: BlastRadiusResult | None = None
 
     # Recommendations
-    pre_change_actions: list[str] = field(default_factory=list)
-    monitoring_required: list[str] = field(default_factory=list)
+    pre_change_actions: list[str] = field(default_factory=list[Any])
+    monitoring_required: list[str] = field(default_factory=list[Any])
     rollback_plan: str | None = None
 
     @property

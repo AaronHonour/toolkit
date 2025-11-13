@@ -6,11 +6,11 @@ Target: 90% reduction in allocations for reusable objects.
 
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from queue import Empty, Full, Queue
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -34,7 +34,7 @@ class PooledObject(Generic[T]):
 
     __slots__ = ("_obj", "_pool", "_created_at", "_last_used", "_use_count", "_is_healthy")
 
-    def __init__(self, obj: T, pool: "ObjectPool"):
+    def __init__(self, obj: T, pool: "ObjectPool[T]") -> None:
         """Initialize pooled object.
 
         Args:
@@ -68,12 +68,12 @@ class PooledObject(Generic[T]):
         """Get number of times object was used."""
         return self._use_count
 
-    def mark_used(self):
+    def mark_used(self) -> None:
         """Mark object as used."""
         self._last_used = time.time()
         self._use_count += 1
 
-    def mark_unhealthy(self):
+    def mark_unhealthy(self) -> None:
         """Mark object as unhealthy."""
         self._is_healthy = False
 
@@ -86,7 +86,7 @@ class PooledObject(Generic[T]):
         self.mark_used()
         return self._obj
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context manager and return to pool."""
         if exc_type is not None:
             # Exception occurred, mark as potentially unhealthy
@@ -113,7 +113,7 @@ class ObjectPool(Generic[T]):
         factory: Callable[[], T],
         config: PoolConfig | None = None,
         health_check: Callable[[T], bool] | None = None,
-    ):
+    ) -> None:
         """Initialize object pool.
 
         Args:
@@ -154,7 +154,7 @@ class ObjectPool(Generic[T]):
         # Pre-create minimum objects
         self._ensure_min_size()
 
-    def _ensure_min_size(self):
+    def _ensure_min_size(self) -> None:
         """Ensure pool has minimum number of objects."""
         with self._lock:
             while self._size < self._config.min_size:
@@ -218,7 +218,7 @@ class ObjectPool(Generic[T]):
                 self._stats["timeouts"] += 1
                 raise Empty("Pool exhausted, no objects available") from e
 
-    def return_object(self, pooled: PooledObject[T]):
+    def return_object(self, pooled: PooledObject[T]) -> None:
         """Return object to pool.
 
         Args:
@@ -271,7 +271,7 @@ class ObjectPool(Generic[T]):
 
         return True
 
-    def _destroy_object(self, pooled: PooledObject[T]):
+    def _destroy_object(self, pooled: PooledObject[T]) -> None:
         """Destroy object.
 
         Args:
@@ -289,7 +289,7 @@ class ObjectPool(Generic[T]):
                 self._stats["destroyed"] += 1
 
     @contextmanager
-    def get(self, timeout: float | None = None):
+    def get(self, timeout: float | None = None) -> Iterator[T]:
         """Context manager for acquiring object.
 
         Args:
@@ -308,7 +308,7 @@ class ObjectPool(Generic[T]):
         finally:
             self.return_object(pooled)
 
-    def drain(self):
+    def drain(self) -> None:
         """Drain all objects from pool.
 
         Destroys all available objects but keeps pool operational.
@@ -320,7 +320,7 @@ class ObjectPool(Generic[T]):
             except Empty:
                 break
 
-    def close(self):
+    def close(self) -> None:
         """Close pool and destroy all objects."""
         self.drain()
 
@@ -330,7 +330,7 @@ class ObjectPool(Generic[T]):
                 # Force destroy any remaining objects
                 self._size = 0
 
-    def stats(self) -> dict:
+    def stats(self) -> dict[str, Any]:
         """Get pool statistics.
 
         Returns:
@@ -347,7 +347,7 @@ class ObjectPool(Generic[T]):
             **self._stats,
         }
 
-    def health_report(self) -> dict:
+    def health_report(self) -> dict[str, Any]:
         """Get health report.
 
         Returns:
@@ -378,7 +378,7 @@ class BufferPool:
 
     __slots__ = ("_buffer_size", "_pool", "_stats")
 
-    def __init__(self, buffer_size: int = 8192, pool_size: int = 100):
+    def __init__(self, buffer_size: int = 8192, pool_size: int = 100) -> None:
         """Initialize buffer pool.
 
         Args:
@@ -404,7 +404,7 @@ class BufferPool:
         }
 
     @contextmanager
-    def acquire(self) -> bytearray:
+    def acquire(self) -> Iterator[bytearray]:
         """Acquire buffer from pool.
 
         Yields:
@@ -416,7 +416,7 @@ class BufferPool:
             self._stats["buffer_reuses"] += 1
             yield buffer
 
-    def stats(self) -> dict:
+    def stats(self) -> dict[str, Any]:
         """Get buffer pool statistics.
 
         Returns:
@@ -435,12 +435,12 @@ class ObjectPoolManager:
     Provides centralized pool management and monitoring.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize pool manager."""
-        self._pools: dict[str, ObjectPool] = {}
+        self._pools: dict[str, ObjectPool[Any]] = {}
         self._lock = threading.Lock()
 
-    def register_pool(self, name: str, pool: ObjectPool):
+    def register_pool(self, name: str, pool: ObjectPool[Any]) -> None:
         """Register object pool.
 
         Args:
@@ -450,7 +450,7 @@ class ObjectPoolManager:
         with self._lock:
             self._pools[name] = pool
 
-    def get_pool(self, name: str) -> ObjectPool | None:
+    def get_pool(self, name: str) -> ObjectPool[Any] | None:
         """Get pool by name.
 
         Args:
@@ -461,7 +461,7 @@ class ObjectPoolManager:
         """
         return self._pools.get(name)
 
-    def get_all_stats(self) -> dict:
+    def get_all_stats(self) -> dict[str, Any]:
         """Get statistics for all pools.
 
         Returns:
@@ -469,7 +469,7 @@ class ObjectPoolManager:
         """
         return {name: pool.stats() for name, pool in self._pools.items()}
 
-    def get_health_report(self) -> dict:
+    def get_health_report(self) -> dict[str, Any]:
         """Get health report for all pools.
 
         Returns:
@@ -477,7 +477,7 @@ class ObjectPoolManager:
         """
         return {name: pool.health_report() for name, pool in self._pools.items()}
 
-    def close_all(self):
+    def close_all(self) -> None:
         """Close all pools."""
         with self._lock:
             for pool in self._pools.values():

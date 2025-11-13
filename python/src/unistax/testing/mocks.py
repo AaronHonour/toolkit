@@ -15,7 +15,7 @@ class MockService:
         True
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize MockService."""
         self._mock = Mock()
 
@@ -24,7 +24,7 @@ class MockService:
         return getattr(self._mock, name)
 
 
-def mock_service(service_type: type) -> Callable:
+def mock_service(service_type: type) -> Callable[..., Any]:
     """Decorator to mock a service in tests.
 
     Args:
@@ -41,11 +41,11 @@ def mock_service(service_type: type) -> Callable:
         ...     email_service.send.assert_called_once()
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         from functools import wraps
 
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             mock = MockService()
             kwargs[service_type.__name__.lower().replace("service", "")] = mock
             return await func(*args, **kwargs)

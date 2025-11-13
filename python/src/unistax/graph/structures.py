@@ -51,8 +51,8 @@ class ServiceNode:
     id: UUID
     name: str
     service_type: ServiceType
-    endpoints: list[str] = field(default_factory=list)
-    metadata: dict[str, Any] = field(default_factory=dict)
+    endpoints: list[str] = field(default_factory=list[Any])
+    metadata: dict[str, Any] = field(default_factory=dict[str, Any])
     health_score: float = 1.0
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
@@ -123,7 +123,7 @@ class DependencyEdge:
     latency_p99: float | None = None  # Milliseconds
     error_rate: float = 0.0  # 0.0 to 1.0
     request_rate: float = 0.0  # Requests per second
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict[str, Any])
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 

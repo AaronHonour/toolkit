@@ -23,7 +23,7 @@ class HealthCheck:
         check_type: "liveness" or "readiness"
     """
 
-    def __init__(self, name: str, func: Callable, check_type: str = "readiness"):
+    def __init__(self, name: str, func: Callable[..., Any], check_type: str = "readiness") -> None:
         """Initialize HealthCheck.
 
         Args:
@@ -77,7 +77,7 @@ class HealthCheck:
 class HealthCheckRegistry:
     """Registry for health checks."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize HealthCheckRegistry."""
         self._checks: list[HealthCheck] = []
 

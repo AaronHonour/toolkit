@@ -2,12 +2,12 @@
 
 from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel  # type: ignore[import-not-found]
 
 T = TypeVar("T")
 
 
-class APIResponse(BaseModel, Generic[T]):
+class APIResponse(BaseModel, Generic[T]):  # type: ignore[misc]
     """Standard API response."""
 
     success: bool = True
@@ -16,7 +16,7 @@ class APIResponse(BaseModel, Generic[T]):
     meta: dict[str, Any] | None = None
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(BaseModel):  # type: ignore[misc]
     """Error response."""
 
     success: bool = False
@@ -26,7 +26,7 @@ class ErrorResponse(BaseModel):
     code: str | None = None
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
+class PaginatedResponse(BaseModel, Generic[T]):  # type: ignore[misc]
     """Paginated response."""
 
     success: bool = True

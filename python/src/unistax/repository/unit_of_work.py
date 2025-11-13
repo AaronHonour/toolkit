@@ -13,21 +13,21 @@ class UnitOfWork:
         ...     await uow.commit()
     """
 
-    def __init__(self, session: Any | None = None):
+    def __init__(self, session: Any | None = None) -> None:
         """Initialize UnitOfWork.
 
         Args:
             session: Database session (optional)
         """
         self._session = session
-        self._changes = []
+        self._changes: list[Any] = []
         self._is_committed = False
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "UnitOfWork":
         """Enter context - begin transaction."""
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Exit context - commit or rollback."""
         if exc_type is None and not self._is_committed:
             await self.commit()

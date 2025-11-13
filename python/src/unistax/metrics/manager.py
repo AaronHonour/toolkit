@@ -4,6 +4,7 @@ Provides unified interface for collecting and reporting metrics.
 """
 
 import time
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -64,6 +65,7 @@ class MetricsManager:
         # Backend-specific configuration
         backend_config = config.get_dict("metrics.backend_config", {})
 
+        backend: MetricsBackend
         if backend_type == "prometheus":
             backend = PrometheusBackend(**backend_config)
         elif backend_type == "statsd":
@@ -132,7 +134,7 @@ class MetricsManager:
         self._backend.histogram(formatted_name, value, merged_labels)
 
     @contextmanager
-    def timer(self, name: str, labels: dict[str, str] | None = None):
+    def timer(self, name: str, labels: dict[str, str] | None = None) -> Generator[None, None, None]:
         """Context manager for timing operations.
 
         Args:
@@ -151,7 +153,9 @@ class MetricsManager:
             duration = time.perf_counter() - start_time
             self.histogram(name, duration, labels)
 
-    def time_function(self, name: str, labels: dict[str, str] | None = None):
+    def time_function(
+        self, name: str, labels: dict[str, str] | None = None
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Decorator for timing functions.
 
         Args:
@@ -165,9 +169,9 @@ class MetricsManager:
         """
         from functools import wraps
 
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 with self.timer(name, labels):
                     return func(*args, **kwargs)
 

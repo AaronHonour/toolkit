@@ -15,7 +15,9 @@ class Fallback:
         ...     return api.get(f"/users/{user_id}")
     """
 
-    def __init__(self, default_value: Any = None, fallback_func: Callable = None):
+    def __init__(
+        self, default_value: Any = None, fallback_func: Callable[..., Any] | None = None
+    ) -> None:
         """Initialize Fallback.
 
         Args:
@@ -25,22 +27,24 @@ class Fallback:
         self.default_value = default_value
         self.fallback_func = fallback_func
 
-    def with_fallback(self, fallback_func: Callable = None):
+    def with_fallback(
+        self, fallback_func: Callable[..., Any] | None = None
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Decorator to add fallback behavior.
 
         Args:
             fallback_func: Custom fallback function
         """
 
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 try:
                     return func(*args, **kwargs)
                 except Exception:
-                    if fallback_func:
+                    if fallback_func is not None:
                         return fallback_func(*args, **kwargs)
-                    elif self.fallback_func:
+                    elif self.fallback_func is not None:
                         return self.fallback_func(*args, **kwargs)
                     return self.default_value
 

@@ -3,7 +3,7 @@
 from unistax.tracing.context import TraceContext, get_span_id, get_trace_id
 from unistax.tracing.exporters import ExporterConfig, ExporterType
 from unistax.tracing.span import SpanKind, SpanManager
-from unistax.tracing.tracer import TracerManager, get_tracer, trace
+from .tracer import Tracer, trace_decorator as trace  # type: ignore[attr-defined]
 
 __all__ = [
     "TracerManager",

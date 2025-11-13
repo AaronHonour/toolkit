@@ -1,8 +1,9 @@
 """Worker management for background tasks."""
 
 from dataclasses import dataclass
+from typing import Any
 
-from celery import Celery
+from celery import Celery  # type: ignore[import-not-found]
 
 # Global Celery app instance
 _celery_app: Celery | None = None
@@ -25,7 +26,7 @@ class WorkerConfig:
 class Worker:
     """Celery worker manager."""
 
-    def __init__(self, app: Celery, config: WorkerConfig | None = None):
+    def __init__(self, app: Celery, config: WorkerConfig | None = None) -> None:
         """Initialize worker.
 
         Args:
@@ -36,7 +37,7 @@ class Worker:
         self.config = config or WorkerConfig()
         self._apply_config()
 
-    def _apply_config(self):
+    def _apply_config(self) -> None:
         """Apply worker configuration to Celery app."""
         self.app.conf.update(
             worker_prefetch_multiplier=self.config.worker_prefetch_multiplier,
@@ -52,7 +53,7 @@ class Worker:
         loglevel: str = "info",
         logfile: str | None = None,
         pidfile: str | None = None,
-    ):
+    ) -> None:
         """Start the worker.
 
         Args:
@@ -79,7 +80,7 @@ class Worker:
 
         self.app.worker_main(argv)
 
-    def inspect(self):
+    def inspect(self) -> Any:
         """Get worker inspection interface.
 
         Returns:
@@ -91,15 +92,15 @@ class Worker:
         """
         return self.app.control.inspect()
 
-    def purge(self):
+    def purge(self) -> int:
         """Purge all waiting tasks.
 
         Returns:
             Number of tasks purged
         """
-        return self.app.control.purge()
+        return self.app.control.purge()  # type: ignore[no-any-return]
 
-    def revoke(self, task_id: str, terminate: bool = False):
+    def revoke(self, task_id: str, terminate: bool = False) -> None:
         """Revoke a task.
 
         Args:
@@ -109,7 +110,7 @@ class Worker:
         self.app.control.revoke(task_id, terminate=terminate)
 
 
-def set_celery_app(app: Celery):
+def set_celery_app(app: Celery) -> None:
     """Set global Celery app.
 
     Args:

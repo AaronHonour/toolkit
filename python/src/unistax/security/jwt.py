@@ -14,7 +14,7 @@ class JWT:
         >>> claims = jwt.decode(token)
     """
 
-    def __init__(self, secret: str, algorithm: str = "HS256", expiration: int = 3600):
+    def __init__(self, secret: str, algorithm: str = "HS256", expiration: int = 3600) -> None:
         """Initialize JWT.
 
         Args:
@@ -106,4 +106,4 @@ class JWT:
         if "exp" in payload and payload["exp"] < time.time():
             raise ValueError("Token expired")
 
-        return payload
+        return payload  # type: ignore[no-any-return]

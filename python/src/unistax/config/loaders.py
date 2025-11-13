@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 class YAMLLoader:
@@ -78,7 +78,7 @@ class EnvInterpolator:
         """Recursively interpolate environment variables in data structure.
 
         Args:
-            data: Data to interpolate (dict, list, or string)
+            data: Data to interpolate (dict[str, Any], list[Any], or string)
 
         Returns:
             Data with interpolated values

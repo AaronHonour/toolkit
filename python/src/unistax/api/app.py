@@ -4,9 +4,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from fastapi import APIRouter, FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, FastAPI, Request  # type: ignore[import-not-found]
+from fastapi.middleware.cors import CORSMiddleware  # type: ignore[import-not-found]
+from fastapi.responses import JSONResponse  # type: ignore[import-not-found]
 
 from unistax.config import ConfigManager
 from unistax.lifecycle import Application
@@ -20,7 +20,7 @@ class RouteConfig:
 
     path: str
     methods: list[str]
-    handler: Callable
+    handler: Callable[..., Any]
     tags: list[str] | None = None
     summary: str | None = None
     description: str | None = None
@@ -40,7 +40,7 @@ class APIApplication:
         openapi_url: str = "/openapi.json",
         cors_enabled: bool = True,
         cors_origins: list[str] | None = None,
-    ):
+    ) -> None:
         """Initialize API application.
 
         Args:
@@ -104,7 +104,7 @@ class APIApplication:
         allow_credentials: bool = True,
         allow_methods: list[str] | None = None,
         allow_headers: list[str] | None = None,
-    ):
+    ) -> None:
         """Add CORS middleware.
 
         Args:
@@ -121,7 +121,7 @@ class APIApplication:
             allow_headers=allow_headers or ["*"],
         )
 
-    def add_middleware(self, middleware_class: Any, **kwargs):
+    def add_middleware(self, middleware_class: Any, **kwargs: Any) -> None:
         """Add middleware to application.
 
         Args:
@@ -130,11 +130,11 @@ class APIApplication:
         """
         self.app.add_middleware(middleware_class, **kwargs)
 
-    def _setup_exception_handlers(self):
+    def _setup_exception_handlers(self) -> None:
         """Setup exception handlers."""
 
-        @self.app.exception_handler(404)
-        async def not_found_handler(request: Request, exc: Any):
+        @self.app.exception_handler(404)  # type: ignore[misc]
+        async def not_found_handler(request: Request, exc: Any) -> JSONResponse:
             return JSONResponse(
                 status_code=404,
                 content={
@@ -144,8 +144,8 @@ class APIApplication:
                 },
             )
 
-        @self.app.exception_handler(500)
-        async def server_error_handler(request: Request, exc: Any):
+        @self.app.exception_handler(500)  # type: ignore[misc]
+        async def server_error_handler(request: Request, exc: Any) -> JSONResponse:
             self.logger.error(f"Internal server error: {exc}")
             return JSONResponse(
                 status_code=500,
@@ -155,7 +155,7 @@ class APIApplication:
                 },
             )
 
-    def include_router(self, router: "APIRouter", prefix: str = "", tags: list[str] | None = None):
+    def include_router(self, router: "APIRouter", prefix: str = "", tags: list[str] | None = None) -> None:
         """Include router in application.
 
         Args:
@@ -165,7 +165,7 @@ class APIApplication:
         """
         self.app.include_router(router.router, prefix=prefix, tags=tags or [])
 
-    def on_startup(self, func: Callable):
+    def on_startup(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Register startup handler.
 
         Args:
@@ -174,9 +174,9 @@ class APIApplication:
         Returns:
             Decorated function
         """
-        return self.app.on_event("startup")(func)
+        return self.app.on_event("startup")(func)  # type: ignore[no-any-return]
 
-    def on_shutdown(self, func: Callable):
+    def on_shutdown(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Register shutdown handler.
 
         Args:
@@ -185,7 +185,7 @@ class APIApplication:
         Returns:
             Decorated function
         """
-        return self.app.on_event("shutdown")(func)
+        return self.app.on_event("shutdown")(func)  # type: ignore[no-any-return]
 
     def get_app(self) -> FastAPI:
         """Get FastAPI application.

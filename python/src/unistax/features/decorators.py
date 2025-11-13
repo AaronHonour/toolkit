@@ -2,13 +2,14 @@
 
 from collections.abc import Callable
 from functools import wraps
+from typing import Any
 
 from unistax.features.manager import FeatureManager
 
 _feature_manager: FeatureManager | None = None
 
 
-def set_feature_manager(manager: FeatureManager):
+def set_feature_manager(manager: FeatureManager) -> None:
     """Set global feature manager."""
     global _feature_manager
     _feature_manager = manager
@@ -21,12 +22,14 @@ def is_enabled(feature_name: str, user_id: str | None = None) -> bool:
     return _feature_manager.is_enabled(feature_name, user_id=user_id)
 
 
-def feature_flag(feature_name: str, fallback: Callable | None = None):
+def feature_flag(
+    feature_name: str, fallback: Callable[..., Any] | None = None
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to check feature flag before executing function."""
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             if is_enabled(feature_name):
                 return func(*args, **kwargs)
             elif fallback:

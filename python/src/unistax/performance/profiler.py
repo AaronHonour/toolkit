@@ -7,13 +7,14 @@ import pstats
 import time
 from collections.abc import Callable
 from contextlib import contextmanager
+from typing import Any
 
 
 class Profiler:
     """Performance profiler for identifying bottlenecks."""
 
     @staticmethod
-    def profile_function(func: Callable, *args, **kwargs) -> tuple:
+    def profile_function(func: Callable[..., Any], *args: Any, **kwargs: Any) -> tuple[Any, ...]:
         """Profile function execution.
 
         Args:
@@ -44,7 +45,7 @@ class Profiler:
         return result, stream.getvalue()
 
     @staticmethod
-    def profile_decorator(func: Callable) -> Callable:
+    def profile_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """Decorator to profile function.
 
         Example:
@@ -55,7 +56,7 @@ class Profiler:
         """
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             result, stats = Profiler.profile_function(func, *args, **kwargs)
             print(f"\nProfile for {func.__name__}:")
             print(stats)
@@ -65,7 +66,7 @@ class Profiler:
 
     @staticmethod
     @contextmanager
-    def profile_context(name: str = "block"):
+    def profile_context(name: str = "block") -> Any:
         """Context manager for profiling code block.
 
         Example:
@@ -92,15 +93,15 @@ class Profiler:
 class PerformanceMonitor:
     """Monitor performance metrics over time."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize performance monitor."""
-        self.metrics = {
+        self.metrics: dict[str, dict[str, Any]] = {
             "calls": {},
             "total_time": {},
             "avg_time": {},
         }
 
-    def monitor(self, func: Callable) -> Callable:
+    def monitor(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """Decorator to monitor function performance.
 
         Example:
@@ -115,7 +116,7 @@ class PerformanceMonitor:
         func_name = func.__name__
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             start = time.perf_counter()
             try:
                 return func(*args, **kwargs)

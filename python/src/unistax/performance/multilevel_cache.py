@@ -29,14 +29,14 @@ class CacheEntry:
 class LRUCache:
     """Thread-safe LRU cache implementation."""
 
-    def __init__(self, max_size: int = 1000):
+    def __init__(self, max_size: int = 1000) -> None:
         """Initialize LRU cache.
 
         Args:
             max_size: Maximum cache size
         """
         self.max_size = max_size
-        self.cache: OrderedDict = OrderedDict()
+        self.cache: OrderedDict[str, CacheEntry] = OrderedDict()
         self.lock = threading.RLock()
 
     def get(self, key: str) -> Any | None:
@@ -64,7 +64,7 @@ class LRUCache:
             entry.hits += 1
             return entry.value
 
-    def set(self, key: str, value: Any, ttl: int = 300):
+    def set(self, key: str, value: Any, ttl: int = 300) -> None:
         """Set value in cache.
 
         Args:
@@ -81,7 +81,7 @@ class LRUCache:
 
             self.cache[key] = CacheEntry(value=value, timestamp=time.time(), ttl=ttl)
 
-    def delete(self, key: str):
+    def delete(self, key: str) -> None:
         """Delete key from cache.
 
         Args:
@@ -91,7 +91,7 @@ class LRUCache:
             if key in self.cache:
                 del self.cache[key]
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all cache entries."""
         with self.lock:
             self.cache.clear()
@@ -105,7 +105,7 @@ class LRUCache:
         with self.lock:
             return len(self.cache)
 
-    def stats(self) -> dict:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
@@ -126,7 +126,7 @@ class MultiLevelCache:
 
     def __init__(
         self, l1_max_size: int = 1000, l2_client: Any | None = None, enable_stats: bool = True
-    ):
+    ) -> None:
         """Initialize multi-level cache.
 
         Args:
@@ -189,7 +189,7 @@ class MultiLevelCache:
 
         return None
 
-    def set(self, key: str, value: Any, ttl: int = 300):
+    def set(self, key: str, value: Any, ttl: int = 300) -> None:
         """Set value in both cache levels.
 
         Args:
@@ -211,7 +211,7 @@ class MultiLevelCache:
             with self.stats_lock:
                 self.stats["sets"] += 1
 
-    def delete(self, key: str):
+    def delete(self, key: str) -> None:
         """Delete from all cache levels.
 
         Args:
@@ -225,7 +225,7 @@ class MultiLevelCache:
             except Exception:
                 pass
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all cache levels."""
         self.l1.clear()
 
@@ -235,7 +235,7 @@ class MultiLevelCache:
             except Exception:
                 pass
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache statistics.
 
         Returns:
@@ -271,7 +271,7 @@ class MultiLevelCache:
             },
         }
 
-    def warm_cache(self, key_value_pairs: list[tuple[str, Any]], ttl: int = 300):
+    def warm_cache(self, key_value_pairs: list[tuple[str, Any]], ttl: int = 300) -> None:
         """Warm cache with initial data.
 
         Args:

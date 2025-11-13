@@ -6,12 +6,12 @@ configuration schemas.
 
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict  # type: ignore[import-not-found]
 
 T = TypeVar("T", bound="ConfigSchema")
 
 
-class ConfigSchema(BaseModel):
+class ConfigSchema(BaseModel):  # type: ignore[misc]
     """Base class for configuration schemas.
 
     Uses Pydantic for validation and type safety.
@@ -54,7 +54,7 @@ class ConfigSchema(BaseModel):
 
     def to_dict(self) -> dict[str, Any]:
         """Export schema as dictionary."""
-        return self.model_dump()
+        return self.model_dump()  # type: ignore[no-any-return]
 
     @classmethod
     def from_yaml(cls: type[T], path: str) -> T:

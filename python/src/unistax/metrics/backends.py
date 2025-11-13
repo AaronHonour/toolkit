@@ -51,7 +51,7 @@ class InMemoryBackend(MetricsBackend):
         self._lock = threading.RLock()
         self._counters: dict[str, float] = defaultdict(float)
         self._gauges: dict[str, float] = {}
-        self._histograms: dict[str, list[float]] = defaultdict(list)
+        self._histograms: dict[str, list[float]] = defaultdict(list[Any])
 
     def _make_key(self, name: str, labels: dict[str, str] | None) -> str:
         """Create metric key from name and labels."""
@@ -124,7 +124,7 @@ class PrometheusBackend(MetricsBackend):
         self._fallback = InMemoryBackend()
 
         try:
-            from prometheus_client import CollectorRegistry
+            from prometheus_client import CollectorRegistry  # type: ignore[import-not-found]
 
             self._registry = registry or CollectorRegistry()
             self._metrics: dict[str, Any] = {}
@@ -139,18 +139,18 @@ class PrometheusBackend(MetricsBackend):
         if not self._prometheus_available:
             return None
 
-        from prometheus_client import Counter, Gauge, Histogram
+        import prometheus_client
 
         label_names = list(labels.keys()) if labels else []
         key = f"{metric_type}:{name}:{','.join(sorted(label_names))}"
 
         if key not in self._metrics:
             if metric_type == "counter":
-                metric_class = Counter
+                metric_class = prometheus_client.Counter
             elif metric_type == "gauge":
-                metric_class = Gauge
+                metric_class = prometheus_client.Gauge
             else:  # histogram
-                metric_class = Histogram
+                metric_class = prometheus_client.Histogram
 
             self._metrics[key] = metric_class(
                 name.replace(".", "_"),
@@ -205,9 +205,9 @@ class PrometheusBackend(MetricsBackend):
             return self._fallback.get_metrics()
 
         # Return Prometheus metrics in text format
-        from prometheus_client import generate_latest
+        return prometheus_client.Summary(*args, **kwargs)  # type: ignore
 
-        return {"prometheus": generate_latest(self._registry).decode("utf-8")}
+        import prometheus_client; return prometheus_client.generate_latest(self._registry)
 
     def reset(self) -> None:
         """Reset all metrics."""
@@ -238,7 +238,7 @@ class StatsDBackend(MetricsBackend):
         self._fallback = InMemoryBackend()
 
         try:
-            import statsd
+            import statsd  # type: ignore[import-not-found]
 
             self._client = statsd.StatsClient(host, port, prefix=prefix)
             self._statsd_available = True

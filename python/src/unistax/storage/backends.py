@@ -14,12 +14,12 @@ class StorageBackend(ABC):
         pass
 
     @abstractmethod
-    def download(self, source_path: str, dest_path: str):
+    def download(self, source_path: str, dest_path: str) -> None:
         """Download file."""
         pass
 
     @abstractmethod
-    def delete(self, path: str):
+    def delete(self, path: str) -> None:
         """Delete file."""
         pass
 
@@ -37,7 +37,7 @@ class StorageBackend(ABC):
 class LocalStorage(StorageBackend):
     """Local filesystem storage."""
 
-    def __init__(self, base_path: str = "/tmp/storage"):
+    def __init__(self, base_path: str = "/tmp/storage") -> None:
         """Initialize local storage."""
         self.base_path = base_path
         os.makedirs(base_path, exist_ok=True)
@@ -49,12 +49,12 @@ class LocalStorage(StorageBackend):
         shutil.copy2(source_path, full_path)
         return full_path
 
-    def download(self, source_path: str, dest_path: str):
+    def download(self, source_path: str, dest_path: str) -> None:
         """Download file from local storage."""
         full_path = os.path.join(self.base_path, source_path.lstrip("/"))
         shutil.copy2(full_path, dest_path)
 
-    def delete(self, path: str):
+    def delete(self, path: str) -> None:
         """Delete file from local storage."""
         full_path = os.path.join(self.base_path, path.lstrip("/"))
         if os.path.exists(full_path):
@@ -74,8 +74,8 @@ class S3Storage(StorageBackend):
     """AWS S3 storage."""
 
     def __init__(
-        self, bucket: str, region: str = "us-east-1", access_key: str = None, secret_key: str = None
-    ):  # noqa: E501
+        self, bucket: str, region: str = "us-east-1", access_key: str | None = None, secret_key: str | None = None
+    ) -> None:  # noqa: E501
         """Initialize S3 storage."""
         self.bucket = bucket
         # Implementation requires boto3
@@ -85,11 +85,11 @@ class S3Storage(StorageBackend):
         # Implementation with boto3
         return f"s3://{self.bucket}/{dest_path}"
 
-    def download(self, source_path: str, dest_path: str):
+    def download(self, source_path: str, dest_path: str) -> None:
         """Download from S3."""
         pass
 
-    def delete(self, path: str):
+    def delete(self, path: str) -> None:
         """Delete from S3."""
         pass
 
@@ -105,7 +105,7 @@ class S3Storage(StorageBackend):
 class AzureStorage(StorageBackend):
     """Azure Blob storage."""
 
-    def __init__(self, container: str, connection_string: str):
+    def __init__(self, container: str, connection_string: str) -> None:
         """Initialize Azure storage."""
         self.container = container
         # Implementation requires azure-storage-blob
@@ -114,11 +114,11 @@ class AzureStorage(StorageBackend):
         """Upload to Azure."""
         return f"https://{self.container}.blob.core.windows.net/{dest_path}"
 
-    def download(self, source_path: str, dest_path: str):
+    def download(self, source_path: str, dest_path: str) -> None:
         """Download from Azure."""
         pass
 
-    def delete(self, path: str):
+    def delete(self, path: str) -> None:
         """Delete from Azure."""
         pass
 

@@ -27,7 +27,7 @@ class ValidationRules:
         return bool(re.match(pattern, value))
 
     @staticmethod
-    def length(value: str, min_len: int = 0, max_len: int = float("inf")) -> bool:
+    def length(value: str, min_len: int = 0, max_len: float = float("inf")) -> bool:
         """Validate string length."""
         return min_len <= len(value) <= max_len
 
@@ -48,12 +48,12 @@ class Validator:
         >>> validator.validate({"email": "test@example.com"})
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Validator."""
-        self.rules: dict[str, list[Callable]] = {}
+        self.rules: dict[str, list[tuple[Callable[..., Any], str]]] = {}
         self.errors: dict[str, list[str]] = {}
 
-    def add_rule(self, field: str, rule: Callable, error_message: str = "Validation failed"):
+    def add_rule(self, field: str, rule: Callable[..., Any], error_message: str = "Validation failed") -> None:
         """Add validation rule for field."""
         if field not in self.rules:
             self.rules[field] = []

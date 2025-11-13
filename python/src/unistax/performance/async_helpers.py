@@ -11,7 +11,7 @@ T = TypeVar("T")
 class AsyncPool:
     """Async operation pool for concurrent execution."""
 
-    def __init__(self, max_workers: int = 10):
+    def __init__(self, max_workers: int = 10) -> None:
         """Initialize async pool.
 
         Args:
@@ -48,7 +48,7 @@ class AsyncPool:
 
 async def async_batch(
     items: list[T], batch_size: int, processor: Callable[[list[T]], Coroutine[Any, Any, Any]]
-):
+) -> Any:
     """Process items in async batches.
 
     Args:
@@ -70,7 +70,9 @@ async def async_batch(
     return await asyncio.gather(*tasks)
 
 
-def run_in_executor(func: Callable, *args, executor: ThreadPoolExecutor | None = None, **kwargs):
+def run_in_executor(
+    func: Callable[..., Any], *args: Any, executor: ThreadPoolExecutor | None = None, **kwargs: Any
+) -> Any:
     """Run blocking function in executor.
 
     Args:

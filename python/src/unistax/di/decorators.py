@@ -15,7 +15,7 @@ def singleton(cls: type[T]) -> type[T]:
         ... class UserService:
         ...     pass
     """
-    cls.__lifetime__ = Lifetime.SINGLETON
+    cls.__lifetime__ = Lifetime.SINGLETON  # type: ignore[attr-defined]
     return cls
 
 
@@ -27,7 +27,7 @@ def transient(cls: type[T]) -> type[T]:
         ... class RequestHandler:
         ...     pass
     """
-    cls.__lifetime__ = Lifetime.TRANSIENT
+    cls.__lifetime__ = Lifetime.TRANSIENT  # type: ignore[attr-defined]
     return cls
 
 
@@ -39,5 +39,5 @@ def scoped(cls: type[T]) -> type[T]:
         ... class DatabaseContext:
         ...     pass
     """
-    cls.__lifetime__ = Lifetime.SCOPED
+    cls.__lifetime__ = Lifetime.SCOPED  # type: ignore[attr-defined]
     return cls

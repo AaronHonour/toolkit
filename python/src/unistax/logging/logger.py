@@ -109,7 +109,7 @@ class Logger:
         self,
         level: int,
         message: str,
-        args: tuple,
+        args: tuple[Any, ...],
         extra: dict[str, Any] | None,
         **kwargs: Any,
     ) -> None:
@@ -126,7 +126,9 @@ class Logger:
             return
 
         # Merge context with extra fields
-        merged_extra = {**log_context.get(), **(extra or {})}
+        context_data = log_context.get()
+        extra_data = extra or {}
+        merged_extra = {**context_data, **extra_data}  # type: ignore[dict-item]
 
         self._logger.log(level, message, *args, extra=merged_extra, **kwargs)
 
@@ -157,7 +159,8 @@ class Logger:
             **kwargs: Context key-value pairs
         """
         current = log_context.get()
-        log_context.set({**current, **kwargs})
+        updated = {**current, **kwargs}  # type: ignore[dict-item]
+        log_context.set(updated)
 
     def clear_context(self) -> None:
         """Clear logging context."""
@@ -174,8 +177,8 @@ class LoggerFactory:
     def create(
         name: str,
         level: str = "INFO",
-        handlers: list | None = None,
-        filters: list | None = None,
+        handlers: list[Any]| None = None,
+        filters: list[Any]| None = None,
     ) -> Logger:
         """Create configured logger.
 
@@ -294,7 +297,7 @@ class LoggerFactory:
         if formatter_type == "json":
             formatter = JSONFormatter()
         else:
-            formatter = StructuredFormatter()
+            formatter = StructuredFormatter()  # type: ignore[assignment]
 
         handler.setFormatter(formatter)
 

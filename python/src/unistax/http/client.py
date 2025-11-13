@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 try:
-    import requests
+    import requests  # type: ignore[import-untyped]
 
     REQUESTS_AVAILABLE = True
 except ImportError:
@@ -61,7 +61,7 @@ class HTTPClient:
         timeout: float = 10.0,
         max_retries: int = 3,
         headers: dict[str, str] | None = None,
-    ):
+    ) -> None:
         """Initialize HTTP client.
 
         Args:
@@ -171,6 +171,8 @@ class HTTPClient:
 
         if last_error:
             raise last_error
+
+        raise RuntimeError("Request failed with no error recorded")
 
     def get(self, url: str, **kwargs: Any) -> Response:
         """GET request."""

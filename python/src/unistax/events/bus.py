@@ -5,7 +5,7 @@ import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TypeVar
+from typing import Any, TypeVar
 from uuid import uuid4
 
 T = TypeVar("T", bound="Event")
@@ -15,10 +15,10 @@ T = TypeVar("T", bound="Event")
 class Event:
     """Base event class."""
 
-    event_id: str = None
-    timestamp: datetime = None
+    event_id: str | None = None
+    timestamp: datetime | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize defaults."""
         if self.event_id is None:
             self.event_id = str(uuid4())
@@ -39,11 +39,11 @@ class EventBus:
         >>> await bus.publish(UserCreated(user_id=123))
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize EventBus."""
-        self._handlers: dict[type[Event], list[Callable]] = {}
+        self._handlers: dict[type[Event], list[Callable[..., Any]]] = {}
 
-    def subscribe(self, event_type: type[T]) -> Callable:
+    def subscribe(self, event_type: type[T]) -> Callable[..., Any]:
         """Subscribe to event type.
 
         Args:
@@ -53,7 +53,7 @@ class EventBus:
             Decorator function
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             if event_type not in self._handlers:
                 self._handlers[event_type] = []
             self._handlers[event_type].append(func)
@@ -86,13 +86,13 @@ class EventBus:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
-    def unsubscribe(self, event_type: type[Event], handler: Callable) -> None:
+    def unsubscribe(self, event_type: type[Event], handler: Callable[..., Any]) -> None:
         """Unsubscribe handler from event."""
         if event_type in self._handlers:
             self._handlers[event_type] = [h for h in self._handlers[event_type] if h != handler]
 
 
-def event_handler(event_type: type[Event]) -> Callable:
+def event_handler(event_type: type[Event]) -> Callable[..., Any]:
     """Decorator to mark function as event handler.
 
     Args:
@@ -102,8 +102,8 @@ def event_handler(event_type: type[Event]) -> Callable:
         Decorator function
     """
 
-    def decorator(func: Callable) -> Callable:
-        func.__event_type__ = event_type
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        func.__event_type__ = event_type  # type: ignore[attr-defined]
         return func
 
     return decorator

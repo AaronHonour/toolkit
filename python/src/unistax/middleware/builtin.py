@@ -12,7 +12,7 @@ class LoggingMiddleware(Middleware):
     Logs method, path, status code, and duration.
     """
 
-    def __init__(self, logger: Any | None = None):
+    def __init__(self, logger: Any | None = None) -> None:
         """Initialize LoggingMiddleware.
 
         Args:
@@ -72,7 +72,7 @@ class MetricsMiddleware(Middleware):
     Tracks request count, duration, and status codes.
     """
 
-    def __init__(self, metrics: Any | None = None):
+    def __init__(self, metrics: Any | None = None) -> None:
         """Initialize MetricsMiddleware.
 
         Args:
@@ -168,11 +168,11 @@ class CORSMiddleware(Middleware):
 
     def __init__(
         self,
-        allow_origins: list[str] = None,
-        allow_methods: list[str] = None,
-        allow_headers: list[str] = None,
+        allow_origins: list[str] | None = None,
+        allow_methods: list[str] | None = None,
+        allow_headers: list[str] | None = None,
         max_age: int = 3600,
-    ):
+    ) -> None:
         """Initialize CORSMiddleware.
 
         Args:
@@ -233,7 +233,7 @@ class CompressionMiddleware(Middleware):
     Uses gzip compression for large responses.
     """
 
-    def __init__(self, min_size: int = 1024):
+    def __init__(self, min_size: int = 1024) -> None:
         """Initialize CompressionMiddleware.
 
         Args:

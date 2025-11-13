@@ -10,7 +10,7 @@ class TokenBucket:
     Allows bursts while maintaining average rate.
     """
 
-    def __init__(self, capacity: int, refill_rate: float):
+    def __init__(self, capacity: int, refill_rate: float) -> None:
         """Initialize token bucket.
 
         Args:
@@ -19,10 +19,10 @@ class TokenBucket:
         """
         self.capacity = capacity
         self.refill_rate = refill_rate
-        self.tokens = capacity
+        self.tokens: float = capacity
         self.last_refill = time.time()
 
-    def _refill(self):
+    def _refill(self) -> None:
         """Refill tokens based on elapsed time."""
         now = time.time()
         elapsed = now - self.last_refill
@@ -52,7 +52,7 @@ class SlidingWindow:
     More accurate than fixed window, prevents burst at window boundaries.
     """
 
-    def __init__(self, limit: int, window_size: int):
+    def __init__(self, limit: int, window_size: int) -> None:
         """Initialize sliding window.
 
         Args:
@@ -61,7 +61,7 @@ class SlidingWindow:
         """
         self.limit = limit
         self.window_size = window_size
-        self.requests = deque()
+        self.requests: deque[float] = deque()
 
     def is_allowed(self) -> bool:
         """Check if request is allowed.

@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from typing import Any
 
-from fastapi import APIRouter as FastAPIRouter
+from fastapi import APIRouter as FastAPIRouter  # type: ignore[import-not-found]
 
 
 class APIRouter:
@@ -14,7 +14,7 @@ class APIRouter:
         prefix: str = "",
         tags: list[str] | None = None,
         dependencies: list[Any] | None = None,
-    ):
+    ) -> None:
         """Initialize API router.
 
         Args:
@@ -28,7 +28,7 @@ class APIRouter:
             dependencies=dependencies or [],
         )
 
-    def get(self, path: str, **kwargs):
+    def get(self, path: str, **kwargs: Any) -> Callable[..., Any]:
         """Register GET endpoint.
 
         Args:
@@ -38,9 +38,9 @@ class APIRouter:
         Returns:
             Route decorator
         """
-        return self.router.get(path, **kwargs)
+        return self.router.get(path, **kwargs)  # type: ignore[no-any-return]
 
-    def post(self, path: str, **kwargs):
+    def post(self, path: str, **kwargs: Any) -> Callable[..., Any]:
         """Register POST endpoint.
 
         Args:
@@ -50,9 +50,9 @@ class APIRouter:
         Returns:
             Route decorator
         """
-        return self.router.post(path, **kwargs)
+        return self.router.post(path, **kwargs)  # type: ignore[no-any-return]
 
-    def put(self, path: str, **kwargs):
+    def put(self, path: str, **kwargs: Any) -> Callable[..., Any]:
         """Register PUT endpoint.
 
         Args:
@@ -62,9 +62,9 @@ class APIRouter:
         Returns:
             Route decorator
         """
-        return self.router.put(path, **kwargs)
+        return self.router.put(path, **kwargs)  # type: ignore[no-any-return]
 
-    def patch(self, path: str, **kwargs):
+    def patch(self, path: str, **kwargs: Any) -> Callable[..., Any]:
         """Register PATCH endpoint.
 
         Args:
@@ -74,9 +74,9 @@ class APIRouter:
         Returns:
             Route decorator
         """
-        return self.router.patch(path, **kwargs)
+        return self.router.patch(path, **kwargs)  # type: ignore[no-any-return]
 
-    def delete(self, path: str, **kwargs):
+    def delete(self, path: str, **kwargs: Any) -> Callable[..., Any]:
         """Register DELETE endpoint.
 
         Args:
@@ -86,15 +86,15 @@ class APIRouter:
         Returns:
             Route decorator
         """
-        return self.router.delete(path, **kwargs)
+        return self.router.delete(path, **kwargs)  # type: ignore[no-any-return]
 
     def add_api_route(
         self,
         path: str,
-        endpoint: Callable,
+        endpoint: Callable[..., Any],
         methods: list[str] | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """Add API route.
 
         Args:

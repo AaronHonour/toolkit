@@ -39,19 +39,19 @@ class AnalysisReport:
     dependency_count: int = 0
 
     # Analysis results
-    circular_dependencies: list[CircularDependency] = field(default_factory=list)
-    critical_services: list[CriticalityScore] = field(default_factory=list)
-    bottlenecks: dict[str, float] = field(default_factory=dict)
+    circular_dependencies: list[CircularDependency] = field(default_factory=list[Any])
+    critical_services: list[CriticalityScore] = field(default_factory=list[Any])
+    bottlenecks: dict[str, float] = field(default_factory=dict[str, Any])
     deployment_order: list[str] | None = None
-    blast_radius_cache: dict[str, BlastRadiusResult] = field(default_factory=dict)
+    blast_radius_cache: dict[str, BlastRadiusResult] = field(default_factory=dict[str, Any])
 
     # Insights and recommendations
-    insights: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    recommendations: list[str] = field(default_factory=list)
+    insights: list[str] = field(default_factory=list[Any])
+    warnings: list[str] = field(default_factory=list[Any])
+    recommendations: list[str] = field(default_factory=list[Any])
 
     # Metadata
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict[str, Any])
 
     @property
     def has_circular_dependencies(self) -> bool:

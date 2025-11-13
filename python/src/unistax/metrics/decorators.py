@@ -10,7 +10,7 @@ from typing import Any
 from .manager import get_metrics
 
 
-def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
+def timer(name: str, labels: dict[str, str] | None = None) -> Callable[..., Any]:
     """Decorator to time function execution.
 
     Args:
@@ -23,7 +23,7 @@ def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
         ...     return db.query(...)
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             metrics = get_metrics()
@@ -35,7 +35,7 @@ def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
     return decorator
 
 
-def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> Callable:
+def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> Callable[..., Any]:
     """Decorator to increment counter on function call.
 
     Args:
@@ -49,7 +49,7 @@ def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None)
         ...     pass
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             metrics = get_metrics()
@@ -61,7 +61,7 @@ def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None)
     return decorator
 
 
-def gauge(name: str, value_func: Callable | None = None) -> Callable:
+def gauge(name: str, value_func: Callable[..., Any]| None = None) -> Callable[..., Any]:
     """Decorator to set gauge value based on function result.
 
     Args:
@@ -74,7 +74,7 @@ def gauge(name: str, value_func: Callable | None = None) -> Callable:
         ...     return queue.get_all()
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             result = func(*args, **kwargs)

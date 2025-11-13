@@ -35,11 +35,11 @@ class Notification:
 class NotificationManager:
     """Multi-channel notification manager."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize notification manager."""
         self.channels: dict[NotificationChannel, ChannelBackend] = {}
 
-    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend"):
+    def register_channel(self, channel_type: NotificationChannel, backend: "ChannelBackend") -> None:
         """Register channel backend.
 
         Args:

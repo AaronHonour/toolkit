@@ -22,12 +22,12 @@ class QueueBackend(ABC):
         pass
 
     @abstractmethod
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete message."""
         pass
 
     @abstractmethod
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to queue."""
         pass
 
@@ -35,7 +35,7 @@ class QueueBackend(ABC):
 class RedisQueue(QueueBackend):
     """Redis queue backend."""
 
-    def __init__(self, redis_client: Any):
+    def __init__(self, redis_client: Any) -> None:
         """Initialize Redis queue."""
         self.redis = redis_client
 
@@ -49,11 +49,11 @@ class RedisQueue(QueueBackend):
         """Receive from Redis queue."""
         return []
 
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete from Redis queue."""
         pass
 
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to Redis queue."""
         pass
 
@@ -61,7 +61,7 @@ class RedisQueue(QueueBackend):
 class RabbitMQQueue(QueueBackend):
     """RabbitMQ queue backend."""
 
-    def __init__(self, connection_string: str):
+    def __init__(self, connection_string: str) -> None:
         """Initialize RabbitMQ queue."""
         self.connection_string = connection_string
 
@@ -75,10 +75,10 @@ class RabbitMQQueue(QueueBackend):
         """Receive from RabbitMQ."""
         return []
 
-    def delete(self, queue_name: str, message_id: str):
+    def delete(self, queue_name: str, message_id: str) -> None:
         """Delete from RabbitMQ."""
         pass
 
-    def subscribe(self, queue_name: str, handler: Callable[[Message], None]):
+    def subscribe(self, queue_name: str, handler: Callable[[Message], None]) -> None:
         """Subscribe to RabbitMQ."""
         pass

@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Any
 
 from unistax.audit.logger import AuditAction, AuditEntry
 
@@ -10,7 +11,7 @@ class AuditStorage(ABC):
     """Base audit storage interface."""
 
     @abstractmethod
-    def save(self, entry: AuditEntry):
+    def save(self, entry: AuditEntry) -> None:
         """Save audit entry."""
         pass
 
@@ -31,11 +32,11 @@ class AuditStorage(ABC):
 class InMemoryAuditStorage(AuditStorage):
     """In-memory audit storage."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize storage."""
         self.entries: list[AuditEntry] = []
 
-    def save(self, entry: AuditEntry):
+    def save(self, entry: AuditEntry) -> None:
         """Save entry to memory."""
         self.entries.append(entry)
 
@@ -68,11 +69,11 @@ class InMemoryAuditStorage(AuditStorage):
 class DBAuditStorage(AuditStorage):
     """Database audit storage."""
 
-    def __init__(self, session_factory):
+    def __init__(self, session_factory: Any) -> None:
         """Initialize with database session factory."""
         self.session_factory = session_factory
 
-    def save(self, entry: AuditEntry):
+    def save(self, entry: AuditEntry) -> None:
         """Save to database."""
         # Implementation depends on ORM model
         pass

@@ -10,6 +10,7 @@ Implements efficient algorithms for:
 
 from collections import defaultdict, deque
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -348,7 +349,7 @@ def compute_betweenness_centrality(adj_list: dict[str, set[str]]) -> dict[str, f
     for source in nodes:
         # Single-source shortest paths (BFS)
         stack: list[str] = []
-        predecessors: dict[str, list[str]] = defaultdict(list)
+        predecessors: dict[str, list[str]] = defaultdict(list[Any])
         sigma: dict[str, int] = defaultdict(int)
         sigma[source] = 1
         distance: dict[str, int] = {}

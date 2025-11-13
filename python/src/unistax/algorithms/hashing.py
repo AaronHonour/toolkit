@@ -121,7 +121,7 @@ class FastHasher:
 
     __slots__ = ("_state",)
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize hasher."""
         self._state = 0
 
@@ -163,17 +163,17 @@ class ConsistentHashRing:
 
     __slots__ = ("_nodes", "_virtual_nodes", "_ring", "_sorted_keys")
 
-    def __init__(self, nodes: list[str] = None, virtual_nodes: int = 150):
+    def __init__(self, nodes: list[str] | None = None, virtual_nodes: int = 150) -> None:
         """Initialize consistent hash ring.
 
         Args:
             nodes: Initial list of node identifiers
             virtual_nodes: Number of virtual nodes per physical node (higher = better distribution)
         """
-        self._nodes = set()
+        self._nodes: set[str] = set()
         self._virtual_nodes = virtual_nodes
-        self._ring = {}
-        self._sorted_keys = []
+        self._ring: dict[int, str] = {}
+        self._sorted_keys: list[int] = []
 
         if nodes:
             for node in nodes:
@@ -259,7 +259,7 @@ class ConsistentHashRing:
             count = len(self._nodes)
 
         hash_value = fast_hash_str(key)
-        nodes = []
+        nodes: list[str] = []
         start_idx = 0
 
         for idx, ring_key in enumerate(self._sorted_keys):

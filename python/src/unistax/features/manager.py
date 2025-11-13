@@ -25,7 +25,7 @@ class Feature:
     status: FeatureStatus = FeatureStatus.DISABLED
     description: str | None = None
     rollout_percentage: int = 0
-    targeting_rules: dict[str, Any] = field(default_factory=dict)
+    targeting_rules: dict[str, Any] = field(default_factory=dict[str, Any])
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 
@@ -33,7 +33,7 @@ class Feature:
 class FeatureManager:
     """Manage feature flags."""
 
-    def __init__(self, storage: "FeatureStorage"):
+    def __init__(self, storage: "FeatureStorage") -> None:
         """Initialize feature manager.
 
         Args:
@@ -72,7 +72,7 @@ class FeatureManager:
 
         return False
 
-    def enable(self, feature_name: str):
+    def enable(self, feature_name: str) -> None:
         """Enable feature.
 
         Args:
@@ -83,7 +83,7 @@ class FeatureManager:
         feature.updated_at = datetime.utcnow()
         self.storage.save(feature)
 
-    def disable(self, feature_name: str):
+    def disable(self, feature_name: str) -> None:
         """Disable feature.
 
         Args:
@@ -95,7 +95,7 @@ class FeatureManager:
             feature.updated_at = datetime.utcnow()
             self.storage.save(feature)
 
-    def set_rollout(self, feature_name: str, percentage: int):
+    def set_rollout(self, feature_name: str, percentage: int) -> None:
         """Set rollout percentage.
 
         Args:

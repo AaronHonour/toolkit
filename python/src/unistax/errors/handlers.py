@@ -214,7 +214,7 @@ class ErrorHandlerChain:
                     include_traceback=handler_config.get("traceback", True),
                 )
             elif handler_type == "retry":
-                handler = RetryErrorHandler(
+                handler = RetryErrorHandler(  # type: ignore[assignment]
                     max_retries=handler_config.get("max_retries", 3),
                     backoff_factor=handler_config.get("backoff_factor", 2.0),
                 )

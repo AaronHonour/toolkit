@@ -20,16 +20,16 @@ class FieldMapper:
 class DTOTransformer:
     """Transform between DTOs and models."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize transformer."""
-        self.mappings: dict[tuple, list[FieldMapper]] = {}
+        self.mappings: dict[tuple[Any, ...], list[FieldMapper]] = {}
 
     def add_mapping(
         self,
         source_type: type,
         target_type: type,
         field_mapper: FieldMapper,
-    ):
+    ) -> None:
         """Add field mapping.
 
         Args:
@@ -62,7 +62,7 @@ class DTOTransformer:
         if key not in self.mappings:
             # No custom mappings, use default
             if hasattr(target_type, "from_orm"):
-                return target_type.from_orm(source)
+                return target_type.from_orm(source)  # type: ignore[no-any-return,attr-defined]
             elif hasattr(source, "to_dict"):
                 return target_type(**source.to_dict())
             else:

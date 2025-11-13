@@ -1,9 +1,9 @@
 """Pagination utilities."""
 
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel  # type: ignore[import-not-found]
 
 T = TypeVar("T")
 
@@ -27,7 +27,7 @@ class PaginationParams:
         return self.page_size
 
 
-class Page(BaseModel, Generic[T]):
+class Page(BaseModel, Generic[T]):  # type: ignore[misc]
     """Paginated response."""
 
     items: list[T]
@@ -93,7 +93,7 @@ class Paginator:
         )
 
     @staticmethod
-    def paginate_query(query: any, params: PaginationParams) -> tuple[any, int]:
+    def paginate_query(query: Any, params: PaginationParams) -> tuple[Any, int]:
         """Paginate SQLAlchemy query.
 
         Args:

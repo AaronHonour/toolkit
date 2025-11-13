@@ -25,7 +25,7 @@ class RingBuffer:
 
     __slots__ = ("_buffer", "_capacity", "_head", "_tail", "_size", "_lock")
 
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int) -> None:
         """Initialize ring buffer.
 
         Args:
@@ -103,7 +103,7 @@ class LRUCache(Generic[K, V]):
 
     __slots__ = ("_cache", "_capacity", "_hits", "_misses", "_lock")
 
-    def __init__(self, capacity: int = 10000):
+    def __init__(self, capacity: int = 10000) -> None:
         """Initialize LRU cache.
 
         Args:
@@ -182,7 +182,7 @@ class BloomFilter:
 
     __slots__ = ("_size", "_hash_count", "_bit_array", "_count", "_lock")
 
-    def __init__(self, expected_elements: int = 10000, false_positive_rate: float = 0.01):
+    def __init__(self, expected_elements: int = 10000, false_positive_rate: float = 0.01) -> None:
         """Initialize Bloom filter.
 
         Args:
@@ -253,7 +253,7 @@ class FastDict(Generic[K, V]):
 
     __slots__ = ("_data", "_size", "_capacity")
 
-    def __init__(self, capacity: int = 1000):
+    def __init__(self, capacity: int = 1000) -> None:
         """Initialize fast dict.
 
         Args:
@@ -296,14 +296,14 @@ class FastDict(Generic[K, V]):
         self._data.clear()
         self._size = 0
 
-    def keys(self):
+    def keys(self) -> Any:
         """Get keys."""
         return self._data.keys()
 
-    def values(self):
+    def values(self) -> Any:
         """Get values."""
         return self._data.values()
 
-    def items(self):
+    def items(self) -> Any:
         """Get items."""
         return self._data.items()
