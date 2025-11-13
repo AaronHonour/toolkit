@@ -648,6 +648,343 @@ Monitor CSRF failures for potential attacks:
 
 ---
 
+### 6. Secrets Management Implementation (FEATURE ADDED)
+
+**Feature:** Added comprehensive secrets management system with multiple backend support for secure secret storage and retrieval.
+
+**Files:**
+- `python/src/unistax/secrets/manager.py` - Unified SecretManager with caching and type conversion
+- `python/src/unistax/secrets/adapters.py` - EnvironmentBackend and FileBackend implementations
+- `python/src/unistax/secrets/base.py` - Abstract SecretBackend interface
+- `python/src/unistax/secrets/exceptions.py` - Secrets-specific exceptions
+- `python/src/unistax/secrets/__init__.py` - Module exports
+
+**Security Features:**
+- **Multiple backends** - Environment variables, file-based, extensible to cloud providers
+- **In-memory caching** - Configurable TTL to reduce backend calls
+- **Type safety** - Type conversion methods (int, bool, float, JSON, list)
+- **Secret validation** - Required secrets checking on initialization
+- **Fallback mechanism** - Try multiple backends in order
+- **Secure file permissions** - Enforcement of 0600 or 0400 for file-based secrets
+- **Never logs secrets** - Security-conscious logging throughout
+- **Access audit logging** - Comprehensive logging for security monitoring
+
+**Backends:**
+
+1. **EnvironmentBackend** - Environment variable-based secrets:
+   - Load from environment variables or .env files
+   - Prefix support for namespacing
+   - Case-sensitive or case-insensitive modes
+   - Perfect for containerized deployments (Docker, Kubernetes)
+
+2. **FileBackend** - File-based secrets storage:
+   - JSON format for easy management
+   - Secure file permissions (0600 recommended)
+   - Read-only mode support
+   - Automatic file creation with secure permissions
+   - Warning on insecure permissions
+
+**Usage Examples:**
+
+**Development (Environment Variables with .env):**
+```python
+from unistax.secrets import SecretManager, EnvironmentBackend
+
+# Load from .env file
+backend = EnvironmentBackend.from_dotenv(".env")
+manager = SecretManager(backend)
+
+# Get secrets
+database_url = manager.get("DATABASE_URL")
+secret_key = manager.get("SECRET_KEY")
+
+# Type conversion
+debug_mode = manager.get_bool("DEBUG", default=False)
+max_connections = manager.get_int("MAX_CONNECTIONS", default=10)
+allowed_hosts = manager.get_list("ALLOWED_HOSTS")  # Comma-separated
+```
+
+**.env file** (add to .gitignore!):
+```bash
+# Database configuration
+DATABASE_URL=postgresql://user:password@localhost/mydb
+DATABASE_MAX_CONNECTIONS=20
+
+# Application settings
+SECRET_KEY=your-secret-key-here
+DEBUG=false
+ALLOWED_HOSTS=localhost,example.com,*.example.org
+
+# API keys
+STRIPE_API_KEY=sk_test_...
+SENDGRID_API_KEY=SG...
+```
+
+**Local Deployment (File-Based):**
+```python
+from unistax.secrets import SecretManager, FileBackend
+
+# Create backend with secure permissions
+backend = FileBackend("secrets.json", mode=0o600)
+manager = SecretManager(backend, cache_ttl=300)  # 5 minute cache
+
+# Set secrets
+manager.set("database/password", "secure-password")
+manager.set("api/stripe/key", "sk_live_...")
+
+# Get secrets
+db_password = manager.get("database/password")
+stripe_key = manager.get("api/stripe/key")
+```
+
+**secrets.json** (mode 0600, never commit!):
+```json
+{
+  "database/password": "secure-password",
+  "database/username": "dbuser",
+  "api/stripe/key": "sk_live_...",
+  "api/sendgrid/key": "SG...",
+  "jwt/secret": "your-jwt-secret-key"
+}
+```
+
+**Multiple Backends with Fallback:**
+```python
+from unistax.secrets import SecretManager, EnvironmentBackend, FileBackend
+
+# Try environment first, then file
+manager = SecretManager([
+    EnvironmentBackend(),  # Check env vars first
+    FileBackend("secrets.json"),  # Fallback to file
+])
+
+# Will check both backends in order
+secret = manager.get("API_KEY")
+```
+
+**Production Configuration with Required Secrets:**
+```python
+import os
+from unistax.secrets import SecretManager, EnvironmentBackend
+
+# Environment backend with prefix
+backend = EnvironmentBackend(prefix="MYAPP_")
+
+# Validate required secrets on startup
+manager = SecretManager(
+    backend,
+    cache_ttl=600,  # 10 minute cache
+    required_secrets=[
+        "DATABASE_URL",
+        "SECRET_KEY",
+        "JWT_SECRET",
+        "STRIPE_API_KEY",
+    ],
+)
+# Raises SecretNotFound if any are missing!
+
+# Use in application
+app.config["database_url"] = manager.get("DATABASE_URL")
+app.config["secret_key"] = manager.get("SECRET_KEY")
+```
+
+**Type Conversion Examples:**
+```python
+from unistax.secrets import SecretManager, EnvironmentBackend
+
+manager = SecretManager(EnvironmentBackend())
+
+# Boolean (true/false, yes/no, 1/0, on/off)
+debug = manager.get_bool("DEBUG", default=False)
+maintenance_mode = manager.get_bool("MAINTENANCE_MODE", default=False)
+
+# Integer
+max_retries = manager.get_int("MAX_RETRIES", default=3)
+timeout_seconds = manager.get_int("TIMEOUT_SECONDS", default=30)
+
+# Float
+rate_limit = manager.get_float("RATE_LIMIT", default=100.0)
+
+# JSON
+feature_flags = manager.get_json("FEATURE_FLAGS", default={})
+# FEATURE_FLAGS='{"new_ui": true, "beta_features": false}'
+
+# List (comma-separated)
+allowed_origins = manager.get_list("CORS_ORIGINS")
+# CORS_ORIGINS="http://localhost:3000,https://app.example.com"
+```
+
+**Exception Handling:**
+```python
+from unistax.secrets import (
+    SecretManager,
+    SecretNotFound,
+    SecretInvalidFormat,
+    SecretAccessDenied,
+)
+
+manager = SecretManager(backend)
+
+try:
+    api_key = manager.get("API_KEY")
+except SecretNotFound:
+    print("API_KEY not configured - using development mode")
+    api_key = "dev-key"
+except SecretAccessDenied:
+    print("Permission denied reading secrets")
+    sys.exit(1)
+except SecretInvalidFormat as e:
+    print(f"Invalid secret format: {e}")
+    sys.exit(1)
+
+# Type conversion errors
+try:
+    port = manager.get_int("PORT")
+except SecretInvalidFormat:
+    print("PORT must be a valid integer")
+    port = 8000
+```
+
+**Advanced Usage - Secret Listing:**
+```python
+manager = SecretManager(FileBackend("secrets.json"))
+
+# List all secrets (keys only, not values!)
+all_secrets = manager.list()
+
+# List with prefix
+database_secrets = manager.list("database/")
+api_keys = manager.list("api/")
+
+# Check if secret exists
+if manager.exists("OPTIONAL_FEATURE_KEY"):
+    feature_key = manager.get("OPTIONAL_FEATURE_KEY")
+```
+
+**Security Best Practices:**
+
+| Environment | Backend | Configuration | Security Notes |
+|-------------|---------|---------------|----------------|
+| Development | EnvironmentBackend | .env file | Add .env to .gitignore |
+| Testing | FileBackend | secrets.test.json | Use test-specific secrets |
+| Staging | EnvironmentBackend | Container env vars | Use staging secrets |
+| Production | Cloud provider | AWS/GCP/Azure | Use IAM roles, rotate regularly |
+| Local deploy | FileBackend | mode=0600 | Restrict file permissions |
+
+**File Permissions:**
+```python
+# Production - read-only
+backend = FileBackend("secrets.json", mode=0o400, readonly=True)
+
+# Development - read-write
+backend = FileBackend("secrets.json", mode=0o600)
+
+# Shared server - user-only access
+backend = FileBackend("secrets.json", mode=0o600)
+# File permissions: -rw------- (owner only)
+```
+
+**Caching Strategy:**
+```python
+# No caching (always fetch from backend)
+manager = SecretManager(backend, cache_ttl=None)
+
+# Short cache for frequently accessed secrets
+manager = SecretManager(backend, cache_ttl=60)  # 1 minute
+
+# Long cache for rarely changing secrets
+manager = SecretManager(backend, cache_ttl=3600)  # 1 hour
+
+# Clear cache when secrets updated
+manager.clear_cache()
+```
+
+**Best Practices:**
+
+1. **Never commit secrets to version control:**
+   ```bash
+   # .gitignore
+   .env
+   .env.*
+   secrets.json
+   secrets-*.json
+   *.secret
+   ```
+
+2. **Use different secrets per environment:**
+   ```python
+   # Development
+   manager = SecretManager(EnvironmentBackend.from_dotenv(".env.development"))
+
+   # Production
+   manager = SecretManager(EnvironmentBackend.from_dotenv(".env.production"))
+   ```
+
+3. **Validate required secrets on startup:**
+   ```python
+   manager = SecretManager(
+       backend,
+       required_secrets=["DATABASE_URL", "SECRET_KEY", "API_KEY"],
+   )
+   # Application won't start without these secrets
+   ```
+
+4. **Use type conversion for type safety:**
+   ```python
+   # Don't
+   port = int(manager.get("PORT"))  # May raise ValueError
+
+   # Do
+   port = manager.get_int("PORT", default=8000)  # Type-safe with default
+   ```
+
+5. **Use secure file permissions:**
+   ```bash
+   # Set secure permissions
+   chmod 600 secrets.json
+
+   # Verify permissions
+   ls -la secrets.json
+   # -rw------- 1 user user ... secrets.json
+   ```
+
+6. **Rotate secrets regularly:**
+   ```python
+   # Update secret
+   manager.set("API_KEY", "new-key-value")
+
+   # Clear cache to ensure new value is used
+   manager.clear_cache()
+   ```
+
+7. **Monitor secret access:**
+   ```python
+   # Enable logging
+   import logging
+   logging.basicConfig(level=logging.INFO)
+
+   # Logs will include:
+   # - Secret retrievals (key name, backend used)
+   # - Cache hits/misses
+   # - Missing secrets
+   # - Permission errors
+   ```
+
+**Security Considerations:**
+
+- ✅ Environment variables may be visible in process listings (ps, /proc)
+- ✅ File-based secrets need proper permissions (0600 or 0400)
+- ✅ Never log secret values (only log keys for audit)
+- ✅ Use HTTPS for cloud secret managers (future)
+- ✅ Implement secret rotation policies
+- ✅ Use separate secrets for different environments
+- ✅ Monitor secret access for suspicious activity
+- ✅ Use caching wisely (balance performance vs. freshness)
+- ✅ Validate secret format before using
+- ✅ Use required_secrets for critical configuration
+
+---
+
 ## Remaining Security Concerns
 
 ### HIGH PRIORITY (Requires Immediate Action)
@@ -838,21 +1175,35 @@ security = SecurityHeadersMiddleware()  # Uses secure defaults
 
 See documentation above for complete usage examples and configuration options.
 
-#### 3. Secrets Management
-Never store secrets in code or config files:
+#### 3. Secrets Management ✅ FIXED
 
+**Status:** IMPLEMENTED - See "Recent Security Fixes" section #6 above.
+
+Comprehensive secrets management has been implemented with:
+- SecretManager with multiple backend support
+- EnvironmentBackend for environment variables and .env files
+- FileBackend for JSON-based secrets with secure permissions
+- In-memory caching with configurable TTL
+- Type conversion (string, int, bool, float, JSON, list)
+- Required secrets validation
+- Fallback mechanism across multiple backends
+- Comprehensive logging and audit trails
+
+Usage:
 ```python
-# BAD
-database_url = "postgresql://user:password@localhost/db"
+from unistax.secrets import SecretManager, EnvironmentBackend
 
-# GOOD
-import os
-database_url = os.environ["DATABASE_URL"]
+# Load from .env file
+backend = EnvironmentBackend.from_dotenv(".env")
+manager = SecretManager(backend)
 
-# BETTER - Use secrets manager
-from cloud_secrets import get_secret
-database_url = get_secret("production/database/url")
+# Get secrets with type safety
+database_url = manager.get("DATABASE_URL")
+debug_mode = manager.get_bool("DEBUG", default=False)
+max_connections = manager.get_int("MAX_CONNECTIONS", default=10)
 ```
+
+See documentation above for complete usage examples, file-based backend, and configuration options.
 
 ---
 
@@ -1005,6 +1356,15 @@ If you discover a security vulnerability:
 - ✅ Support for token expiration and user-specific binding
 - ✅ Configurable exempt endpoints and secure cookie settings
 - ✅ Protection against Cross-Site Request Forgery attacks
+- ✅ Implemented comprehensive secrets management system
+- ✅ Added SecretManager with multiple backend support
+- ✅ Added EnvironmentBackend for environment variables and .env files
+- ✅ Added FileBackend for JSON-based secrets with secure permissions
+- ✅ Type conversion methods (string, int, bool, float, JSON, list)
+- ✅ Required secrets validation on startup
+- ✅ In-memory caching with configurable TTL
+- ✅ Fallback mechanism across multiple backends
+- ✅ Secure file permissions enforcement (0600/0400)
 - ✅ Added secret strength validation
 - ✅ Documented remaining security concerns
 - ✅ Created security best practices guide
