@@ -111,10 +111,7 @@ class BaseModel(Base, TimestampMixin):
         Returns:
             Dictionary representation
         """
-        return {
-            column.name: getattr(self, column.name)
-            for column in self.__table__.columns
-        }
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     def __repr__(self) -> str:
         """String representation.
@@ -122,9 +119,5 @@ class BaseModel(Base, TimestampMixin):
         Returns:
             String representation
         """
-        attrs = ", ".join(
-            f"{k}={v!r}"
-            for k, v in self.to_dict().items()
-            if k != "id"
-        )
+        attrs = ", ".join(f"{k}={v!r}" for k, v in self.to_dict().items() if k != "id")
         return f"{self.__class__.__name__}(id={self.id}, {attrs})"

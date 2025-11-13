@@ -7,6 +7,7 @@ from functools import wraps
 
 class CircuitState(Enum):
     """Circuit breaker states."""
+
     CLOSED = "closed"
     OPEN = "open"
     HALF_OPEN = "half_open"
@@ -22,7 +23,9 @@ class CircuitBreaker:
         ...     return requests.get("https://api.example.com")
     """
 
-    def __init__(self, failure_threshold: int = 5, timeout: float = 60.0, half_open_max_calls: int = 1):  # noqa: E501
+    def __init__(
+        self, failure_threshold: int = 5, timeout: float = 60.0, half_open_max_calls: int = 1
+    ):  # noqa: E501
         """Initialize CircuitBreaker.
 
         Args:

@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from unistax.algorithms import LRUCache
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
@@ -43,7 +43,7 @@ class QueryCache:
     - Handles 10K+ unique queries efficiently
     """
 
-    __slots__ = ('_cache', '_config', '_stats', '_lock')
+    __slots__ = ("_cache", "_config", "_stats", "_lock")
 
     def __init__(self, config: QueryCacheConfig | None = None):
         """Initialize query cache.
@@ -64,10 +64,10 @@ class QueryCache:
         self._config = config or QueryCacheConfig()
         self._cache = LRUCache(capacity=self._config.max_size)
         self._stats = {
-            'hits': 0,
-            'misses': 0,
-            'sets': 0,
-            'evictions': 0,
+            "hits": 0,
+            "misses": 0,
+            "sets": 0,
+            "evictions": 0,
         }
         self._lock = threading.RLock()
 
@@ -103,10 +103,10 @@ class QueryCache:
             result = self._cache.get(key)
 
             if result is not None:
-                self._stats['hits'] += 1
+                self._stats["hits"] += 1
                 return result
             else:
-                self._stats['misses'] += 1
+                self._stats["misses"] += 1
                 return None
 
     def set(self, query: str, result: Any, params: dict | None = None, ttl: int | None = None):
@@ -125,14 +125,9 @@ class QueryCache:
 
         with self._lock:
             self._cache.put(key, result)
-            self._stats['sets'] += 1
+            self._stats["sets"] += 1
 
-    def get_or_compute(
-        self,
-        key: str,
-        compute_fn: Callable[[], T],
-        ttl: int | None = None
-    ) -> T:
+    def get_or_compute(self, key: str, compute_fn: Callable[[], T], ttl: int | None = None) -> T:
         """Get from cache or compute and cache.
 
         Args:
@@ -148,10 +143,10 @@ class QueryCache:
             result = self._cache.get(key)
 
             if result is not None:
-                self._stats['hits'] += 1
+                self._stats["hits"] += 1
                 return result
 
-            self._stats['misses'] += 1
+            self._stats["misses"] += 1
 
         # Compute result
         result = compute_fn()
@@ -159,7 +154,7 @@ class QueryCache:
         # Cache it
         with self._lock:
             self._cache.put(key, result)
-            self._stats['sets'] += 1
+            self._stats["sets"] += 1
 
         return result
 
@@ -188,13 +183,13 @@ class QueryCache:
             Statistics dictionary
         """
         with self._lock:
-            total_requests = self._stats['hits'] + self._stats['misses']
-            hit_rate = self._stats['hits'] / total_requests if total_requests > 0 else 0
+            total_requests = self._stats["hits"] + self._stats["misses"]
+            hit_rate = self._stats["hits"] / total_requests if total_requests > 0 else 0
 
             return {
                 **self._stats,
-                'hit_rate': hit_rate,
-                'size': self._config.max_size,
+                "hit_rate": hit_rate,
+                "size": self._config.max_size,
             }
 
 
@@ -205,7 +200,7 @@ class PreparedStatementCache:
     Achieves 10-20% query performance improvement.
     """
 
-    __slots__ = ('_cache', '_max_size', '_stats', '_lock')
+    __slots__ = ("_cache", "_max_size", "_stats", "_lock")
 
     def __init__(self, max_size: int = 1000):
         """Initialize prepared statement cache.
@@ -215,7 +210,7 @@ class PreparedStatementCache:
         """
         self._cache: OrderedDict[str, Any] = OrderedDict()
         self._max_size = max_size
-        self._stats = {'hits': 0, 'misses': 0}
+        self._stats = {"hits": 0, "misses": 0}
         self._lock = threading.Lock()
 
     def get_or_prepare(self, session: Session, query: str) -> Any:
@@ -234,12 +229,12 @@ class PreparedStatementCache:
             # Check cache
             if key in self._cache:
                 self._cache.move_to_end(key)  # LRU behavior
-                self._stats['hits'] += 1
+                self._stats["hits"] += 1
                 return self._cache[key]
 
             # Prepare statement
             stmt = text(query)
-            self._stats['misses'] += 1
+            self._stats["misses"] += 1
 
             # Add to cache
             self._cache[key] = stmt
@@ -255,11 +250,11 @@ class PreparedStatementCache:
             Statistics
         """
         with self._lock:
-            total = self._stats['hits'] + self._stats['misses']
+            total = self._stats["hits"] + self._stats["misses"]
             return {
                 **self._stats,
-                'hit_rate': self._stats['hits'] / total if total > 0 else 0,
-                'size': len(self._cache),
+                "hit_rate": self._stats["hits"] / total if total > 0 else 0,
+                "size": len(self._cache),
             }
 
 
@@ -270,7 +265,7 @@ class QueryBatcher:
     Achieves 5-10x throughput improvement for bulk operations.
     """
 
-    __slots__ = ('_session', '_queries', '_params', '_results')
+    __slots__ = ("_session", "_queries", "_params", "_results")
 
     def __init__(self, session: Session):
         """Initialize query batcher.
@@ -414,9 +409,7 @@ def cached_query(ttl: int = 300):
 
             # Try cache
             result = _cache.get_or_compute(
-                key=cache_key,
-                compute_fn=lambda: func(*args, **kwargs),
-                ttl=ttl
+                key=cache_key, compute_fn=lambda: func(*args, **kwargs), ttl=ttl
             )
 
             return result
@@ -432,7 +425,7 @@ class ConnectionPoolMonitor:
     Tracks connection pool metrics for optimization.
     """
 
-    __slots__ = ('_engine', '_stats', '_lock')
+    __slots__ = ("_engine", "_stats", "_lock")
 
     def __init__(self, engine):
         """Initialize pool monitor.
@@ -442,10 +435,10 @@ class ConnectionPoolMonitor:
         """
         self._engine = engine
         self._stats = {
-            'checkouts': 0,
-            'connects': 0,
-            'disconnects': 0,
-            'checkins': 0,
+            "checkouts": 0,
+            "connects": 0,
+            "disconnects": 0,
+            "checkins": 0,
         }
         self._lock = threading.Lock()
 
@@ -459,23 +452,23 @@ class ConnectionPoolMonitor:
 
         with self._lock:
             return {
-                'size': pool.size(),
-                'checked_in': pool.checkedin(),
-                'checked_out': pool.checkedout(),
-                'overflow': pool.overflow(),
-                'utilization': pool.checkedout() / pool.size() if pool.size() > 0 else 0,
+                "size": pool.size(),
+                "checked_in": pool.checkedin(),
+                "checked_out": pool.checkedout(),
+                "overflow": pool.overflow(),
+                "utilization": pool.checkedout() / pool.size() if pool.size() > 0 else 0,
                 **self._stats,
             }
 
     def on_checkout(self):
         """Record connection checkout."""
         with self._lock:
-            self._stats['checkouts'] += 1
+            self._stats["checkouts"] += 1
 
     def on_checkin(self):
         """Record connection checkin."""
         with self._lock:
-            self._stats['checkins'] += 1
+            self._stats["checkins"] += 1
 
 
 class QueryProfiler:
@@ -484,7 +477,7 @@ class QueryProfiler:
     Identifies slow queries and optimization opportunities.
     """
 
-    __slots__ = ('_queries', '_lock')
+    __slots__ = ("_queries", "_lock")
 
     def __init__(self):
         """Initialize query profiler."""
@@ -500,12 +493,14 @@ class QueryProfiler:
             params: Query parameters
         """
         with self._lock:
-            self._queries.append({
-                'query': query,
-                'duration': duration,
-                'params': params,
-                'timestamp': time.time(),
-            })
+            self._queries.append(
+                {
+                    "query": query,
+                    "duration": duration,
+                    "params": params,
+                    "timestamp": time.time(),
+                }
+            )
 
     def get_slow_queries(self, threshold: float = 0.1) -> list[dict[str, Any]]:
         """Get slow queries above threshold.
@@ -517,7 +512,7 @@ class QueryProfiler:
             List of slow queries
         """
         with self._lock:
-            return [q for q in self._queries if q['duration'] > threshold]
+            return [q for q in self._queries if q["duration"] > threshold]
 
     def get_stats(self) -> dict[str, Any]:
         """Get query statistics.
@@ -528,23 +523,23 @@ class QueryProfiler:
         with self._lock:
             if not self._queries:
                 return {
-                    'total': 0,
-                    'avg_duration': 0,
-                    'p95_duration': 0,
-                    'p99_duration': 0,
+                    "total": 0,
+                    "avg_duration": 0,
+                    "p95_duration": 0,
+                    "p99_duration": 0,
                 }
 
-            durations = sorted(q['duration'] for q in self._queries)
+            durations = sorted(q["duration"] for q in self._queries)
             total = len(durations)
 
             return {
-                'total': total,
-                'avg_duration': sum(durations) / total,
-                'p50_duration': durations[int(total * 0.5)],
-                'p95_duration': durations[int(total * 0.95)],
-                'p99_duration': durations[int(total * 0.99)],
-                'min_duration': durations[0],
-                'max_duration': durations[-1],
+                "total": total,
+                "avg_duration": sum(durations) / total,
+                "p50_duration": durations[int(total * 0.5)],
+                "p95_duration": durations[int(total * 0.95)],
+                "p99_duration": durations[int(total * 0.99)],
+                "min_duration": durations[0],
+                "max_duration": durations[-1],
             }
 
 

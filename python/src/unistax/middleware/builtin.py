@@ -128,9 +128,7 @@ class MetricsMiddleware(Middleware):
             duration = time.time() - start_time
             if self.metrics:
                 self.metrics.histogram("http.request.duration", duration)
-                self.metrics.counter(
-                    "http.errors.total", labels={"error_type": type(e).__name__}
-                )
+                self.metrics.counter("http.errors.total", labels={"error_type": type(e).__name__})
             raise
 
 
@@ -262,7 +260,9 @@ class CompressionMiddleware(Middleware):
 
         # Check response size
         if response.body and isinstance(response.body, (str, bytes)):
-            body_size = len(response.body if isinstance(response.body, bytes) else response.body.encode())  # noqa: E501
+            body_size = len(
+                response.body if isinstance(response.body, bytes) else response.body.encode()
+            )  # noqa: E501
 
             if body_size >= self.min_size:
                 import gzip

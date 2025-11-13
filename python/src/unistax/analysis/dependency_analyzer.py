@@ -186,9 +186,7 @@ class DependencyAnalyzer:
         reverse_adj_list: dict[str, set[str]] = {}
 
         for service in self.graph.get_all_services():
-            reverse_adj_list[service.name] = self._underlying_graph.get_predecessors(
-                service.name
-            )
+            reverse_adj_list[service.name] = self._underlying_graph.get_predecessors(service.name)
 
         return reverse_adj_list
 
@@ -235,9 +233,7 @@ class DependencyAnalyzer:
         if report.critical_services:
             critical_count = report.critical_service_count
             if critical_count > 0:
-                report.insights.append(
-                    f"{critical_count} services identified as critical"
-                )
+                report.insights.append(f"{critical_count} services identified as critical")
 
                 # Check for single point of failure
                 top_critical = report.get_most_critical_services(3)
@@ -273,9 +269,7 @@ class DependencyAnalyzer:
         # Critical service recommendations
         critical_count = report.critical_service_count
         if critical_count > 0:
-            report.recommendations.append(
-                "Add redundancy and failover for critical services"
-            )
+            report.recommendations.append("Add redundancy and failover for critical services")
             report.recommendations.append(
                 "Implement circuit breakers for dependencies on critical services"
             )

@@ -79,11 +79,7 @@ class LRUCache:
                 # Remove least recently used
                 self.cache.popitem(last=False)
 
-            self.cache[key] = CacheEntry(
-                value=value,
-                timestamp=time.time(),
-                ttl=ttl
-            )
+            self.cache[key] = CacheEntry(value=value, timestamp=time.time(), ttl=ttl)
 
     def delete(self, key: str):
         """Delete key from cache.
@@ -129,10 +125,7 @@ class MultiLevelCache:
     """Multi-level cache with L1 (memory) and L2 (Redis) support."""
 
     def __init__(
-        self,
-        l1_max_size: int = 1000,
-        l2_client: Any | None = None,
-        enable_stats: bool = True
+        self, l1_max_size: int = 1000, l2_client: Any | None = None, enable_stats: bool = True
     ):
         """Initialize multi-level cache.
 

@@ -32,11 +32,7 @@ class AsyncPool:
         async with self.semaphore:
             return await coro
 
-    async def map(
-        self,
-        func: Callable[[Any], Coroutine[Any, Any, T]],
-        items: list[Any]
-    ) -> list[T]:
+    async def map(self, func: Callable[[Any], Coroutine[Any, Any, T]], items: list[Any]) -> list[T]:
         """Map async function over items concurrently.
 
         Args:
@@ -51,9 +47,7 @@ class AsyncPool:
 
 
 async def async_batch(
-    items: list[T],
-    batch_size: int,
-    processor: Callable[[list[T]], Coroutine[Any, Any, Any]]
+    items: list[T], batch_size: int, processor: Callable[[list[T]], Coroutine[Any, Any, Any]]
 ):
     """Process items in async batches.
 
@@ -70,18 +64,13 @@ async def async_batch(
     """
     tasks = []
     for i in range(0, len(items), batch_size):
-        batch = items[i:i + batch_size]
+        batch = items[i : i + batch_size]
         tasks.append(processor(batch))
 
     return await asyncio.gather(*tasks)
 
 
-def run_in_executor(
-    func: Callable,
-    *args,
-    executor: ThreadPoolExecutor | None = None,
-    **kwargs
-):
+def run_in_executor(func: Callable, *args, executor: ThreadPoolExecutor | None = None, **kwargs):
     """Run blocking function in executor.
 
     Args:

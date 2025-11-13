@@ -53,6 +53,7 @@ class Profiler:
                 # code
                 pass
         """
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             result, stats = Profiler.profile_function(func, *args, **kwargs)
@@ -128,8 +129,7 @@ class PerformanceMonitor:
                 self.metrics["calls"][func_name] += 1
                 self.metrics["total_time"][func_name] += elapsed
                 self.metrics["avg_time"][func_name] = (
-                    self.metrics["total_time"][func_name] /
-                    self.metrics["calls"][func_name]
+                    self.metrics["total_time"][func_name] / self.metrics["calls"][func_name]
                 )
 
         return wrapper
@@ -144,9 +144,7 @@ class PerformanceMonitor:
 
         # Sort by total time
         sorted_funcs = sorted(
-            self.metrics["calls"].keys(),
-            key=lambda f: self.metrics["total_time"][f],
-            reverse=True
+            self.metrics["calls"].keys(), key=lambda f: self.metrics["total_time"][f], reverse=True
         )
 
         for func_name in sorted_funcs:

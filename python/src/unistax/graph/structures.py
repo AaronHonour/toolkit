@@ -38,8 +38,14 @@ class ServiceNode:
     """Represents a service in the dependency graph."""
 
     __slots__ = (
-        'id', 'name', 'service_type', 'endpoints', 'metadata',
-        'health_score', 'created_at', 'updated_at'
+        "id",
+        "name",
+        "service_type",
+        "endpoints",
+        "metadata",
+        "health_score",
+        "created_at",
+        "updated_at",
     )
 
     id: UUID
@@ -80,7 +86,7 @@ class ServiceNode:
 class WeightedEdge:
     """Represents a weighted edge in a graph."""
 
-    __slots__ = ('source', 'target', 'weight')
+    __slots__ = ("source", "target", "weight")
 
     source: str
     target: str
@@ -96,9 +102,17 @@ class DependencyEdge:
     """Represents a dependency between two services."""
 
     __slots__ = (
-        'id', 'source', 'target', 'dependency_type', 'weight',
-        'latency_p99', 'error_rate', 'request_rate', 'metadata',
-        'created_at', 'updated_at'
+        "id",
+        "source",
+        "target",
+        "dependency_type",
+        "weight",
+        "latency_p99",
+        "error_rate",
+        "request_rate",
+        "metadata",
+        "created_at",
+        "updated_at",
     )
 
     id: UUID
@@ -153,7 +167,7 @@ class DependencyEdge:
 class DirectedGraph:
     """Efficient directed graph implementation using adjacency lists."""
 
-    __slots__ = ('_adj_list', '_reverse_adj_list', '_nodes', '_edges')
+    __slots__ = ("_adj_list", "_reverse_adj_list", "_nodes", "_edges")
 
     def __init__(self) -> None:
         """Initialize an empty directed graph."""
@@ -241,7 +255,7 @@ class DirectedGraph:
 class ServiceDependencyGraph:
     """Domain-specific graph for service dependency analysis."""
 
-    __slots__ = ('_graph', '_services', '_dependencies', '_metadata')
+    __slots__ = ("_graph", "_services", "_dependencies", "_metadata")
 
     def __init__(self) -> None:
         """Initialize an empty service dependency graph."""
@@ -259,15 +273,19 @@ class ServiceDependencyGraph:
         """Add a dependency between services."""
         # Ensure services exist
         if dependency.source not in self._services:
-            self.add_service(ServiceNode.create(
-                dependency.source,
-                ServiceType.API,  # Default type
-            ))
+            self.add_service(
+                ServiceNode.create(
+                    dependency.source,
+                    ServiceType.API,  # Default type
+                )
+            )
         if dependency.target not in self._services:
-            self.add_service(ServiceNode.create(
-                dependency.target,
-                ServiceType.API,  # Default type
-            ))
+            self.add_service(
+                ServiceNode.create(
+                    dependency.target,
+                    ServiceType.API,  # Default type
+                )
+            )
 
         # Add dependency
         key = (dependency.source, dependency.target)

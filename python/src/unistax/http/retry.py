@@ -53,5 +53,5 @@ class ExponentialBackoff(RetryStrategy):
         Returns:
             Delay in seconds
         """
-        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+        delay = min(self.base_delay * (2**attempt), self.max_delay)
         return delay

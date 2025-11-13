@@ -1,6 +1,5 @@
 """Trace context management."""
 
-
 from opentelemetry import trace
 from opentelemetry.trace import SpanContext
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator

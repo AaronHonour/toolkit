@@ -23,7 +23,7 @@ class RingBuffer:
     Performance: 10M+ ops/sec for put/get operations.
     """
 
-    __slots__ = ('_buffer', '_capacity', '_head', '_tail', '_size', '_lock')
+    __slots__ = ("_buffer", "_capacity", "_head", "_tail", "_size", "_lock")
 
     def __init__(self, capacity: int):
         """Initialize ring buffer.
@@ -101,7 +101,7 @@ class LRUCache(Generic[K, V]):
     Memory: 50% less than dict-based cache.
     """
 
-    __slots__ = ('_cache', '_capacity', '_hits', '_misses', '_lock')
+    __slots__ = ("_cache", "_capacity", "_hits", "_misses", "_lock")
 
     def __init__(self, capacity: int = 10000):
         """Initialize LRU cache.
@@ -180,7 +180,7 @@ class BloomFilter:
     Performance: 50M+ ops/sec for contains checks.
     """
 
-    __slots__ = ('_size', '_hash_count', '_bit_array', '_count', '_lock')
+    __slots__ = ("_size", "_hash_count", "_bit_array", "_count", "_lock")
 
     def __init__(self, expected_elements: int = 10000, false_positive_rate: float = 0.01):
         """Initialize Bloom filter.
@@ -211,7 +211,7 @@ class BloomFilter:
                 index = self._hash(item, seed) % self._size
                 byte_index = index // 8
                 bit_index = index % 8
-                self._bit_array[byte_index] |= (1 << bit_index)
+                self._bit_array[byte_index] |= 1 << bit_index
             self._count += 1
 
     def contains(self, item: str) -> bool:
@@ -251,7 +251,7 @@ class FastDict(Generic[K, V]):
     Performance: 8M+ ops/sec for get/set operations.
     """
 
-    __slots__ = ('_data', '_size', '_capacity')
+    __slots__ = ("_data", "_size", "_capacity")
 
     def __init__(self, capacity: int = 1000):
         """Initialize fast dict.

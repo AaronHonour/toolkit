@@ -74,9 +74,7 @@ class CacheManager:
         else:
             backend = InMemoryCache()
 
-        return cls(
-            backend=backend, prefix=prefix, serializer=serializer, compress=compress
-        )
+        return cls(backend=backend, prefix=prefix, serializer=serializer, compress=compress)
 
     def _create_backend(self, backend_type: str) -> CacheBackend:
         """Create cache backend by type."""
@@ -240,9 +238,7 @@ class CacheManager:
 
         return decorator
 
-    def get_or_set(
-        self, key: str, factory: Callable, ttl: int | None = None
-    ) -> Any:
+    def get_or_set(self, key: str, factory: Callable, ttl: int | None = None) -> Any:
         """Get value from cache or set it using factory function.
 
         Args:

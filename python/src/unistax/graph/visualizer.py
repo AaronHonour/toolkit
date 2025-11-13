@@ -27,27 +27,31 @@ class GraphVisualizer:
         """
         nodes = []
         for service in graph.get_all_services():
-            nodes.append({
-                "id": service.name,
-                "name": service.name,
-                "type": service.service_type.value,
-                "health": service.health_score,
-                "endpoints": service.endpoints,
-                "metadata": service.metadata,
-            })
+            nodes.append(
+                {
+                    "id": service.name,
+                    "name": service.name,
+                    "type": service.service_type.value,
+                    "health": service.health_score,
+                    "endpoints": service.endpoints,
+                    "metadata": service.metadata,
+                }
+            )
 
         links = []
         for dep in graph.get_all_dependencies():
-            links.append({
-                "source": dep.source,
-                "target": dep.target,
-                "type": dep.dependency_type.value,
-                "weight": dep.weight,
-                "latency_p99": dep.latency_p99,
-                "error_rate": dep.error_rate,
-                "request_rate": dep.request_rate,
-                "metadata": dep.metadata,
-            })
+            links.append(
+                {
+                    "source": dep.source,
+                    "target": dep.target,
+                    "type": dep.dependency_type.value,
+                    "weight": dep.weight,
+                    "latency_p99": dep.latency_p99,
+                    "error_rate": dep.error_rate,
+                    "request_rate": dep.request_rate,
+                    "metadata": dep.metadata,
+                }
+            )
 
         return {
             "nodes": nodes,
@@ -65,33 +69,37 @@ class GraphVisualizer:
 
         # Add nodes
         for service in graph.get_all_services():
-            elements.append({
-                "data": {
-                    "id": service.name,
-                    "label": service.name,
-                    "type": service.service_type.value,
-                    "health": service.health_score,
-                    "endpoints": service.endpoints,
-                    **service.metadata,
+            elements.append(
+                {
+                    "data": {
+                        "id": service.name,
+                        "label": service.name,
+                        "type": service.service_type.value,
+                        "health": service.health_score,
+                        "endpoints": service.endpoints,
+                        **service.metadata,
+                    }
                 }
-            })
+            )
 
         # Add edges
         for dep in graph.get_all_dependencies():
             edge_id = f"{dep.source}-{dep.target}"
-            elements.append({
-                "data": {
-                    "id": edge_id,
-                    "source": dep.source,
-                    "target": dep.target,
-                    "type": dep.dependency_type.value,
-                    "weight": dep.weight,
-                    "latency_p99": dep.latency_p99,
-                    "error_rate": dep.error_rate,
-                    "request_rate": dep.request_rate,
-                    **dep.metadata,
+            elements.append(
+                {
+                    "data": {
+                        "id": edge_id,
+                        "source": dep.source,
+                        "target": dep.target,
+                        "type": dep.dependency_type.value,
+                        "weight": dep.weight,
+                        "latency_p99": dep.latency_p99,
+                        "error_rate": dep.error_rate,
+                        "request_rate": dep.request_rate,
+                        **dep.metadata,
+                    }
                 }
-            })
+            )
 
         return {"elements": elements}
 
@@ -126,7 +134,7 @@ class GraphVisualizer:
 
             # Add label with dependency type
             edge_label = dep.dependency_type.value.replace("_", " ")
-            lines.append(f'    {source_id} -->|{edge_label}| {target_id}')
+            lines.append(f"    {source_id} -->|{edge_label}| {target_id}")
 
         return "\n".join(lines)
 
@@ -165,8 +173,7 @@ class GraphVisualizer:
             shape = shape_map.get(service.service_type.value, "box")
 
             lines.append(
-                f'    {node_id} [label="{service.name}", '
-                f'color={color}, shape={shape}];'
+                f'    {node_id} [label="{service.name}", ' f"color={color}, shape={shape}];"
             )
 
         lines.append("")
@@ -187,10 +194,7 @@ class GraphVisualizer:
 
             # Add edge with attributes
             label = dep.dependency_type.value.replace("_", " ")
-            lines.append(
-                f'    {source_id} -> {target_id} '
-                f'[label="{label}", style={style}];'
-            )
+            lines.append(f"    {source_id} -> {target_id} " f'[label="{label}", style={style}];')
 
         lines.append("}")
         return "\n".join(lines)

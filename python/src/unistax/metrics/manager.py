@@ -95,9 +95,7 @@ class MetricsManager:
             merged.update(labels)
         return merged
 
-    def counter(
-        self, name: str, value: float = 1.0, labels: dict[str, str] | None = None
-    ) -> None:
+    def counter(self, name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> None:
         """Increment counter metric.
 
         Args:
@@ -109,9 +107,7 @@ class MetricsManager:
         merged_labels = self._merge_labels(labels)
         self._backend.increment(formatted_name, value, merged_labels)
 
-    def gauge(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def gauge(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Set gauge metric.
 
         Args:
@@ -123,9 +119,7 @@ class MetricsManager:
         merged_labels = self._merge_labels(labels)
         self._backend.gauge(formatted_name, value, merged_labels)
 
-    def histogram(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def histogram(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Record histogram value.
 
         Args:

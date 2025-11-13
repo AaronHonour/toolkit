@@ -127,8 +127,13 @@ class APICallDiscoverer(DependencyDiscoverer):
         """Check if a name is likely a service (not a public domain)."""
         # Exclude common public domains
         excluded = {
-            "localhost", "example.com", "google.com", "amazonaws.com",
-            "cloudflare.com", "cdn", "static",
+            "localhost",
+            "example.com",
+            "google.com",
+            "amazonaws.com",
+            "cloudflare.com",
+            "cdn",
+            "static",
         }
 
         name_lower = name.lower()

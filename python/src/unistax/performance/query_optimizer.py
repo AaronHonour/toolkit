@@ -74,11 +74,7 @@ class QueryOptimizer:
 
     @staticmethod
     def optimize_pagination(
-        query: Any,
-        page: int,
-        page_size: int,
-        use_keyset: bool = False,
-        last_id: int | None = None
+        query: Any, page: int, page_size: int, use_keyset: bool = False, last_id: int | None = None
     ) -> Any:
         """Optimize pagination query.
 
@@ -134,6 +130,8 @@ class QueryOptimizer:
         if hasattr(model, "__table__"):
             for column in model.__table__.columns:
                 if column.foreign_keys:
-                    suggestions.append(f"CREATE INDEX idx_{model.__tablename__}_{column.name} ON {model.__tablename__}({column.name})")  # noqa: E501
+                    suggestions.append(
+                        f"CREATE INDEX idx_{model.__tablename__}_{column.name} ON {model.__tablename__}({column.name})"  # noqa: E501
+                    )
 
         return suggestions

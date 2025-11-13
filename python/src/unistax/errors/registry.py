@@ -70,9 +70,7 @@ class ErrorRegistry:
             List of error classes
         """
         return [
-            error_class
-            for error_class in self._errors.values()
-            if error_class.category == category
+            error_class for error_class in self._errors.values() if error_class.category == category
         ]
 
     def get_statistics(self) -> dict[str, int]:

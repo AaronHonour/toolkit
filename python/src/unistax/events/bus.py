@@ -89,9 +89,7 @@ class EventBus:
     def unsubscribe(self, event_type: type[Event], handler: Callable) -> None:
         """Unsubscribe handler from event."""
         if event_type in self._handlers:
-            self._handlers[event_type] = [
-                h for h in self._handlers[event_type] if h != handler
-            ]
+            self._handlers[event_type] = [h for h in self._handlers[event_type] if h != handler]
 
 
 def event_handler(event_type: type[Event]) -> Callable:

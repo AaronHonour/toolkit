@@ -155,9 +155,7 @@ class ImpactAnalyzer:
             Impact report for deployment
         """
         change_type = (
-            ChangeType.BREAKING_CHANGE
-            if is_breaking_change
-            else ChangeType.SERVICE_DEPLOYMENT
+            ChangeType.BREAKING_CHANGE if is_breaking_change else ChangeType.SERVICE_DEPLOYMENT
         )
 
         report = ImpactReport(
@@ -292,18 +290,14 @@ class ImpactAnalyzer:
         report.pre_change_actions.append(
             "Verify circuit breakers are configured for dependent services"
         )
-        report.pre_change_actions.append(
-            "Ensure monitoring alerts are active"
-        )
+        report.pre_change_actions.append("Ensure monitoring alerts are active")
 
         if report.total_affected > 0:
             report.monitoring_required.append("Monitor error rates in dependent services")
             report.monitoring_required.append("Watch for cascading failures")
 
         if report.risk_level in ("HIGH", "CRITICAL"):
-            report.pre_change_actions.append(
-                "Consider implementing fallback mechanisms"
-            )
+            report.pre_change_actions.append("Consider implementing fallback mechanisms")
             report.rollback_plan = "Restore service from backup or previous version"
 
     def _generate_deployment_recommendations(
@@ -312,22 +306,16 @@ class ImpactAnalyzer:
         is_breaking: bool,
     ) -> None:
         """Generate recommendations for deployment."""
-        report.pre_change_actions.append(
-            "Deploy to staging environment first"
-        )
+        report.pre_change_actions.append("Deploy to staging environment first")
 
         if is_breaking:
-            report.pre_change_actions.append(
-                "Coordinate with owners of dependent services"
-            )
+            report.pre_change_actions.append("Coordinate with owners of dependent services")
             report.pre_change_actions.append(
                 "Version API and maintain backward compatibility temporarily"
             )
             report.rollback_plan = "Rollback to previous version with compatible API"
         else:
-            report.pre_change_actions.append(
-                "Use blue-green or canary deployment strategy"
-            )
+            report.pre_change_actions.append("Use blue-green or canary deployment strategy")
             report.rollback_plan = "Quick rollback to previous version"
 
         report.monitoring_required.append("Monitor error rates and latency")
@@ -335,9 +323,7 @@ class ImpactAnalyzer:
 
     def _generate_degradation_recommendations(self, report: ImpactReport) -> None:
         """Generate recommendations for degradation."""
-        report.pre_change_actions.append(
-            "Verify timeout configurations in dependent services"
-        )
+        report.pre_change_actions.append("Verify timeout configurations in dependent services")
         report.monitoring_required.append("Monitor latency metrics")
         report.monitoring_required.append("Watch for timeout errors in dependents")
 

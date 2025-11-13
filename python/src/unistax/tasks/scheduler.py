@@ -55,13 +55,9 @@ class Scheduler:
         }
 
         if use_async:
-            self.scheduler = AsyncIOScheduler(
-                timezone=timezone, job_defaults=defaults
-            )
+            self.scheduler = AsyncIOScheduler(timezone=timezone, job_defaults=defaults)
         else:
-            self.scheduler = BackgroundScheduler(
-                timezone=timezone, job_defaults=defaults
-            )
+            self.scheduler = BackgroundScheduler(timezone=timezone, job_defaults=defaults)
 
         self._jobs: dict[str, Job] = {}
 

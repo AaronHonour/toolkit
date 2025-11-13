@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from queue import Empty, Full, Queue
 from typing import Generic, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
@@ -32,9 +32,9 @@ class PooledObject(Generic[T]):
     Tracks usage statistics and lifecycle.
     """
 
-    __slots__ = ('_obj', '_pool', '_created_at', '_last_used', '_use_count', '_is_healthy')
+    __slots__ = ("_obj", "_pool", "_created_at", "_last_used", "_use_count", "_is_healthy")
 
-    def __init__(self, obj: T, pool: 'ObjectPool'):
+    def __init__(self, obj: T, pool: "ObjectPool"):
         """Initialize pooled object.
 
         Args:
@@ -112,7 +112,7 @@ class ObjectPool(Generic[T]):
         self,
         factory: Callable[[], T],
         config: PoolConfig | None = None,
-        health_check: Callable[[T], bool] | None = None
+        health_check: Callable[[T], bool] | None = None,
     ):
         """Initialize object pool.
 
@@ -143,12 +143,12 @@ class ObjectPool(Generic[T]):
         self._size = 0
         self._lock = threading.RLock()
         self._stats = {
-            'created': 0,
-            'destroyed': 0,
-            'acquisitions': 0,
-            'returns': 0,
-            'health_check_failures': 0,
-            'timeouts': 0,
+            "created": 0,
+            "destroyed": 0,
+            "acquisitions": 0,
+            "returns": 0,
+            "health_check_failures": 0,
+            "timeouts": 0,
         }
 
         # Pre-create minimum objects
@@ -176,7 +176,7 @@ class ObjectPool(Generic[T]):
             obj = self._factory()
             pooled = PooledObject(obj, self)
             self._size += 1
-            self._stats['created'] += 1
+            self._stats["created"] += 1
 
             return pooled
 
@@ -204,18 +204,18 @@ class ObjectPool(Generic[T]):
                 self._destroy_object(pooled)
                 return self._create_object()
 
-            self._stats['acquisitions'] += 1
+            self._stats["acquisitions"] += 1
             return pooled
 
         except Empty:
             # No available objects, try to create new one
             try:
                 pooled = self._create_object()
-                self._stats['acquisitions'] += 1
+                self._stats["acquisitions"] += 1
                 return pooled
             except RuntimeError as e:
                 # Pool exhausted
-                self._stats['timeouts'] += 1
+                self._stats["timeouts"] += 1
                 raise Empty("Pool exhausted, no objects available") from e
 
     def return_object(self, pooled: PooledObject[T]):
@@ -237,7 +237,7 @@ class ObjectPool(Generic[T]):
 
         try:
             self._available.put(pooled, block=False)
-            self._stats['returns'] += 1
+            self._stats["returns"] += 1
         except Full:
             # Pool full, destroy object
             self._destroy_object(pooled)
@@ -263,10 +263,10 @@ class ObjectPool(Generic[T]):
         if self._health_check is not None:
             try:
                 if not self._health_check(pooled.object):
-                    self._stats['health_check_failures'] += 1
+                    self._stats["health_check_failures"] += 1
                     return False
             except Exception:
-                self._stats['health_check_failures'] += 1
+                self._stats["health_check_failures"] += 1
                 return False
 
         return True
@@ -279,14 +279,14 @@ class ObjectPool(Generic[T]):
         """
         try:
             # Try to close object if it has close method
-            if hasattr(pooled.object, 'close'):
+            if hasattr(pooled.object, "close"):
                 pooled.object.close()
         except Exception:
             pass
         finally:
             with self._lock:
                 self._size -= 1
-                self._stats['destroyed'] += 1
+                self._stats["destroyed"] += 1
 
     @contextmanager
     def get(self, timeout: float | None = None):
@@ -337,12 +337,12 @@ class ObjectPool(Generic[T]):
             Statistics dictionary
         """
         return {
-            'size': self._size,
-            'available': self._available.qsize(),
-            'in_use': self._size - self._available.qsize(),
-            'config': {
-                'min_size': self._config.min_size,
-                'max_size': self._config.max_size,
+            "size": self._size,
+            "available": self._available.qsize(),
+            "in_use": self._size - self._available.qsize(),
+            "config": {
+                "min_size": self._config.min_size,
+                "max_size": self._config.max_size,
             },
             **self._stats,
         }
@@ -353,13 +353,17 @@ class ObjectPool(Generic[T]):
         Returns:
             Health metrics
         """
-        total_ops = self._stats['acquisitions'] + self._stats['returns']
+        total_ops = self._stats["acquisitions"] + self._stats["returns"]
         return {
-            'healthy': self._size >= self._config.min_size,
-            'size': self._size,
-            'utilization': (self._size - self._available.qsize()) / self._size if self._size > 0 else 0,  # noqa: E501
-            'success_rate': 1 - (self._stats['timeouts'] / total_ops) if total_ops > 0 else 1.0,
-            'health_check_failure_rate': self._stats['health_check_failures'] / total_ops if total_ops > 0 else 0,  # noqa: E501
+            "healthy": self._size >= self._config.min_size,
+            "size": self._size,
+            "utilization": (
+                (self._size - self._available.qsize()) / self._size if self._size > 0 else 0
+            ),  # noqa: E501
+            "success_rate": 1 - (self._stats["timeouts"] / total_ops) if total_ops > 0 else 1.0,
+            "health_check_failure_rate": (
+                self._stats["health_check_failures"] / total_ops if total_ops > 0 else 0
+            ),  # noqa: E501
         }
 
 
@@ -372,7 +376,7 @@ class BufferPool:
     Performance: 10M+ ops/sec buffer acquisition.
     """
 
-    __slots__ = ('_buffer_size', '_pool', '_stats')
+    __slots__ = ("_buffer_size", "_pool", "_stats")
 
     def __init__(self, buffer_size: int = 8192, pool_size: int = 100):
         """Initialize buffer pool.
@@ -392,11 +396,11 @@ class BufferPool:
         self._buffer_size = buffer_size
         self._pool = ObjectPool(
             factory=lambda: bytearray(buffer_size),
-            config=PoolConfig(min_size=pool_size // 2, max_size=pool_size)
+            config=PoolConfig(min_size=pool_size // 2, max_size=pool_size),
         )
         self._stats = {
-            'bytes_processed': 0,
-            'buffer_reuses': 0,
+            "bytes_processed": 0,
+            "buffer_reuses": 0,
         }
 
     @contextmanager
@@ -408,8 +412,8 @@ class BufferPool:
         """
         with self._pool.get() as buffer:
             # Clear buffer for reuse
-            buffer[:] = b'\x00' * self._buffer_size
-            self._stats['buffer_reuses'] += 1
+            buffer[:] = b"\x00" * self._buffer_size
+            self._stats["buffer_reuses"] += 1
             yield buffer
 
     def stats(self) -> dict:
@@ -419,8 +423,8 @@ class BufferPool:
             Statistics
         """
         return {
-            'buffer_size': self._buffer_size,
-            'pool_stats': self._pool.stats(),
+            "buffer_size": self._buffer_size,
+            "pool_stats": self._pool.stats(),
             **self._stats,
         }
 
@@ -463,10 +467,7 @@ class ObjectPoolManager:
         Returns:
             Dictionary of pool statistics
         """
-        return {
-            name: pool.stats()
-            for name, pool in self._pools.items()
-        }
+        return {name: pool.stats() for name, pool in self._pools.items()}
 
     def get_health_report(self) -> dict:
         """Get health report for all pools.
@@ -474,10 +475,7 @@ class ObjectPoolManager:
         Returns:
             Health report
         """
-        return {
-            name: pool.health_report()
-            for name, pool in self._pools.items()
-        }
+        return {name: pool.health_report() for name, pool in self._pools.items()}
 
     def close_all(self):
         """Close all pools."""

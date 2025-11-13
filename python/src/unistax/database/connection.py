@@ -99,9 +99,7 @@ class DatabaseManager:
             SQLAlchemy session factory
         """
         if self._session_factory is None:
-            self._session_factory = sessionmaker(
-                bind=self.get_engine(), expire_on_commit=False
-            )
+            self._session_factory = sessionmaker(bind=self.get_engine(), expire_on_commit=False)
 
         return self._session_factory
 

@@ -145,7 +145,7 @@ class RetryErrorHandler(ErrorHandler):
             if retry_count < self._max_retries:
                 context["should_retry"] = True
                 context["retry_count"] = retry_count + 1
-                context["backoff_delay"] = self._backoff_factor ** retry_count
+                context["backoff_delay"] = self._backoff_factor**retry_count
 
     def _should_retry(self, error: Exception) -> bool:
         """Check if error should be retried."""

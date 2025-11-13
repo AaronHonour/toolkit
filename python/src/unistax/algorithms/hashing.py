@@ -5,7 +5,6 @@ Target: Sub-microsecond hashing for MB-sized data.
 """
 
 
-
 def fast_hash(data: bytes) -> int:
     """Ultra-fast non-cryptographic hash.
 
@@ -120,7 +119,7 @@ class FastHasher:
     Optimized for hashing large streams without loading all into memory.
     """
 
-    __slots__ = ('_state',)
+    __slots__ = ("_state",)
 
     def __init__(self):
         """Initialize hasher."""
@@ -162,7 +161,7 @@ class ConsistentHashRing:
         ring.remove_node('node2')
     """
 
-    __slots__ = ('_nodes', '_virtual_nodes', '_ring', '_sorted_keys')
+    __slots__ = ("_nodes", "_virtual_nodes", "_ring", "_sorted_keys")
 
     def __init__(self, nodes: list[str] = None, virtual_nodes: int = 150):
         """Initialize consistent hash ring.

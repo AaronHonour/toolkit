@@ -45,9 +45,7 @@ class MigrationManager:
 
         config = Config(alembic_ini)
         config.set_main_option("script_location", self.script_location)
-        config.set_main_option(
-            "sqlalchemy.url", self.database_manager.config.url
-        )
+        config.set_main_option("sqlalchemy.url", self.database_manager.config.url)
 
         return config
 

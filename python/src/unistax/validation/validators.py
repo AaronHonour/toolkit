@@ -11,28 +11,30 @@ class ValidationRules:
     @staticmethod
     def email(value: str) -> bool:
         """Validate email format."""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, value))
 
     @staticmethod
     def url(value: str) -> bool:
         """Validate URL format."""
-        pattern = r'^https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b'
+        pattern = r"^https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b"
         return bool(re.match(pattern, value))
 
     @staticmethod
     def phone(value: str) -> bool:
         """Validate phone number format."""
-        pattern = r'^\+?1?\d{9,15}$'
+        pattern = r"^\+?1?\d{9,15}$"
         return bool(re.match(pattern, value))
 
     @staticmethod
-    def length(value: str, min_len: int = 0, max_len: int = float('inf')) -> bool:
+    def length(value: str, min_len: int = 0, max_len: int = float("inf")) -> bool:
         """Validate string length."""
         return min_len <= len(value) <= max_len
 
     @staticmethod
-    def range_check(value: float, min_val: float = float('-inf'), max_val: float = float('inf')) -> bool:  # noqa: E501
+    def range_check(
+        value: float, min_val: float = float("-inf"), max_val: float = float("inf")
+    ) -> bool:  # noqa: E501
         """Validate numeric range."""
         return min_val <= value <= max_val
 

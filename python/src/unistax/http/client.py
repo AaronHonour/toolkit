@@ -7,6 +7,7 @@ from typing import Any
 
 try:
     import requests
+
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
@@ -15,6 +16,7 @@ except ImportError:
 @dataclass
 class Response:
     """HTTP response wrapper."""
+
     status_code: int
     headers: dict[str, str]
     body: bytes
@@ -23,16 +25,18 @@ class Response:
     def json(self) -> Any:
         """Parse response as JSON."""
         import json
-        return json.loads(self.body.decode('utf-8'))
+
+        return json.loads(self.body.decode("utf-8"))
 
     def text(self) -> str:
         """Get response as text."""
-        return self.body.decode('utf-8')
+        return self.body.decode("utf-8")
 
 
 @dataclass
 class Request:
     """HTTP request."""
+
     method: str
     url: str
     headers: dict[str, str] | None = None
@@ -161,7 +165,7 @@ class HTTPClient:
                 last_error = e
                 if attempt < attempts - 1:
                     # Exponential backoff
-                    time.sleep(2 ** attempt)
+                    time.sleep(2**attempt)
                     continue
                 raise
 

@@ -6,6 +6,7 @@ from enum import Enum
 
 class CircuitState(Enum):
     """Circuit breaker state."""
+
     CLOSED = "closed"
     OPEN = "open"
     HALF_OPEN = "half_open"

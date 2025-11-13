@@ -37,10 +37,7 @@ class BlastRadiusResult:
     @property
     def critical_services(self) -> set[str]:
         """Services directly dependent on the failed service."""
-        return {
-            svc for svc, level in self.impact_levels.items()
-            if level == 1
-        }
+        return {svc for svc, level in self.impact_levels.items() if level == 1}
 
 
 @dataclass
@@ -109,9 +106,7 @@ def tarjan_scc(adj_list: dict[str, set[str]]) -> list[list[str]]:
     return sccs
 
 
-def detect_circular_dependencies(
-    adj_list: dict[str, set[str]]
-) -> list[CircularDependency]:
+def detect_circular_dependencies(adj_list: dict[str, set[str]]) -> list[CircularDependency]:
     """Detect all circular dependencies in the service graph.
 
     Args:
@@ -305,11 +300,7 @@ def calculate_service_criticality(
         # Calculate criticality score (weighted combination)
         # Higher in-degree and PageRank = more critical
         # High out-degree = less independent, but not necessarily less critical
-        criticality = (
-            0.5 * norm_pagerank +
-            0.4 * norm_in_degree +
-            0.1 * norm_out_degree
-        )
+        criticality = 0.5 * norm_pagerank + 0.4 * norm_in_degree + 0.1 * norm_out_degree
 
         reasons = []
         if norm_in_degree > 0.7:
@@ -339,9 +330,7 @@ def calculate_service_criticality(
     return scores
 
 
-def compute_betweenness_centrality(
-    adj_list: dict[str, set[str]]
-) -> dict[str, float]:
+def compute_betweenness_centrality(adj_list: dict[str, set[str]]) -> dict[str, float]:
     """Compute betweenness centrality to identify bottleneck services.
 
     Services with high betweenness centrality are bottlenecks that
@@ -388,9 +377,7 @@ def compute_betweenness_centrality(
         while stack:
             node = stack.pop()
             for predecessor in predecessors[node]:
-                delta[predecessor] += (
-                    sigma[predecessor] / sigma[node] * (1 + delta[node])
-                )
+                delta[predecessor] += sigma[predecessor] / sigma[node] * (1 + delta[node])
 
             if node != source:
                 betweenness[node] += delta[node]
@@ -399,10 +386,7 @@ def compute_betweenness_centrality(
     n = len(nodes)
     if n > 2:
         normalize_factor = (n - 1) * (n - 2)
-        betweenness = {
-            node: score / normalize_factor
-            for node, score in betweenness.items()
-        }
+        betweenness = {node: score / normalize_factor for node, score in betweenness.items()}
 
     return betweenness
 

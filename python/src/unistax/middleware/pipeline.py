@@ -77,9 +77,7 @@ class MiddlewarePipeline:
         self._middleware.append(middleware)
         return self
 
-    async def execute(
-        self, request: Request, final_handler: NextHandler | None = None
-    ) -> Response:
+    async def execute(self, request: Request, final_handler: NextHandler | None = None) -> Response:
         """Execute middleware pipeline.
 
         Args:

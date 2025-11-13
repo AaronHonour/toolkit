@@ -20,16 +20,12 @@ class MetricsBackend(ABC):
         pass
 
     @abstractmethod
-    def gauge(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def gauge(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Set gauge metric."""
         pass
 
     @abstractmethod
-    def histogram(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def histogram(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Record histogram value."""
         pass
 
@@ -73,17 +69,13 @@ class InMemoryBackend(MetricsBackend):
         with self._lock:
             self._counters[key] += value
 
-    def gauge(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def gauge(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Set gauge value."""
         key = self._make_key(name, labels)
         with self._lock:
             self._gauges[key] = value
 
-    def histogram(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def histogram(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Record histogram value."""
         key = self._make_key(name, labels)
         with self._lock:
@@ -183,9 +175,7 @@ class PrometheusBackend(MetricsBackend):
         else:
             metric.inc(value)
 
-    def gauge(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def gauge(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Set gauge value."""
         if not self._prometheus_available:
             self._fallback.gauge(name, value, labels)
@@ -197,9 +187,7 @@ class PrometheusBackend(MetricsBackend):
         else:
             metric.set(value)
 
-    def histogram(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def histogram(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Record histogram value."""
         if not self._prometheus_available:
             self._fallback.histogram(name, value, labels)
@@ -236,9 +224,7 @@ class StatsDBackend(MetricsBackend):
     Sends metrics to StatsD server if available, falls back to in-memory.
     """
 
-    def __init__(
-        self, host: str = "localhost", port: int = 8125, prefix: str = ""
-    ) -> None:
+    def __init__(self, host: str = "localhost", port: int = 8125, prefix: str = "") -> None:
         """Initialize StatsD backend.
 
         Args:
@@ -279,9 +265,7 @@ class StatsDBackend(MetricsBackend):
         formatted_name = self._format_name(name, labels)
         self._client.incr(formatted_name, int(value))
 
-    def gauge(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def gauge(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Set gauge value."""
         if not self._statsd_available:
             self._fallback.gauge(name, value, labels)
@@ -290,9 +274,7 @@ class StatsDBackend(MetricsBackend):
         formatted_name = self._format_name(name, labels)
         self._client.gauge(formatted_name, value)
 
-    def histogram(
-        self, name: str, value: float, labels: dict[str, str] | None = None
-    ) -> None:
+    def histogram(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
         """Record histogram value."""
         if not self._statsd_available:
             self._fallback.histogram(name, value, labels)

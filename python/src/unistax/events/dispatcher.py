@@ -15,9 +15,7 @@ class EventDispatcher:
         """Initialize EventDispatcher."""
         self._handlers: dict[type[Event], list[tuple[int, Callable]]] = {}
 
-    def register(
-        self, event_type: type[Event], handler: Callable, priority: int = 0
-    ) -> None:
+    def register(self, event_type: type[Event], handler: Callable, priority: int = 0) -> None:
         """Register event handler with priority.
 
         Args:

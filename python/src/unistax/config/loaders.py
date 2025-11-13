@@ -115,9 +115,7 @@ class EnvInterpolator:
             # No separator: variable is required
             if separator is None:
                 if env_value is None:
-                    raise ValueError(
-                        f"Required environment variable not set: {var_name}"
-                    )
+                    raise ValueError(f"Required environment variable not set: {var_name}")
                 return env_value
 
             # :- separator: use default if variable is unset or empty

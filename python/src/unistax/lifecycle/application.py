@@ -83,9 +83,7 @@ class Application:
         self._shutdown_hooks.append(hook)
         return func
 
-    def health_check(
-        self, name: str | None = None, check_type: str = "readiness"
-    ) -> Callable:
+    def health_check(self, name: str | None = None, check_type: str = "readiness") -> Callable:
         """Register health check.
 
         Args:
@@ -142,9 +140,7 @@ class Application:
 
         # Run shutdown hooks with timeout
         try:
-            await asyncio.wait_for(
-                self._run_shutdown_hooks(), timeout=self.shutdown_timeout
-            )
+            await asyncio.wait_for(self._run_shutdown_hooks(), timeout=self.shutdown_timeout)
             print(f"✓ Application stopped gracefully: {self.name}")
         except asyncio.TimeoutError:
             print(f"⚠ Shutdown timeout exceeded: {self.name}")

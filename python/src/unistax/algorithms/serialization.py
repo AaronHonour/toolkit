@@ -10,12 +10,14 @@ from typing import Any
 
 try:
     import orjson
+
     HAS_ORJSON = True
 except ImportError:
     HAS_ORJSON = False
 
 try:
     import msgpack
+
     HAS_MSGPACK = True
 except ImportError:
     HAS_MSGPACK = False
@@ -29,10 +31,7 @@ class SerializationFormat(Enum):
     MSGPACK = "msgpack"  # Binary format, smaller size
 
 
-def fast_serialize(
-    data: Any,
-    format: SerializationFormat = SerializationFormat.ORJSON
-) -> bytes:
+def fast_serialize(data: Any, format: SerializationFormat = SerializationFormat.ORJSON) -> bytes:
     """Ultra-fast serialization.
 
     Performance comparison (1MB object):
@@ -63,13 +62,10 @@ def fast_serialize(
 
     else:
         # Fallback to standard json
-        return json.dumps(data).encode('utf-8')
+        return json.dumps(data).encode("utf-8")
 
 
-def fast_deserialize(
-    data: bytes,
-    format: SerializationFormat = SerializationFormat.ORJSON
-) -> Any:
+def fast_deserialize(data: bytes, format: SerializationFormat = SerializationFormat.ORJSON) -> Any:
     """Ultra-fast deserialization.
 
     Args:
@@ -86,7 +82,7 @@ def fast_deserialize(
         return msgpack.unpackb(data, raw=False)
 
     else:
-        return json.loads(data.decode('utf-8'))
+        return json.loads(data.decode("utf-8"))
 
 
 class FastSerializer:
@@ -96,12 +92,10 @@ class FastSerializer:
     Uses schema caching for faster processing.
     """
 
-    __slots__ = ('_format', '_cache', '_cache_size')
+    __slots__ = ("_format", "_cache", "_cache_size")
 
     def __init__(
-        self,
-        format: SerializationFormat = SerializationFormat.ORJSON,
-        cache_size: int = 1000
+        self, format: SerializationFormat = SerializationFormat.ORJSON, cache_size: int = 1000
     ):
         """Initialize serializer.
 
@@ -232,5 +226,5 @@ def get_serialization_stats() -> dict:
             "api_responses": "orjson" if HAS_ORJSON else "json",
             "cache_storage": "msgpack" if HAS_MSGPACK else "json",
             "message_queues": "msgpack" if HAS_MSGPACK else "json",
-        }
+        },
     }

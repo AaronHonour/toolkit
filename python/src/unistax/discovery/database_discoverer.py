@@ -79,8 +79,15 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
 
         # Common database config keys
         db_keys = [
-            "database", "db", "postgres", "postgresql", "mysql",
-            "mongodb", "redis", "elasticsearch", "cassandra",
+            "database",
+            "db",
+            "postgres",
+            "postgresql",
+            "mysql",
+            "mongodb",
+            "redis",
+            "elasticsearch",
+            "cassandra",
         ]
 
         for key in db_keys:
@@ -137,7 +144,7 @@ class DatabaseConnectionDiscoverer(DependencyDiscoverer):
                 }
 
             # Try key=value format (e.g., "host=localhost port=5432 dbname=mydb")
-            kv_pattern = r'(\w+)=([^\s]+)'
+            kv_pattern = r"(\w+)=([^\s]+)"
             matches = dict(re.findall(kv_pattern, conn_str))
 
             if matches:

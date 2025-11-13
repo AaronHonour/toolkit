@@ -73,7 +73,9 @@ class LocalStorage(StorageBackend):
 class S3Storage(StorageBackend):
     """AWS S3 storage."""
 
-    def __init__(self, bucket: str, region: str = "us-east-1", access_key: str = None, secret_key: str = None):  # noqa: E501
+    def __init__(
+        self, bucket: str, region: str = "us-east-1", access_key: str = None, secret_key: str = None
+    ):  # noqa: E501
         """Initialize S3 storage."""
         self.bucket = bucket
         # Implementation requires boto3

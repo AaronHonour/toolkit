@@ -59,8 +59,12 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
 
         # Common service configuration patterns
         service_keys = [
-            "services", "dependencies", "upstreams", "backends",
-            "external_services", "integrations",
+            "services",
+            "dependencies",
+            "upstreams",
+            "backends",
+            "external_services",
+            "integrations",
         ]
 
         for key in service_keys:
@@ -108,24 +112,21 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
 
         # Patterns for service URLs in env vars
         url_pattern = re.compile(
-            r'(?:https?://)?([a-z0-9\-]+(?:\.[a-z0-9\-]+)*):?(\d+)?',
+            r"(?:https?://)?([a-z0-9\-]+(?:\.[a-z0-9\-]+)*):?(\d+)?",
             re.IGNORECASE,
         )
 
         # Common env var patterns
         service_env_patterns = [
-            r'.*_SERVICE_URL',
-            r'.*_API_URL',
-            r'.*_ENDPOINT',
-            r'.*_HOST',
+            r".*_SERVICE_URL",
+            r".*_API_URL",
+            r".*_ENDPOINT",
+            r".*_HOST",
         ]
 
         for env_var, value in self.env_vars.items():
             # Check if env var matches service patterns
-            is_service_var = any(
-                re.match(pattern, env_var)
-                for pattern in service_env_patterns
-            )
+            is_service_var = any(re.match(pattern, env_var) for pattern in service_env_patterns)
 
             if is_service_var:
                 # Try to extract service name from URL
@@ -197,8 +198,14 @@ class ConfigurationDiscoverer(DependencyDiscoverer):
         """Check if a name is likely a service (not a public domain)."""
         # Exclude common public domains
         excluded = {
-            "localhost", "example.com", "google.com", "amazonaws.com",
-            "cloudflare.com", "cdn", "static", "www",
+            "localhost",
+            "example.com",
+            "google.com",
+            "amazonaws.com",
+            "cloudflare.com",
+            "cdn",
+            "static",
+            "www",
         }
 
         name_lower = name.lower()

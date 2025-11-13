@@ -33,11 +33,13 @@ class QueryBuilder:
         Returns:
             QueryBuilder for chaining
         """
-        self._query.filters.append({
-            "field": field,
-            "operator": operator,
-            "value": value,
-        })
+        self._query.filters.append(
+            {
+                "field": field,
+                "operator": operator,
+                "value": value,
+            }
+        )
         return self
 
     def order_by(self, field: str, direction: str = "asc") -> "QueryBuilder":
@@ -50,10 +52,12 @@ class QueryBuilder:
         Returns:
             QueryBuilder for chaining
         """
-        self._query.sorts.append({
-            "field": field,
-            "direction": direction,
-        })
+        self._query.sorts.append(
+            {
+                "field": field,
+                "direction": direction,
+            }
+        )
         return self
 
     def limit(self, limit: int) -> "QueryBuilder":

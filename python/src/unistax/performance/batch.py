@@ -25,9 +25,7 @@ class BatchProcessor:
     """Batch multiple operations for efficiency."""
 
     def __init__(
-        self,
-        processor_func: Callable[[list[T]], list[R]],
-        config: BatchConfig | None = None
+        self, processor_func: Callable[[list[T]], list[R]], config: BatchConfig | None = None
     ):
         """Initialize batch processor.
 
@@ -170,7 +168,7 @@ class AsyncBatchProcessor:
     def __init__(
         self,
         processor_func: Callable[[list[T]], asyncio.Future[list[R]]],
-        config: BatchConfig | None = None
+        config: BatchConfig | None = None,
     ):
         """Initialize async batch processor.
 
@@ -252,10 +250,7 @@ class AsyncBatchProcessor:
 
         while len(batch) < self.config.max_batch_size and time.time() < deadline:
             try:
-                item = await asyncio.wait_for(
-                    self.queue.get(),
-                    timeout=0.01
-                )
+                item = await asyncio.wait_for(self.queue.get(), timeout=0.01)
                 batch.append(item)
             except asyncio.TimeoutError:
                 if batch:
@@ -302,6 +297,7 @@ def batch_calls(batch_size: int = 100):
         for item in items:
             result = process_items(item)
     """
+
     def decorator(func: Callable) -> Callable:
         processor = BatchProcessor(func, BatchConfig(max_batch_size=batch_size))
         processor.start()

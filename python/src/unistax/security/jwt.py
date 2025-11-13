@@ -57,9 +57,7 @@ class JWT:
 
         # Create signature
         message = f"{header_b64}.{payload_b64}"
-        signature = hmac.new(
-            self.secret.encode(), message.encode(), hashlib.sha256
-        ).digest()
+        signature = hmac.new(self.secret.encode(), message.encode(), hashlib.sha256).digest()
         signature_b64 = base64.urlsafe_b64encode(signature).decode().rstrip("=")
 
         return f"{message}.{signature_b64}"

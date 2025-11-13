@@ -35,9 +35,7 @@ def timer(name: str, labels: dict[str, str] | None = None) -> Callable:
     return decorator
 
 
-def counter(
-    name: str, value: float = 1.0, labels: dict[str, str] | None = None
-) -> Callable:
+def counter(name: str, value: float = 1.0, labels: dict[str, str] | None = None) -> Callable:
     """Decorator to increment counter on function call.
 
     Args:
