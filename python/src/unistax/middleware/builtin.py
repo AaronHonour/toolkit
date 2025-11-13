@@ -164,6 +164,9 @@ class CORSMiddleware(Middleware):
     """Adds CORS headers to responses.
 
     Handles preflight requests and adds CORS headers.
+
+    SECURITY WARNING: Do not use wildcard origins ("*") in production!
+    Always specify exact allowed origins to prevent unauthorized access.
     """
 
     def __init__(
@@ -171,19 +174,68 @@ class CORSMiddleware(Middleware):
         allow_origins: list[str] | None = None,
         allow_methods: list[str] | None = None,
         allow_headers: list[str] | None = None,
+        allow_credentials: bool = False,
         max_age: int = 3600,
     ) -> None:
         """Initialize CORSMiddleware.
 
         Args:
-            allow_origins: Allowed origins (defaults to ["*"])
+            allow_origins: Allowed origins. REQUIRED - no default for security.
+                          Examples: ["https://example.com", "https://app.example.com"]
+                          Never use ["*"] in production!
             allow_methods: Allowed HTTP methods
             allow_headers: Allowed headers
+            allow_credentials: Allow credentials (cookies, auth headers).
+                             Cannot be used with wildcard origins.
             max_age: Max age for preflight cache in seconds
+
+        Raises:
+            ValueError: If origins not specified or invalid configuration
+
+        Security Notes:
+            - Always specify exact origins in production
+            - Only use wildcard ("*") for development/testing
+            - Cannot use credentials with wildcard origins
+            - Validate origins match your application domains
+
+        Example:
+            >>> # Production (SECURE)
+            >>> cors = CORSMiddleware(
+            ...     allow_origins=["https://example.com", "https://app.example.com"],
+            ...     allow_credentials=True
+            ... )
+            >>>
+            >>> # Development only (INSECURE)
+            >>> cors = CORSMiddleware(allow_origins=["*"])
         """
-        self.allow_origins = allow_origins or ["*"]
+        if not allow_origins:
+            raise ValueError(
+                "allow_origins is required. Specify exact origins for production, "
+                "or ['*'] for development only. Never use ['*'] in production!"
+            )
+
+        # Validate credentials + wildcard combination
+        if allow_credentials and "*" in allow_origins:
+            raise ValueError(
+                "Cannot use allow_credentials=True with wildcard origins ('*'). "
+                "Specify exact origins or disable credentials."
+            )
+
+        # Warn about wildcard usage
+        if "*" in allow_origins and len(allow_origins) == 1:
+            import warnings
+
+            warnings.warn(
+                "Using wildcard CORS origins ['*'] is INSECURE and should only be used "
+                "in development. In production, specify exact allowed origins.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        self.allow_origins = allow_origins
         self.allow_methods = allow_methods or ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-        self.allow_headers = allow_headers or ["*"]
+        self.allow_headers = allow_headers or ["Content-Type", "Authorization"]
+        self.allow_credentials = allow_credentials
         self.max_age = max_age
 
     async def process(self, request: Request, next_handler: NextHandler) -> Response:
