@@ -233,6 +233,178 @@ security = SecurityHeadersMiddleware(
 
 ---
 
+### 4. Rate Limiting Implementation (FEATURE ADDED)
+
+**Feature:** Added comprehensive rate limiting middleware to prevent brute force attacks and API abuse.
+
+**Files:**
+- `python/src/unistax/ratelimit/limiter.py` - Enhanced rate limiter (386 lines)
+- `python/src/unistax/ratelimit/middleware.py` - HTTP middleware (NEW, 234 lines)
+- `python/src/unistax/ratelimit/storage.py` - Storage backends (NEW, 79 lines)
+
+**Changes:**
+- ✅ Enhanced RateLimiter with comprehensive exception handling
+- ✅ Added `RateLimitExceeded` exception with detailed context
+- ✅ Added `RateLimitInfo` dataclass for status tracking
+- ✅ Implemented RateLimitMiddleware for HTTP requests
+- ✅ Added InMemoryStorage for single-server deployments
+- ✅ Added RedisStorage for distributed systems
+- ✅ Standard rate limit headers (X-RateLimit-*)
+- ✅ Comprehensive logging for security monitoring
+- ✅ Reset and clear methods for limit management
+
+**Security Features:**
+
+1. **Prevents Brute Force Attacks**
+   - Configurable limits per endpoint/user/IP
+   - Automatic blocking after threshold
+   - Exponential backoff via Retry-After header
+
+2. **Standard HTTP Headers**
+   - `X-RateLimit-Limit`: Maximum requests allowed
+   - `X-RateLimit-Remaining`: Remaining requests in window
+   - `X-RateLimit-Reset`: Unix timestamp when limit resets
+   - `Retry-After`: Seconds to wait before retrying (when exceeded)
+
+3. **Flexible Key Functions**
+   - Per-IP rate limiting (default)
+   - Per-user rate limiting
+   - Per-endpoint rate limiting
+   - Custom key extraction
+
+4. **Multiple Storage Backends**
+   - In-memory (single server)
+   - Redis (distributed systems)
+   - Pluggable architecture for custom backends
+
+**Usage Examples:**
+
+**Basic Rate Limiting:**
+```python
+from unistax.ratelimit import RateLimiter, RateLimitMiddleware
+from unistax.middleware import MiddlewarePipeline
+
+# Create rate limiter: 100 requests per minute
+limiter = RateLimiter(limit=100, window=60)
+
+# Add to middleware pipeline
+middleware = RateLimitMiddleware(limiter)
+pipeline = MiddlewarePipeline()
+pipeline.use(middleware)
+```
+
+**Protect Authentication Endpoints:**
+```python
+from unistax.ratelimit import RateLimiter, RateLimitExceeded
+
+# Strict rate limit for login: 5 attempts per 5 minutes
+auth_limiter = RateLimiter(limit=5, window=300)
+
+@app.post("/login")
+@auth_limiter.limit(key_func=lambda username: f"login:{username}")
+async def login(username: str, password: str):
+    # Login logic here
+    return {"token": "..."}
+```
+
+**Per-User Rate Limiting:**
+```python
+def get_user_key(request):
+    user_id = request.context.get("user_id")
+    if user_id:
+        return f"user:{user_id}"
+    # Fallback to IP if not authenticated
+    return f"ip:{request.headers.get('X-Real-IP', 'unknown')}"
+
+middleware = RateLimitMiddleware(limiter, key_func=get_user_key)
+```
+
+**Distributed Rate Limiting (Redis):**
+```python
+from unistax.ratelimit import RateLimiter, RedisStorage
+
+# Use Redis for distributed systems
+storage = RedisStorage(host="localhost", port=6379)
+limiter = RateLimiter(limit=1000, window=60, storage=storage)
+```
+
+**Custom Rate Limits by Endpoint:**
+```python
+# Different limits for different endpoints
+api_limiter = RateLimiter(limit=1000, window=60)      # 1000 req/min
+auth_limiter = RateLimiter(limit=5, window=300)       # 5 req/5min
+upload_limiter = RateLimiter(limit=10, window=3600)   # 10 req/hour
+
+@app.post("/api/data")
+@api_limiter.limit(key_func=lambda req: f"api:{req.context.get('user_id')}")
+async def get_data():
+    pass
+
+@app.post("/auth/login")
+@auth_limiter.limit(key_func=lambda req: f"login:{req.body.get('username')}")
+async def login():
+    pass
+
+@app.post("/upload")
+@upload_limiter.limit(key_func=lambda req: f"upload:{req.context.get('user_id')}")
+async def upload_file():
+    pass
+```
+
+**Exception Handling:**
+```python
+from unistax.ratelimit import RateLimitExceeded
+
+try:
+    info = limiter.check_limit("user:123")
+    # Process request
+except RateLimitExceeded as e:
+    # Return 429 Too Many Requests
+    return {
+        "error": "Rate limit exceeded",
+        "retry_after": e.retry_after,
+        "limit": e.limit,
+        "window": e.window
+    }
+```
+
+**Recommended Limits by Endpoint Type:**
+
+| Endpoint Type | Limit | Window | Rationale |
+|--------------|-------|---------|-----------|
+| Authentication (login) | 5-10 | 5-15 min | Prevent brute force |
+| Password reset | 3-5 | 15-60 min | Prevent enumeration |
+| Registration | 5 | 60 min | Prevent spam accounts |
+| API endpoints (authenticated) | 100-1000 | 60 sec | Prevent abuse |
+| API endpoints (public) | 10-100 | 60 sec | Prevent DoS |
+| File uploads | 10-20 | 3600 sec | Prevent resource exhaustion |
+| Search endpoints | 50-100 | 60 sec | Prevent expensive queries |
+
+**Security Best Practices:**
+- Always use rate limiting on authentication endpoints
+- Use stricter limits for sensitive operations
+- Log rate limit violations for security monitoring
+- Use Redis storage for distributed deployments
+- Reset limits after successful 2FA/verification
+- Consider IP + user combined limits for better protection
+- Monitor rate limit metrics for attack detection
+
+**Testing Rate Limits:**
+```python
+# Get current limit status
+info = limiter.get_limit_info("user:123")
+print(f"Remaining: {info.remaining}/{info.limit}")
+print(f"Resets at: {info.reset}")
+
+# Reset limit (e.g., after successful 2FA)
+limiter.reset("login:user:123")
+
+# Clear all limits (testing only!)
+limiter.clear_all()
+```
+
+---
+
 ## Remaining Security Concerns
 
 ### HIGH PRIORITY (Requires Immediate Action)
@@ -341,21 +513,32 @@ RBAC authorization is now properly enforced. See commit "security: implement RBA
 
 CORS now requires explicit origin configuration. See commit "security: implement RBAC, fix CORS, and improve error handling" for details.
 
-#### 4. No Rate Limiting on Auth Endpoints
-**Impact:** Brute force attacks possible
+#### 4. No Rate Limiting on Auth Endpoints ✅ FIXED
 
-**Fix:**
+**Status:** IMPLEMENTED - See "Recent Security Fixes" section #4 above.
+
+Comprehensive rate limiting has been implemented with:
+- RateLimitMiddleware for HTTP requests
+- Per-IP, per-user, and per-endpoint rate limiting
+- Standard rate limit headers (X-RateLimit-*)
+- Redis support for distributed systems
+- Comprehensive logging and monitoring
+
+Usage:
 ```python
-from unistax.ratelimit.limiter import RateLimiter
+from unistax.ratelimit import RateLimiter, RateLimitMiddleware
 
-limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 per 5 minutes
+# Protect authentication endpoints: 5 attempts per 5 minutes
+auth_limiter = RateLimiter(limit=5, window=300)
 
 @app.post("/login")
-@limiter.limit(key_func=lambda req: req.client.host)
-async def login(credentials: LoginRequest):
-    # Limit login attempts per IP
+@auth_limiter.limit(key_func=lambda username: f"login:{username}")
+async def login(username: str, password: str):
+    # Login logic
     pass
 ```
+
+See documentation above for complete usage examples and recommended limits.
 
 ---
 
@@ -547,6 +730,11 @@ If you discover a security vulnerability:
 - ✅ Implemented SecurityHeadersMiddleware with OWASP headers
 - ✅ Added CSP, HSTS, X-Frame-Options, and other security headers
 - ✅ Replaced custom JWT with industry-standard PyJWT library
+- ✅ Implemented comprehensive rate limiting middleware
+- ✅ Added RateLimitMiddleware for HTTP request protection
+- ✅ Added InMemoryStorage and RedisStorage backends
+- ✅ Standard rate limit headers (X-RateLimit-Limit/Remaining/Reset)
+- ✅ Protection against brute force attacks on authentication endpoints
 - ✅ Added comprehensive JWT claim validation (exp, nbf, iat, aud, iss)
 - ✅ Added algorithm verification (prevents algorithm confusion attacks)
 - ✅ Added support for RS256, ES256, and other secure algorithms

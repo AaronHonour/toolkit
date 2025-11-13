@@ -3,7 +3,7 @@
 Provides request/response middleware pipeline with:
 - Middleware chain execution
 - Request/response context
-- Built-in middleware (logging, metrics, auth, etc.)
+- Built-in middleware (logging, metrics, auth, security, rate limiting, etc.)
 """
 
 from .builtin import (
