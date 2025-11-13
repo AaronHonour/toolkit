@@ -2,9 +2,7 @@
 
 from opentelemetry import trace  # type: ignore[import-not-found]
 from opentelemetry.trace import SpanContext  # type: ignore[import-not-found]
-from opentelemetry.trace.propagation.tracecontext import (
-    TraceContextTextMapPropagator,
-)
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator  # type: ignore[import-not-found]
 
 
 class TraceContext:
