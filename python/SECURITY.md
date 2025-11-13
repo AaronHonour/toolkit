@@ -121,6 +121,118 @@ results = query.apply_to_sqlalchemy(db_query, UserModel)
 
 ---
 
+### 3. Security Headers Implementation (FEATURE ADDED)
+
+**Feature:** Added comprehensive OWASP-recommended security headers middleware.
+
+**File:** `python/src/unistax/middleware/builtin.py`
+
+**Changes:**
+- ✅ Added SecurityHeadersMiddleware with configurable headers
+- ✅ Content-Security-Policy (CSP) with restrictive defaults
+- ✅ HTTP Strict Transport Security (HSTS)
+- ✅ X-Frame-Options (clickjacking protection)
+- ✅ X-Content-Type-Options (MIME sniffing protection)
+- ✅ Referrer-Policy
+- ✅ Permissions-Policy (feature policy)
+- ✅ X-XSS-Protection (legacy browser support)
+
+**Security Headers Included:**
+
+1. **Content-Security-Policy (CSP)**
+   - Prevents XSS, data injection, and code execution attacks
+   - Default: Restrictive policy allowing only same-origin resources
+   - Customizable per application needs
+
+2. **Strict-Transport-Security (HSTS)**
+   - Forces HTTPS connections
+   - Default: 1 year max-age with includeSubDomains
+   - Prevents man-in-the-middle attacks
+
+3. **X-Frame-Options**
+   - Prevents clickjacking attacks
+   - Default: DENY (no framing allowed)
+   - Can be set to SAMEORIGIN if needed
+
+4. **X-Content-Type-Options**
+   - Prevents MIME type sniffing
+   - Default: nosniff
+
+5. **Referrer-Policy**
+   - Controls referrer information leakage
+   - Default: strict-origin-when-cross-origin
+
+6. **Permissions-Policy**
+   - Disables sensitive browser features
+   - Default: Disables geolocation, camera, microphone, etc.
+
+**Usage:**
+
+```python
+from unistax.middleware import SecurityHeadersMiddleware, MiddlewarePipeline
+
+# Production configuration with custom CSP
+security = SecurityHeadersMiddleware(
+    content_security_policy=(
+        "default-src 'self'; "
+        "script-src 'self' https://cdn.example.com; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' https://api.example.com; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    ),
+    strict_transport_security="max-age=63072000; includeSubDomains; preload",
+    x_frame_options="DENY",
+)
+
+# Add to middleware pipeline
+pipeline = MiddlewarePipeline()
+pipeline.use(security)
+```
+
+**Development Configuration:**
+
+```python
+# More permissive for local development
+security = SecurityHeadersMiddleware(
+    content_security_policy=(
+        "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' ws: wss:"  # Allow WebSocket for hot reload
+    ),
+    strict_transport_security=None,  # Disable HSTS for HTTP dev server
+)
+```
+
+**Testing Your Security Headers:**
+
+Use these tools to validate your configuration:
+- [https://securityheaders.com/](https://securityheaders.com/)
+- [https://observatory.mozilla.org/](https://observatory.mozilla.org/)
+
+**CSP Testing:**
+
+Start with CSP in report-only mode to test without blocking:
+```python
+security = SecurityHeadersMiddleware(
+    custom_headers={
+        "Content-Security-Policy-Report-Only": "default-src 'self'; report-uri /csp-report"
+    }
+)
+```
+
+**Security Notes:**
+- Customize CSP based on your application's resource loading needs
+- Only enable HSTS over HTTPS (causes errors on HTTP)
+- Test thoroughly before deploying to production
+- Use security scanners to validate configuration
+- Consider adding CSP reporting endpoint for violations
+
+---
+
 ## Remaining Security Concerns
 
 ### HIGH PRIORITY (Requires Immediate Action)
@@ -228,24 +340,28 @@ async def update(csrf_protect: CsrfProtect = Depends()):
     # Process update
 ```
 
-#### 2. Missing Security Headers
-Add to FastAPI app:
+#### 2. Missing Security Headers ✅ FIXED
+
+**Status:** IMPLEMENTED - See "Recent Security Fixes" section #3 above.
+
+The SecurityHeadersMiddleware is now available with comprehensive OWASP-recommended headers:
+- Content-Security-Policy (CSP)
+- Strict-Transport-Security (HSTS)
+- X-Frame-Options
+- X-Content-Type-Options
+- Referrer-Policy
+- Permissions-Policy
+- X-XSS-Protection
+
+Usage:
 ```python
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from starlette.middleware.cors import CORSMiddleware
+from unistax.middleware import SecurityHeadersMiddleware
 
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["yourdomain.com"])
-
-# Add security headers
-@app.middleware("http")
-async def add_security_headers(request, call_next):
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    return response
+security = SecurityHeadersMiddleware()  # Uses secure defaults
+# Add to your middleware pipeline
 ```
+
+See documentation above for complete usage examples and configuration options.
 
 #### 3. Secrets Management
 Never store secrets in code or config files:
@@ -392,5 +508,11 @@ If you discover a security vulnerability:
 - ✅ Migrated password hashing from SHA256 to bcrypt
 - ✅ Added comprehensive SQL injection prevention
 - ✅ Added input validation to query builder
+- ✅ Implemented RBAC authorization (fixed bypass vulnerability)
+- ✅ Added security context management (thread-safe user context)
+- ✅ Fixed CORS configuration security (removed wildcard default)
+- ✅ Improved error handling with proper logging
+- ✅ Implemented SecurityHeadersMiddleware with OWASP headers
+- ✅ Added CSP, HSTS, X-Frame-Options, and other security headers
 - ✅ Documented remaining security concerns
 - ✅ Created security best practices guide

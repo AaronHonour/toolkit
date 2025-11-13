@@ -279,6 +279,176 @@ class CORSMiddleware(Middleware):
         }
 
 
+class SecurityHeadersMiddleware(Middleware):
+    """Adds security headers to all responses.
+
+    Implements OWASP recommended security headers to protect against common attacks:
+    - XSS (Cross-Site Scripting)
+    - Clickjacking
+    - MIME type sniffing
+    - Man-in-the-middle attacks
+    - Information disclosure
+
+    References:
+        - OWASP Secure Headers Project
+        - https://owasp.org/www-project-secure-headers/
+        - https://securityheaders.com/
+    """
+
+    def __init__(
+        self,
+        content_security_policy: str | None = None,
+        x_frame_options: str = "DENY",
+        x_content_type_options: str = "nosniff",
+        strict_transport_security: str | None = None,
+        referrer_policy: str = "strict-origin-when-cross-origin",
+        permissions_policy: str | None = None,
+        x_xss_protection: str = "1; mode=block",
+        custom_headers: dict[str, str] | None = None,
+    ) -> None:
+        """Initialize SecurityHeadersMiddleware.
+
+        Args:
+            content_security_policy: Content-Security-Policy header value.
+                Default: Restrictive policy (see _get_default_csp)
+                Example: "default-src 'self'; script-src 'self' 'unsafe-inline'"
+            x_frame_options: X-Frame-Options header. Options: DENY, SAMEORIGIN.
+                Default: DENY (prevents all framing)
+            x_content_type_options: X-Content-Type-Options header.
+                Default: nosniff (prevents MIME type sniffing)
+            strict_transport_security: Strict-Transport-Security (HSTS) header.
+                Default: max-age=31536000; includeSubDomains (1 year, include subdomains)
+                Set to None to disable (not recommended for production)
+                Example: "max-age=63072000; includeSubDomains; preload"
+            referrer_policy: Referrer-Policy header.
+                Default: strict-origin-when-cross-origin
+                Options: no-referrer, no-referrer-when-downgrade, origin,
+                         origin-when-cross-origin, same-origin, strict-origin,
+                         strict-origin-when-cross-origin, unsafe-url
+            permissions_policy: Permissions-Policy header (formerly Feature-Policy).
+                Default: Restrictive policy disabling sensitive features
+                Example: "geolocation=(), microphone=(), camera=()"
+            x_xss_protection: X-XSS-Protection header (legacy, for older browsers).
+                Default: 1; mode=block
+                Note: Modern browsers use CSP instead
+            custom_headers: Additional custom security headers
+
+        Security Notes:
+            - CSP should be tailored to your application's needs
+            - HSTS should only be enabled over HTTPS
+            - Test CSP in report-only mode before enforcing
+            - Use security scanners to validate configuration
+
+        Example:
+            >>> # Production configuration
+            >>> security = SecurityHeadersMiddleware(
+            ...     content_security_policy=(
+            ...         "default-src 'self'; "
+            ...         "script-src 'self' https://cdn.example.com; "
+            ...         "style-src 'self' 'unsafe-inline'; "
+            ...         "img-src 'self' data: https:; "
+            ...         "font-src 'self' data:; "
+            ...         "connect-src 'self' https://api.example.com; "
+            ...         "frame-ancestors 'none'; "
+            ...         "base-uri 'self'; "
+            ...         "form-action 'self'"
+            ...     ),
+            ...     strict_transport_security="max-age=63072000; includeSubDomains; preload",
+            ...     x_frame_options="DENY",
+            ... )
+            >>>
+            >>> # Development configuration (more permissive CSP)
+            >>> security = SecurityHeadersMiddleware(
+            ...     content_security_policy=(
+            ...         "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            ...         "img-src 'self' data: https:; "
+            ...         "connect-src 'self' ws: wss:"
+            ...     ),
+            ...     strict_transport_security=None,  # Disable HSTS for HTTP dev
+            ... )
+        """
+        self.csp = content_security_policy or self._get_default_csp()
+        self.x_frame_options = x_frame_options
+        self.x_content_type_options = x_content_type_options
+        self.hsts = strict_transport_security or "max-age=31536000; includeSubDomains"
+        self.referrer_policy = referrer_policy
+        self.permissions_policy = permissions_policy or self._get_default_permissions_policy()
+        self.x_xss_protection = x_xss_protection
+        self.custom_headers = custom_headers or {}
+
+    def _get_default_csp(self) -> str:
+        """Get default Content Security Policy.
+
+        Returns a restrictive CSP that should work for most applications.
+        Customize based on your application's specific needs.
+        """
+        return (
+            "default-src 'self'; "
+            "script-src 'self'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data:; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+            "upgrade-insecure-requests"
+        )
+
+    def _get_default_permissions_policy(self) -> str:
+        """Get default Permissions Policy.
+
+        Disables sensitive features by default.
+        """
+        return (
+            "geolocation=(), "
+            "microphone=(), "
+            "camera=(), "
+            "payment=(), "
+            "usb=(), "
+            "magnetometer=(), "
+            "gyroscope=(), "
+            "accelerometer=()"
+        )
+
+    async def process(self, request: Request, next_handler: NextHandler) -> Response:
+        """Process request and add security headers to response.
+
+        Args:
+            request: Request to process
+            next_handler: Next handler in chain
+
+        Returns:
+            Response with security headers added
+        """
+        response = await next_handler(request)
+
+        # Add security headers
+        security_headers = {
+            "Content-Security-Policy": self.csp,
+            "X-Frame-Options": self.x_frame_options,
+            "X-Content-Type-Options": self.x_content_type_options,
+            "Referrer-Policy": self.referrer_policy,
+            "Permissions-Policy": self.permissions_policy,
+        }
+
+        # Add HSTS only if explicitly set (should only be used over HTTPS)
+        if self.hsts:
+            security_headers["Strict-Transport-Security"] = self.hsts
+
+        # Add X-XSS-Protection for legacy browser support
+        if self.x_xss_protection:
+            security_headers["X-XSS-Protection"] = self.x_xss_protection
+
+        # Add custom headers
+        security_headers.update(self.custom_headers)
+
+        # Update response headers
+        response.headers.update(security_headers)
+
+        return response
+
+
 class CompressionMiddleware(Middleware):
     """Compresses response bodies.
 

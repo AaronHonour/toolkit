@@ -11,6 +11,7 @@ from .builtin import (
     ErrorHandlerMiddleware,
     LoggingMiddleware,
     MetricsMiddleware,
+    SecurityHeadersMiddleware,
 )
 from .pipeline import Middleware, MiddlewarePipeline, NextHandler, Request, Response
 
@@ -24,4 +25,5 @@ __all__ = [
     "MetricsMiddleware",
     "ErrorHandlerMiddleware",
     "CORSMiddleware",
+    "SecurityHeadersMiddleware",
 ]
