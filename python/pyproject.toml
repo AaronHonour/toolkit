@@ -176,9 +176,9 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/backend-toolkit"
-Documentation = "https://github.com/yourusername/backend-toolkit#readme"
-Repository = "https://github.com/yourusername/backend-toolkit"
+Homepage = "https://github.com/AaronHonour/unistax"
+Documentation = "https://github.com/AaronHonour/unistax#readme"
+Repository = "https://github.com/AaronHonour/unistax"
 
 [tool.setuptools.packages.find]
 where = ["src"]
