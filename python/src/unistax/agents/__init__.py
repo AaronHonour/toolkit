@@ -59,6 +59,9 @@ from unistax.agents.intelligence import (
     SwarmAgent,
 )
 
+# API (REST endpoints)
+from unistax.agents.api import create_agent_api, app as agent_api_app
+
 # Optional Celery integration (requires celery package)
 try:
     from unistax.agents.task_integration import AgentTaskQueue, AgentTaskScheduler
@@ -113,4 +116,7 @@ __all__ = [
     "AntColonyOptimizer",
     "ParticleSwarmOptimizer",
     "SwarmAgent",
+    # API
+    "create_agent_api",
+    "agent_api_app",
 ]
