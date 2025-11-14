@@ -15,6 +15,9 @@ The Agent Swarm Framework provides a complete system for creating, managing, and
 - **📊 Performance Tracking** - Built-in metrics and monitoring
 - **🔄 Proactive & Reactive** - Agents can both respond to tasks and take initiative
 - **🧩 Multiple Personas** - Pre-configured agent types for different roles
+- **🧠 Intelligence Features** - RL learning, knowledge graphs, HTN planning, swarm optimization
+- **🔀 Multi-Agent Workflows** - DAG-based orchestration with dependency resolution
+- **🔐 Enterprise Security** - JWT auth, rate limiting, secrets management
 
 ## Architecture
 
@@ -682,6 +685,288 @@ Test coverage includes:
 - ✅ Inter-agent messaging
 - ✅ Event system integration
 
+## Intelligence Features
+
+The agent framework includes advanced intelligence capabilities that enable agents to learn, plan, and optimize collaboratively.
+
+### Reinforcement Learning
+
+Agents can learn optimal decision-making policies through Q-learning:
+
+```python
+from unistax.agents.intelligence import RLAgent, AgentRLPolicy
+
+# Create agent with RL capabilities
+class SmartAgent(RLAgent, Agent):
+    def __init__(self, agent_id: str, **kwargs):
+        Agent.__init__(self, agent_id, **kwargs)
+        RLAgent.__init__(
+            self,
+            state_features=["queue_size", "cpu_usage", "task_priority"],
+            actions=["process_task", "wait", "delegate", "ask_help"],
+        )
+
+    async def decide(self):
+        # Get current state
+        state = {
+            "queue_size": len(self.current_tasks),
+            "cpu_usage": 0.75,
+            "task_priority": max(t.priority for t in self.current_tasks) if self.current_tasks else 0,
+        }
+
+        # Use RL policy to select action
+        action = self.rl_policy.select_action(state, training=True)
+
+        return action
+
+    async def provide_feedback(self, reward: float):
+        # Learn from experience
+        experience = Experience(
+            state=self.last_state,
+            action=self.last_action,
+            reward=reward,
+            next_state=self.current_state,
+            done=False,
+        )
+        self.rl_policy.learn_from_experience(experience)
+```
+
+**Key Features:**
+- Q-learning for state-action value estimation
+- Experience replay buffer for batch learning
+- Epsilon-greedy exploration strategy
+- Save/load policies for persistence
+
+### Knowledge Graph
+
+Agents share knowledge and best practices through a collaborative knowledge graph:
+
+```python
+from unistax.agents.intelligence import AgentKnowledgeGraph, NodeType, RelationType
+
+# Create shared knowledge graph
+kg = AgentKnowledgeGraph()
+
+# Agent adds knowledge about a dataset
+kg.add_node(
+    node_id="customers_table",
+    node_type=NodeType.DATASET,
+    properties={
+        "table": "dim_customers",
+        "size_mb": 450,
+        "quality_score": 0.95,
+    },
+    agent_id="steward_001",
+)
+
+# Track data lineage
+kg.add_edge(
+    source_id="etl_pipeline_001",
+    target_id="customers_table",
+    relation_type=RelationType.PRODUCES,
+    agent_id="engineer_001",
+)
+
+# Share best practice
+kg.add_best_practice(
+    practice_id="bp_data_quality",
+    topic="data_quality",
+    description="Always validate foreign keys before loading dimension tables",
+    agent_id="engineer_002",
+    related_nodes=["customers_table"],
+)
+
+# Query knowledge
+dependencies = kg.get_dependencies("customers_table")
+consumers = kg.get_consumers("customers_table")
+best_practices = kg.get_best_practices(topic="data_quality")
+```
+
+**Key Features:**
+- Graph-based knowledge representation
+- Node types: datasets, pipelines, models, agents, tasks, insights, best practices, issues
+- Relationship types: dependencies, production, consumption, training, execution
+- Transitive dependency resolution
+- Best practice sharing
+- Issue tracking and impact analysis
+
+### HTN Planning
+
+Hierarchical Task Network planning enables agents to decompose complex tasks:
+
+```python
+from unistax.agents.intelligence import HTNPlanner, HTNTask, HTNMethod, HTNOperator, TaskType
+
+# Create HTN planner
+planner = HTNPlanner()
+
+# Define primitive operators
+fetch_op = HTNOperator(
+    name="fetch_data",
+    preconditions={"source": "available"},
+    effects={"data": "fetched"},
+)
+clean_op = HTNOperator(
+    name="clean_data",
+    preconditions={"data": "fetched"},
+    effects={"data": "clean"},
+)
+analyze_op = HTNOperator(
+    name="analyze_data",
+    preconditions={"data": "clean"},
+    effects={"result": "ready"},
+)
+
+planner.add_operator(fetch_op)
+planner.add_operator(clean_op)
+planner.add_operator(analyze_op)
+
+# Define compound task
+full_analysis = HTNTask("complete_analysis", TaskType.COMPOUND)
+planner.add_task(full_analysis)
+
+# Define decomposition method
+method = HTNMethod(
+    name="standard_analysis_method",
+    task_name="complete_analysis",
+    subtasks=[
+        HTNTask("fetch_data", TaskType.PRIMITIVE),
+        HTNTask("clean_data", TaskType.PRIMITIVE),
+        HTNTask("analyze_data", TaskType.PRIMITIVE),
+    ],
+)
+planner.add_method(method)
+
+# Generate plan
+initial_state = {"source": "available"}
+plan = planner.plan(full_analysis, initial_state)
+
+# Execute plan
+final_state = planner.execute_plan(plan, initial_state)
+```
+
+**Key Features:**
+- Hierarchical task decomposition
+- Multiple decomposition methods per task
+- Precondition checking
+- State-based planning
+- Plan validation and execution
+
+### Swarm Intelligence
+
+Collaborative optimization using nature-inspired algorithms:
+
+**Ant Colony Optimization (ACO)** for path finding and task allocation:
+
+```python
+from unistax.agents.intelligence import AntColonyOptimizer
+
+# Create ACO optimizer
+aco = AntColonyOptimizer(
+    n_ants=20,
+    alpha=1.0,  # Pheromone importance
+    beta=2.0,   # Heuristic importance
+    evaporation_rate=0.1,
+)
+
+# Add task graph edges
+aco.add_edge("task_A", "task_B", distance=2.0)
+aco.add_edge("task_B", "task_C", distance=3.0)
+aco.add_edge("task_A", "task_C", distance=6.0)
+
+# Find optimal path
+best_path, best_cost = aco.optimize(
+    start="task_A",
+    goal="task_C",
+    n_iterations=100,
+)
+print(f"Best path: {best_path}, Cost: {best_cost}")
+```
+
+**Particle Swarm Optimization (PSO)** for hyperparameter tuning:
+
+```python
+from unistax.agents.intelligence import ParticleSwarmOptimizer
+import numpy as np
+
+# Define objective function (e.g., model performance)
+def evaluate_hyperparameters(params):
+    learning_rate, batch_size, dropout = params
+    # Train model and return validation error
+    return validation_error
+
+# Create PSO optimizer
+pso = ParticleSwarmOptimizer(
+    n_particles=30,
+    dimensions=3,
+    bounds=[
+        (0.0001, 0.1),    # learning_rate
+        (16, 128),        # batch_size
+        (0.0, 0.5),       # dropout
+    ],
+    objective_func=evaluate_hyperparameters,
+    minimize=True,
+)
+
+# Optimize
+best_params, best_score = pso.optimize(n_iterations=100)
+print(f"Best hyperparameters: {best_params}, Score: {best_score}")
+```
+
+**Key Features:**
+- Ant Colony Optimization for discrete path finding
+- Particle Swarm Optimization for continuous optimization
+- Pheromone-based learning (ACO)
+- Velocity-based exploration (PSO)
+- Configurable swarm parameters
+
+### Using Intelligence Features with Agents
+
+Agents can inherit intelligence capabilities through mixins:
+
+```python
+from unistax.agents import Agent
+from unistax.agents.intelligence import RLAgent, HTNAgent, SwarmAgent
+
+class IntelligentAgent(RLAgent, HTNAgent, SwarmAgent, Agent):
+    """Agent with full intelligence capabilities."""
+
+    def __init__(self, agent_id: str, **kwargs):
+        Agent.__init__(self, agent_id, persona="intelligent", **kwargs)
+
+        # Initialize RL
+        RLAgent.__init__(
+            self,
+            state_features=["load", "queue_size"],
+            actions=["process", "wait", "delegate"],
+        )
+
+        # Initialize HTN
+        HTNAgent.__init__(self)
+        self._setup_planning_domain()
+
+        # Initialize Swarm
+        SwarmAgent.__init__(self)
+        self.setup_aco(n_ants=10)
+
+    def _setup_planning_domain(self):
+        # Define operators and methods for HTN planning
+        pass
+
+    async def decide(self):
+        # Use RL to decide high-level action
+        state = self._get_state()
+        action = self.rl_policy.select_action(state)
+
+        if action == "process":
+            # Use HTN to plan task decomposition
+            task = self.current_tasks[0]
+            plan = self.htn_planner.plan(task, state)
+            return f"execute_plan:{plan.id}"
+
+        return action
+```
+
 ## Roadmap
 
 ### Phase 1: Core Framework (Completed ✅)
@@ -695,19 +980,18 @@ Test coverage includes:
 - [x] Metrics tracking
 - [x] Comprehensive tests
 
-### Phase 2: Advanced Features (In Progress 🚧)
-- [ ] Task queue integration (unistax.tasks + Celery)
-- [ ] Security integration (JWT, rate limiting, secrets)
-- [ ] Data Scientist persona
-- [ ] Data Steward persona
-- [ ] Orchestrator for multi-agent workflows
+### Phase 2: Advanced Features (Completed ✅)
+- [x] Task queue integration (unistax.tasks + Celery)
+- [x] Security integration (JWT, rate limiting, secrets)
+- [x] Data Scientist persona
+- [x] Data Steward persona
+- [x] Orchestrator for multi-agent workflows
 
-### Phase 3: Intelligence (Planned 📋)
-- [ ] ML-based decision making (Reinforcement Learning)
-- [ ] Knowledge graph integration
-- [ ] Blackboard collaboration pattern
-- [ ] Swarm intelligence algorithms
-- [ ] HTN (Hierarchical Task Network) planning
+### Phase 3: Intelligence (Completed ✅)
+- [x] ML-based decision making (Reinforcement Learning)
+- [x] Knowledge graph integration
+- [x] HTN (Hierarchical Task Network) planning
+- [x] Swarm intelligence algorithms (ACO, PSO)
 
 ### Phase 4: Scale (Future 🔮)
 - [ ] Redis-based distributed messaging

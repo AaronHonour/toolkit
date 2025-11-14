@@ -47,6 +47,18 @@ from unistax.agents.personas.data_steward import DataStewardAgent
 from unistax.agents.registry import AgentRegistry
 from unistax.agents.team import Team, TeamHierarchy, TeamType
 
+# Intelligence features
+from unistax.agents.intelligence import (
+    AgentKnowledgeGraph,
+    AgentRLPolicy,
+    AntColonyOptimizer,
+    HTNAgent,
+    HTNPlanner,
+    ParticleSwarmOptimizer,
+    RLAgent,
+    SwarmAgent,
+)
+
 # Optional Celery integration (requires celery package)
 try:
     from unistax.agents.task_integration import AgentTaskQueue, AgentTaskScheduler
@@ -92,4 +104,13 @@ __all__ = [
     "DataAnalystAgent",
     "DataScientistAgent",
     "DataStewardAgent",
+    # Intelligence
+    "AgentRLPolicy",
+    "RLAgent",
+    "AgentKnowledgeGraph",
+    "HTNPlanner",
+    "HTNAgent",
+    "AntColonyOptimizer",
+    "ParticleSwarmOptimizer",
+    "SwarmAgent",
 ]
