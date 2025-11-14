@@ -33,11 +33,28 @@ from unistax.agents.base import (
     TaskStatus,
     TeamRole,
 )
+from unistax.agents.orchestrator import (
+    AgentOrchestrator,
+    Workflow,
+    WorkflowStatus,
+    WorkflowStep,
+    StepStatus,
+)
 from unistax.agents.personas.data_analyst import DataAnalystAgent
 from unistax.agents.personas.data_engineer import DataEngineerAgent
+from unistax.agents.personas.data_scientist import DataScientistAgent
+from unistax.agents.personas.data_steward import DataStewardAgent
 from unistax.agents.registry import AgentRegistry
-from unistax.agents.task_integration import AgentTaskQueue, AgentTaskScheduler
 from unistax.agents.team import Team, TeamHierarchy, TeamType
+
+# Optional Celery integration (requires celery package)
+try:
+    from unistax.agents.task_integration import AgentTaskQueue, AgentTaskScheduler
+    _HAS_CELERY = True
+except ImportError:
+    AgentTaskQueue = None  # type: ignore
+    AgentTaskScheduler = None  # type: ignore
+    _HAS_CELERY = False
 
 __all__ = [
     # Base agent classes
@@ -64,7 +81,15 @@ __all__ = [
     # Task Integration
     "AgentTaskQueue",
     "AgentTaskScheduler",
+    # Orchestration
+    "AgentOrchestrator",
+    "Workflow",
+    "WorkflowStatus",
+    "WorkflowStep",
+    "StepStatus",
     # Personas
     "DataEngineerAgent",
     "DataAnalystAgent",
+    "DataScientistAgent",
+    "DataStewardAgent",
 ]
